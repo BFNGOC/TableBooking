@@ -1,19 +1,13 @@
 import {
-  IsEmail,
   IsNotEmpty,
-  IsOptional,
+  IsEmail,
+  MinLength,
   IsString,
   Matches,
-  MinLength,
 } from 'class-validator';
 
-export class CreateUserDto {
-  @IsString({ message: 'Name phải là một chuỗi' })
-  @IsNotEmpty({
-    message: 'Name không được để trống',
-  })
-  name!: string;
-
+export class CreateAuthDto {
+  @IsNotEmpty({ message: 'Email không được để trống' })
   @IsEmail(
     {},
     {
@@ -22,25 +16,13 @@ export class CreateUserDto {
   )
   email!: string;
 
-  @IsOptional()
-  @IsString()
+  @IsNotEmpty({ message: 'Password không được để trống' })
+  @IsString({ message: 'Password phải là một chuỗi ký tự' })
   @MinLength(6, {
     message: 'Password phải có ít nhất 6 ký tự',
   })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/, {
     message: 'Password phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt',
   })
-  password?: string;
-
-  @IsOptional()
-  @IsString()
-  phone?: string;
-
-  @IsOptional()
-  @IsString()
-  address?: string;
-
-  @IsOptional()
-  @IsString()
-  avatar?: string;
+  password!: string;
 }

@@ -17,3 +17,15 @@ export const validateMongoId = (id: string): void => {
     throw new BadRequestException('ID không hợp lệ');
   }
 };
+
+export const comparePasswordHelper = async (
+  plainPassword: string,
+  hashedPassword: string,
+) => {
+  try {
+    return await bcrypt.compare(plainPassword, hashedPassword);
+  } catch (error) {
+    console.error('Error comparing password:', error);
+    throw error;
+  }
+};

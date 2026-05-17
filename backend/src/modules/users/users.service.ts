@@ -109,6 +109,16 @@ export class UsersService {
     };
   }
 
+  async findByEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    return user;
+  }
+
   async update(updateUserDto: UpdateUserDto) {
     const { _id, name, phone, address, avatar } = updateUserDto;
 
