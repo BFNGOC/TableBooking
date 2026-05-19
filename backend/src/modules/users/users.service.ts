@@ -11,6 +11,9 @@ import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
 import aqp from 'api-query-params';
+import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class UsersService {
@@ -25,9 +28,10 @@ export class UsersService {
     return false;
   }
 
-  async register(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
     const { email, name, password, phone, address, avatar } = createUserDto;
 
+    //check email
     const isEmailExist = await this.isEmailExist(email);
 
     if (isEmailExist) {
@@ -38,6 +42,7 @@ export class UsersService {
       throw new BadRequestException('Password không được để trống');
     }
 
+    //hash password
     const hashedPassword = await hashPasswordHelper(password);
 
     const createdUser = await this.userModel.create({
@@ -159,6 +164,42 @@ export class UsersService {
     return {
       message: 'Xóa user thành công',
       data: deletedUser,
+    };
+  }
+
+  async handleRegister(registerDto: CreateAuthDto) {
+    const { email, name, password } = registerDto;
+
+    //check email
+    const isEmailExist = await this.isEmailExist(email);
+
+    if (isEmailExist) {
+      throw new ConflictException(`Email đã tồn tại: ${email}`);
+    }
+
+    if (!password) {
+      throw new BadRequestException('Password không được để trống');
+    }
+
+    //hash password
+    const hashedPassword = await hashPasswordHelper(password);
+
+    const createdUser = await this.userModel.create({
+      email,
+      name,
+      password: hashedPassword,
+      isActive: false,
+      verificationCodeId: uuidv4(),
+      verificationCodeExpires: dayjs().add(1, 'minute').toDate(),
+    });
+
+    //send email
+
+    return {
+      message: 'Tạo user thành công',
+      data: {
+        _id: createdUser._id,
+      },
     };
   }
 }

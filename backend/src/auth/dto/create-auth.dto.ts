@@ -1,3 +1,4 @@
+import { Optional } from '@nestjs/common';
 import {
   IsNotEmpty,
   IsEmail,
@@ -25,4 +26,8 @@ export class CreateAuthDto {
     message: 'Password phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt',
   })
   password!: string;
+
+  @IsString({ message: 'Name phải là một chuỗi' })
+  @Optional()
+  name?: string;
 }

@@ -3,6 +3,7 @@ import { UsersService } from '@app/modules/users/users.service';
 import { comparePasswordHelper } from '@app/helpers/util';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import { UserDocument } from '@app/modules/users/schemas/user.schema';
+import { CreateAuthDto } from './dto/create-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,5 +34,9 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
     };
+  }
+
+  async register(registerDto: CreateAuthDto) {
+    return this.usersService.handleRegister(registerDto);
   }
 }

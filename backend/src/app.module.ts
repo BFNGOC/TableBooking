@@ -5,9 +5,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '@app/modules/users/users.module';
 import { AuthModule } from '@app/auth/auth.module';
+import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
+import { APP_GUARD } from '@nestjs/core/constants';
 
 @Module({
   imports: [
+    UsersModule,
+    AuthModule,
+
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -24,13 +29,15 @@ import { AuthModule } from '@app/auth/auth.module';
       }),
       inject: [ConfigService],
     }),
-
-    UsersModule,
-
-    AuthModule,
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}
