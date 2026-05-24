@@ -14,12 +14,14 @@ import aqp from 'api-query-params';
 import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
+    private readonly mailerService: MailerService,
   ) {}
 
   async isEmailExist(email: string): Promise<boolean> {
@@ -184,21 +186,31 @@ export class UsersService {
     //hash password
     const hashedPassword = await hashPasswordHelper(password);
 
-    const createdUser = await this.userModel.create({
+    const codeId = uuidv4();
+
+    const user = await this.userModel.create({
       email,
       name,
       password: hashedPassword,
       isActive: false,
-      verificationCodeId: uuidv4(),
-      verificationCodeExpires: dayjs().add(1, 'minute').toDate(),
+      verificationCodeId: codeId,
+      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
     });
 
     //send email
-
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Activate your account at TableBooking',
+      template: 'register',
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId,
+      },
+    });
     return {
       message: 'Tạo user thành công',
       data: {
-        _id: createdUser._id,
+        _id: user._id,
       },
     };
   }

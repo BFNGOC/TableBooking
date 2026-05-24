@@ -7,6 +7,8 @@ import { UsersModule } from '@app/modules/users/users.module';
 import { AuthModule } from '@app/auth/auth.module';
 import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core/constants';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 
 @Module({
   imports: [
@@ -25,6 +27,33 @@ import { APP_GUARD } from '@nestjs/core/constants';
         onConnectionCreate: (connection) => {
           console.log('MongoDB connected successfully');
           return connection;
+        },
+      }),
+      inject: [ConfigService],
+    }),
+
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('MAIL_HOST'),
+          port: configService.get<number>('MAIL_PORT'),
+          //   secure: false,
+          auth: {
+            user: configService.get<string>('MAIL_USER'),
+            pass: configService.get<string>('MAIL_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: '"No Reply" <noreply@example.com>',
+        },
+        //   preview: true,
+        template: {
+          dir: __dirname + '/mail/templates',
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
         },
       }),
       inject: [ConfigService],
