@@ -1,10 +1,8 @@
-// app/(guest)/auth/register/page.tsx
-
-import FooterAuth from '@/components/form/auth/FooterAuth';
 import LoginGoogleButton from '@/components/buttons/LoginGoogleButton';
-import RegisterForm from '@/components/form/auth/RegisterForm';
+import FooterAuth from './FooterAuth';
+import RegisterForm from './RegisterForm';
 
-function RegisterPage() {
+function Register() {
     return (
         <div className="rounded-3xl bg-white p-8 shadow-sm">
             {/* Header */}
@@ -26,10 +24,10 @@ function RegisterPage() {
             {/* Footer */}
 
             <div className="mt-6 space-y-3">
-                <FooterAuth text="Đã có tài khoản?" href="/auth/login" linkText="Đăng nhập" />
+                <FooterAuth text="Đã có tài khoản?" href="/login" linkText="Đăng nhập" />
             </div>
         </div>
     );
 }
 
-export default RegisterPage;
+export default Register;

@@ -44,13 +44,13 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
 
                 {/* Actions */}
                 <div className="flex items-center gap-3">
-                    <Link href="/auth/login">
+                    <Link href="/login">
                         <Button variant="ghost" className="text-[#6f4e37]">
                             Đăng nhập
                         </Button>
                     </Link>
 
-                    <Link href="/auth/register">
+                    <Link href="/register">
                         <Button className="bg-[#6f4e37] text-white">Đăng ký</Button>
                     </Link>
                 </div>

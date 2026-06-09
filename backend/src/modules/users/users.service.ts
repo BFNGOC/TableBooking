@@ -31,7 +31,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    const { email, name, password, phone, address, avatar } = createUserDto;
+    const { email, name, password } = createUserDto;
 
     //check email
     const isEmailExist = await this.isEmailExist(email);
@@ -51,9 +51,6 @@ export class UsersService {
       email,
       name,
       password: hashedPassword,
-      phone,
-      address,
-      avatar,
     });
 
     return {
@@ -127,16 +124,13 @@ export class UsersService {
   }
 
   async update(updateUserDto: UpdateUserDto) {
-    const { _id, name, phone, address, avatar } = updateUserDto;
+    const { _id, name } = updateUserDto;
 
     const updatedUser = await this.userModel
       .findByIdAndUpdate(
         _id,
         {
           name,
-          phone,
-          address,
-          avatar,
         },
         {
           new: true,

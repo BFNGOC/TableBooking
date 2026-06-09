@@ -25,6 +25,7 @@ export class UsersController {
   }
 
   @Get()
+  @Public()
   async findAll(
     @Query() query: Record<string, any>,
     @Query('current') current: string,

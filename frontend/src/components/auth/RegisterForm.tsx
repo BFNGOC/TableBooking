@@ -1,6 +1,6 @@
 'use client';
 
-import DynamicForm from '@/components/form/DynamicForm';
+import CustomForm from '@/components/form/CustomForm';
 
 function RegisterForm() {
     const fields = [
@@ -44,7 +44,7 @@ function RegisterForm() {
         console.log(data);
     };
 
-    return <DynamicForm fields={fields} submitText="Đăng ký" onSubmit={handleSubmit} />;
+    return <CustomForm fields={fields} submitText="Đăng ký" onSubmit={handleSubmit} />;
 }
 
 export default RegisterForm;

@@ -1,8 +1,8 @@
 import LoginGoogleButton from '@/components/buttons/LoginGoogleButton';
-import FooterAuth from '@/components/form/auth/FooterAuth';
-import LoginForm from '@/components/form/auth/LoginForm';
+import LoginForm from './LoginForm';
+import FooterAuth from './FooterAuth';
 
-function LoginPage() {
+function Login() {
     return (
         <div className="rounded-3xl bg-white p-8 shadow-sm">
             <div className="mb-8">
@@ -20,11 +20,11 @@ function LoginPage() {
             </div>
 
             <div className="mt-6 space-y-3">
-                <FooterAuth href="/auth/forgot-password" linkText="Quên mật khẩu" />
-                <FooterAuth text="Chưa có tài khoản?" href="/auth/register" linkText="Đăng ký" />
+                <FooterAuth href="/forgot-password" linkText="Quên mật khẩu" />
+                <FooterAuth text="Chưa có tài khoản?" href="/register" linkText="Đăng ký" />
             </div>
         </div>
     );
 }
 
-export default LoginPage;
+export default Login;

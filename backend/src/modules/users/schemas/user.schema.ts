@@ -35,15 +35,6 @@ export class User {
   @Prop()
   password?: string;
 
-  @Prop()
-  phone?: string;
-
-  @Prop()
-  address?: string;
-
-  @Prop()
-  avatar?: string;
-
   @Prop({
     type: String,
     enum: UserRole,

@@ -31,16 +31,4 @@ export class CreateUserDto {
     message: 'Password phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt',
   })
   password?: string;
-
-  @IsOptional()
-  @IsString()
-  phone?: string;
-
-  @IsOptional()
-  @IsString()
-  address?: string;
-
-  @IsOptional()
-  @IsString()
-  avatar?: string;
 }

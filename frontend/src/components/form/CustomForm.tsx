@@ -6,13 +6,13 @@ import AppTextField from './AppTextField';
 
 import { FormField } from '@/types/form';
 
-interface DynamicFormProps {
+interface CustomFormProps {
     fields: FormField[];
     submitText: string;
     onSubmit: (data: Record<string, string>) => void;
 }
 
-function DynamicForm({ fields, submitText, onSubmit }: DynamicFormProps) {
+function CustomForm({ fields, submitText, onSubmit }: CustomFormProps) {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -51,4 +51,4 @@ function DynamicForm({ fields, submitText, onSubmit }: DynamicFormProps) {
     );
 }
 
-export default DynamicForm;
+export default CustomForm;

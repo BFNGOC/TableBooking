@@ -1,6 +1,7 @@
 'use client';
 
-import DynamicForm from '@/components/form/DynamicForm';
+import CustomForm from '@/components/form/CustomForm';
+import { signIn } from 'next-auth/react';
 
 function LoginForm() {
     const fields = [
@@ -35,11 +36,15 @@ function LoginForm() {
         },
     ];
 
-    const handleSubmit = (data: Record<string, string>) => {
+    const handleSubmit = async (data: Record<string, string>) => {
         console.log(data);
+
+        const { email, password } = data;
+
+        await signIn('credentials', { email, password, redirect: true, callbackUrl: '/' });
     };
 
-    return <DynamicForm fields={fields} submitText="Đăng nhập" onSubmit={handleSubmit} />;
+    return <CustomForm fields={fields} submitText="Đăng nhập" onSubmit={handleSubmit} />;
 }
 
 export default LoginForm;
