@@ -9,19 +9,19 @@ function OwnerLayout({ children }: OwnerLayoutProps) {
     const menus = [
         {
             label: 'Tổng quan',
-            href: '/admin/dashboard',
+            href: '/owner/dashboard',
         },
         {
-            label: 'Nhà hàng',
-            href: '/admin/dashboard/restaurants',
+            label: 'Đơn đặt bàn',
+            href: '/owner/dashboard/bookings',
         },
         {
-            label: 'Người dùng',
-            href: '/admin/dashboard/users',
+            label: 'Quản lý bàn',
+            href: '/owner/dashboard/tables',
         },
         {
             label: 'Cài đặt',
-            href: '/admin/dashboard/settings',
+            href: '/owner/dashboard/settings',
         },
     ];
 

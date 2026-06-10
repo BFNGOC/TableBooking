@@ -3,6 +3,7 @@
 import { NavItem } from '@/types/navigation';
 import { Button } from '@heroui/react';
 import { Link } from '@heroui/react';
+import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 
 interface INavbarPublicProps {
@@ -10,6 +11,10 @@ interface INavbarPublicProps {
 }
 
 function NavbarPublic({ navItems }: INavbarPublicProps) {
+    const { data: session } = useSession();
+
+    console.log('Session in Navbar:', session);
+
     const pathname = usePathname();
 
     return (

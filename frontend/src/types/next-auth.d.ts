@@ -1,4 +1,4 @@
-interface IUser {
+export interface IUser {
     _id: string;
     name: string;
     email: string;
@@ -29,3 +29,5 @@ declare module 'next-auth' {
         error: string;
     }
 }
+
+export {};

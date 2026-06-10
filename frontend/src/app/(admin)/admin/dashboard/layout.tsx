@@ -9,19 +9,19 @@ function AdminLayout({ children }: AdminLayoutProps) {
     const menus = [
         {
             label: 'Tổng quan',
-            href: '/owner/dashboard',
+            href: '/admin/dashboard',
         },
         {
-            label: 'Đơn đặt bàn',
-            href: '/owner/dashboard/bookings',
+            label: 'Nhà hàng',
+            href: '/admin/dashboard/restaurants',
         },
         {
-            label: 'Quản lý bàn',
-            href: '/owner/dashboard/tables',
+            label: 'Người dùng',
+            href: '/admin/dashboard/users',
         },
         {
             label: 'Cài đặt',
-            href: '/owner/dashboard/settings',
+            href: '/admin/dashboard/settings',
         },
     ];
 

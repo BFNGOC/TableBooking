@@ -1,10 +1,11 @@
-export { };
+export {};
 // https://bobbyhadz.com/blog/typescript-make-types-global#declare-global-types-in-typescript
+import { Method } from 'axios';
 
 declare global {
     interface IRequest {
         url: string;
-        method: string;
+        method: Method;
         body?: { [key: string]: any };
         queryParams?: any;
         useCredentials?: boolean;
@@ -25,8 +26,7 @@ declare global {
             pageSize: number;
             pages: number;
             total: number;
-        },
-        result: T[]
+        };
+        result: T[];
     }
-
 }

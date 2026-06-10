@@ -9,7 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { UserDocument } from '@app/modules/users/schemas/user.schema';
 import { LocalAuthGuard } from './passport/local-auth.guard';
-import { Public } from '@app/decorator/customize';
+import { Public, ResponseMessage } from '@app/decorator/customize';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 
@@ -23,12 +23,14 @@ export class AuthController {
   @Post('login')
   @Public()
   @UseGuards(LocalAuthGuard)
+  @ResponseMessage('Đăng nhập thành công')
   handleLogin(@Request() req: { user: UserDocument }) {
     return this.authService.login(req.user);
   }
 
   @Post('register')
   @Public()
+  @ResponseMessage('Đăng ký thành công')
   register(@Body() registerDto: CreateAuthDto) {
     return this.authService.register(registerDto);
   }
