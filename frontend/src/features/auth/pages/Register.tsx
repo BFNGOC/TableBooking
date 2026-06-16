@@ -1,8 +1,16 @@
-import LoginGoogleButton from '@/components/buttons/LoginGoogleButton';
-import FooterAuth from './FooterAuth';
-import RegisterForm from './RegisterForm';
+'use client';
+
+import LoginGoogleButton from '@/shared/components/buttons/LoginGoogleButton';
+import FooterAuth from '../components/FooterAuth';
+import CustomForm from '@/shared/components/form/CustomForm';
+import { Button } from '@heroui/react';
+import { registerFormFields } from '../constants/register-form-fields';
 
 function Register() {
+    const handleSubmit = (data: Record<string, string>) => {
+        console.log(data);
+    };
+
     return (
         <div className="rounded-3xl bg-white p-8 shadow-sm">
             {/* Header */}
@@ -16,7 +24,15 @@ function Register() {
 
             {/* Form */}
             <div className="space-y-3">
-                <RegisterForm />
+                <CustomForm
+                    fields={registerFormFields}
+                    onSubmit={handleSubmit}
+                    footer={
+                        <Button type="submit" className="w-full h-12 bg-[#6f4e37]">
+                            Đăng ký
+                        </Button>
+                    }
+                ></CustomForm>
 
                 <LoginGoogleButton />
             </div>

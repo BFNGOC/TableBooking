@@ -1,5 +1,5 @@
+import NavbarPublic from '@/shared/components/layouts/Navbar';
 import type { ReactNode } from 'react';
-import NavbarPublic from '@/components/layouts/Navbar';
 
 interface PublicLayoutProps {
     children: ReactNode;

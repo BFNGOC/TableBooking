@@ -1,6 +1,6 @@
 'use client';
 
-import CustomForm from '@/components/form/CustomForm';
+import CustomForm from '@/shared/components/form/CustomForm';
 
 function RegisterForm() {
     const fields = [
