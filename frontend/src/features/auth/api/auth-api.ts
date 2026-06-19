@@ -4,6 +4,7 @@ import {
     IRegisterResponse,
     LoginPayload,
     RegisterPayload,
+    VerifyPayload,
 } from '../types/auth.type';
 
 export const loginApi = async (data: LoginPayload) => {
@@ -18,6 +19,15 @@ export const loginApi = async (data: LoginPayload) => {
 export const registerApi = async (data: RegisterPayload) => {
     const res = await sendRequest<IRegisterResponse>({
         url: '/auth/register',
+        method: 'POST',
+        body: data,
+    });
+    return res;
+};
+
+export const verifyApi = async (data: VerifyPayload) => {
+    const res = await sendRequest({
+        url: '/auth/verify',
         method: 'POST',
         body: data,
     });

@@ -15,6 +15,7 @@ import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
+import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 
 @Injectable()
 export class UsersService {
@@ -202,7 +203,36 @@ export class UsersService {
       },
     });
     return {
-      _id: user._id,
+      user: {
+        _id: user._id,
+      },
+    };
+  }
+
+  async handleActive(data: CheckCodeDto) {
+    const user = await this.userModel.findOne({
+      _id: data._id,
+      verificationCodeId: data.code,
+    });
+
+    if (!user) {
+      throw new NotFoundException('Mã xác thực không hợp lệ');
+    }
+
+    if (user.isActive) {
+      throw new BadRequestException('Tài khoản đã được kích hoạt');
+    }
+
+    if (dayjs().isAfter(user.verificationCodeExpires)) {
+      throw new BadRequestException('Mã xác thực đã hết hạn');
+    }
+
+    user.isActive = true;
+
+    await user.save();
+
+    return {
+      message: 'Kích hoạt tài khoản thành công',
     };
   }
 }

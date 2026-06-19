@@ -4,18 +4,20 @@ import { ReactNode } from 'react';
 import { Form } from '@heroui/react';
 
 import AppTextField from '../inputs/TextField';
-import { FormField } from '@/shared/types/form';
+import { FormField } from '@/shared/types/form-field';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
     onSubmit: (data: T) => void | Promise<void>;
     footer?: ReactNode;
+    defaultValues?: Record<string, any>;
 }
 
 function CustomForm<T extends Record<string, any>>({
     fields,
     onSubmit,
     footer,
+    defaultValues,
 }: CustomFormProps<T>) {
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -47,27 +49,48 @@ function CustomForm<T extends Record<string, any>>({
     return (
         <Form onSubmit={handleFormSubmit} className="grid grid-cols-12 gap-5">
             {fields.map((field) => {
+                const fieldWithDefaults = {
+                    ...field,
+                    defaultValue: defaultValues?.[field.name] || field.defaultValue,
+                };
+
+                if (fieldWithDefaults.hidden) {
+                    return (
+                        <input
+                            key={fieldWithDefaults.name}
+                            type="hidden"
+                            name={fieldWithDefaults.name}
+                            value={fieldWithDefaults.defaultValue || ''}
+                        />
+                    );
+                }
+
                 const renderField = () => {
-                    switch (field.type) {
+                    switch (fieldWithDefaults.type) {
                         case 'select':
-                        // return <AppSelectField key={field.name} {...field} />;
+                        // return <AppSelectField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
 
                         case 'date':
-                        // return <AppDateField key={field.name} {...field} />;
+                        // return <AppDateField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
 
                         case 'time':
-                        // return <AppTimeField key={field.name} {...field} />;
+                        // return <AppTimeField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
 
                         case 'textarea':
-                        // return <AppTextareaField key={field.name} {...field} />;
+                        // return <AppTextareaField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
 
                         default:
-                            return <AppTextField key={field.name} {...field} />;
+                            return (
+                                <AppTextField key={fieldWithDefaults.name} {...fieldWithDefaults} />
+                            );
                     }
                 };
 
                 return (
-                    <div key={field.name} className={`${getColSpanClass(field.col)}`}>
+                    <div
+                        key={fieldWithDefaults.name}
+                        className={`${getColSpanClass(fieldWithDefaults.col)}`}
+                    >
                         {renderField()}
                     </div>
                 );

@@ -1,5 +1,8 @@
-function VerifyEmail() {
-    return <div>VerifyEmail</div>;
+import Verify from '@/features/auth/pages/Verify';
+
+function VerifyEmailPage({ params }: { params: { id: string } }) {
+    const { id } = params;
+    return <Verify _id={id} />;
 }
 
-export default VerifyEmail;
+export default VerifyEmailPage;

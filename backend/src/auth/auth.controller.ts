@@ -12,6 +12,7 @@ import { LocalAuthGuard } from './passport/local-auth.guard';
 import { Public, ResponseMessage } from '@app/decorator/customize';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
+import { CheckCodeDto } from './dto/check-code.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +34,13 @@ export class AuthController {
   @ResponseMessage('Đăng ký thành công')
   register(@Body() registerDto: CreateAuthDto) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('verify')
+  @Public()
+  @ResponseMessage('Xác thực thành công')
+  checkCode(@Body() registerDto: CheckCodeDto) {
+    return this.authService.checkCode(registerDto);
   }
 
   @Get('mail')

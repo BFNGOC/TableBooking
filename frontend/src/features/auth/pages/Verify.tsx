@@ -1,32 +1,33 @@
 'use client';
 
-import LoginGoogleButton from '@/shared/components/buttons/LoginGoogleButton';
-import FooterAuth from '../components/FooterAuth';
 import CustomForm from '@/shared/components/form/CustomForm';
 import { Button } from '@heroui/react';
-import { registerFormFields } from '../constants/register-form-fields';
+import { verifyFormField } from '../constants/verify-form-fields';
+import { VerifyPayload } from '../types/auth.type';
 import { useToast } from '@/shared/hooks/useToast';
-import { RegisterPayload } from '../types/auth.type';
-import { registerApi } from '../api/auth-api';
 import { useRouter } from 'next/navigation';
+import { verifyApi } from '../api/auth-api';
 
-function Register() {
+interface IVerifyProps {
+    _id: string;
+}
+
+function Verify({ _id }: IVerifyProps) {
     const router = useRouter();
     const { showToast } = useToast();
 
-    const handleSubmit = async (data: RegisterPayload) => {
-        try {
-            const res = await registerApi(data);
+    const handleSubmit = async (data: VerifyPayload) => {
+        const res = await verifyApi(data);
 
-            if (res?.data?.user?._id) {
-                showToast('success', 'Đăng ký thành công', 'Chào mừng bạn đến với TableBooking');
-                router.push(`/verify-email/${res.data.user._id}`);
-            }
+        if (res?.data) {
+            showToast('success', 'Xác thực thành công', 'Bạn có thể đăng nhập ngay bây giờ');
+            router.push('/login');
+        }
+        try {
         } catch (error: any) {
             showToast('error', 'Đăng nhập thất bại', error?.message);
         }
     };
-
     return (
         <div className="rounded-3xl bg-white p-8 shadow-sm">
             {/* Header */}
@@ -41,25 +42,18 @@ function Register() {
             {/* Form */}
             <div className="space-y-3">
                 <CustomForm
-                    fields={registerFormFields}
+                    fields={verifyFormField}
+                    defaultValues={{ _id }}
                     onSubmit={handleSubmit}
                     footer={
                         <Button type="submit" className="w-full h-12 bg-[#6f4e37]">
-                            Đăng ký
+                            Xác thực
                         </Button>
                     }
                 ></CustomForm>
-
-                <LoginGoogleButton />
-            </div>
-
-            {/* Footer */}
-
-            <div className="mt-6 space-y-3">
-                <FooterAuth text="Đã có tài khoản?" href="/login" linkText="Đăng nhập" />
             </div>
         </div>
     );
 }
 
-export default Register;
+export default Verify;

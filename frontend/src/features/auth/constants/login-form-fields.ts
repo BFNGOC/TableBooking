@@ -1,4 +1,4 @@
-import { FormField } from '@/shared/types/form';
+import { FormField } from '@/shared/types/form-field';
 import { FormFieldType } from '@/shared/types/form-field-types';
 
 export const loginFormFields: FormField[] = [

@@ -20,3 +20,8 @@ export type RegisterPayload = {
     email: string;
     password: string;
 };
+
+export type VerifyPayload = {
+    _id: string;
+    code: string;
+};

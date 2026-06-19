@@ -1,7 +1,7 @@
 import { FormFieldType } from './form-field-types';
 
 export interface FormField {
-    label: string;
+    label?: string;
     name: string;
 
     type?: FormFieldType;
@@ -15,7 +15,15 @@ export interface FormField {
         value: string;
     }[];
 
+    isDisabled?: boolean;
+
+    hidden?: boolean;
+
+    isReadOnly?: boolean;
+
     isRequired?: boolean;
 
     validate?: (value: string) => string | null;
+
+    defaultValue?: string;
 }
