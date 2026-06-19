@@ -202,10 +202,7 @@ export class UsersService {
       },
     });
     return {
-      message: 'Tạo user thành công',
-      data: {
-        _id: user._id,
-      },
+      _id: user._id,
     };
   }
 }

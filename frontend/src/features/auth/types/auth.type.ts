@@ -6,7 +6,17 @@ export interface ILoginResponse {
     refresh_token: string;
 }
 
+export interface IRegisterResponse {
+    user: IUser;
+}
+
 export type LoginPayload = {
+    email: string;
+    password: string;
+};
+
+export type RegisterPayload = {
+    name: string;
     email: string;
     password: string;
 };

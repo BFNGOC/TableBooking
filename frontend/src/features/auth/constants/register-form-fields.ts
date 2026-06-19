@@ -3,7 +3,7 @@ import { FormFieldType } from '@/shared/types/form-field-types';
 
 export const registerFormFields: FormField[] = [
     {
-        name: 'fullName',
+        name: 'name',
         label: 'Họ và tên',
         type: FormFieldType.TEXT,
         placeholder: 'Nguyễn Văn A',
