@@ -235,4 +235,37 @@ export class UsersService {
       message: 'Kích hoạt tài khoản thành công',
     };
   }
+
+  async retryActive(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundException('Tài khoản không tồn tại');
+    }
+
+    if (user.isActive) {
+      throw new BadRequestException('Tài khoản đã được kích hoạt');
+    }
+
+    //update user
+    const codeId = uuidv4();
+
+    await user.updateOne({
+      verificationCodeId: codeId,
+      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
+    });
+
+    //send email
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Activate your account at TableBooking',
+      template: 'register',
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId,
+      },
+    });
+
+    return { _id: user?._id };
+  }
 }

@@ -25,3 +25,7 @@ export type VerifyPayload = {
     _id: string;
     code: string;
 };
+
+export type RetryActivePayload = {
+    email: string;
+};

@@ -1,4 +1,9 @@
 import { FormFieldType } from './form-field-types';
+import { FormModalModeType } from './form-modal-mode-type';
+
+export interface FieldContext {
+    mode: FormModalModeType;
+}
 
 export interface FormField {
     label?: string;
@@ -15,11 +20,11 @@ export interface FormField {
         value: string;
     }[];
 
-    isDisabled?: boolean;
+    isDisabled?: any;
 
-    hidden?: boolean;
+    hidden?: any;
 
-    isReadOnly?: boolean;
+    isReadOnly?: any;
 
     isRequired?: boolean;
 

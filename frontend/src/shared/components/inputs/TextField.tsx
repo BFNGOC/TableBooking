@@ -26,10 +26,11 @@ function AppTextField({
                 isReadOnly={isReadOnly}
                 validate={validate}
                 className="w-full"
+                value={defaultValue}
             >
                 <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>
 
-                <Input placeholder={placeholder} className="h-12" defaultValue={defaultValue} />
+                <Input placeholder={placeholder} className="h-12" />
 
                 <FieldError />
             </TextField>

@@ -5,12 +5,14 @@ import { Form } from '@heroui/react';
 
 import AppTextField from '../inputs/TextField';
 import { FormField } from '@/shared/types/form-field';
+import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
-    onSubmit: (data: T) => void | Promise<void>;
+    onSubmit?: (data: T) => void | Promise<void>;
     footer?: ReactNode;
     defaultValues?: Record<string, any>;
+    mode?: FormModalModeType;
 }
 
 function CustomForm<T extends Record<string, any>>({
@@ -18,9 +20,14 @@ function CustomForm<T extends Record<string, any>>({
     onSubmit,
     footer,
     defaultValues,
+    mode = 'create',
 }: CustomFormProps<T>) {
+    const isViewMode = mode === 'view';
+
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (isViewMode) return;
 
         const formData = new FormData(e.currentTarget);
 
@@ -30,7 +37,9 @@ function CustomForm<T extends Record<string, any>>({
             (data as Record<string, any>)[key] = value.toString();
         });
 
-        onSubmit(data);
+        if (onSubmit) {
+            onSubmit(data);
+        }
     };
 
     const getColSpanClass = (col?: number) => {
@@ -51,8 +60,12 @@ function CustomForm<T extends Record<string, any>>({
             {fields.map((field) => {
                 const fieldWithDefaults = {
                     ...field,
-                    defaultValue: defaultValues?.[field.name] || field.defaultValue,
+                    defaultValue: defaultValues?.[field.name] ?? field.defaultValue,
                 };
+
+                const isDisabled = isViewMode ? true : field.isDisabled;
+
+                const isReadOnly = isViewMode ? true : field.isReadOnly;
 
                 if (fieldWithDefaults.hidden) {
                     return (
@@ -68,20 +81,24 @@ function CustomForm<T extends Record<string, any>>({
                 const renderField = () => {
                     switch (fieldWithDefaults.type) {
                         case 'select':
-                        // return <AppSelectField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
+                        // return <AppSelectField {...fieldWithDefaults} />;
 
                         case 'date':
-                        // return <AppDateField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
+                        // return <AppDateField {...fieldWithDefaults} />;
 
                         case 'time':
-                        // return <AppTimeField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
+                        // return <AppTimeField {...fieldWithDefaults} />;
 
                         case 'textarea':
-                        // return <AppTextareaField key={fieldWithDefaults.name} {...fieldWithDefaults} />;
+                        // return <AppTextareaField {...fieldWithDefaults} />;
 
                         default:
                             return (
-                                <AppTextField key={fieldWithDefaults.name} {...fieldWithDefaults} />
+                                <AppTextField
+                                    {...fieldWithDefaults}
+                                    isDisabled={isDisabled}
+                                    isReadOnly={isReadOnly}
+                                />
                             );
                     }
                 };
@@ -89,14 +106,16 @@ function CustomForm<T extends Record<string, any>>({
                 return (
                     <div
                         key={fieldWithDefaults.name}
-                        className={`${getColSpanClass(fieldWithDefaults.col)}`}
+                        className={getColSpanClass(fieldWithDefaults.col)}
                     >
                         {renderField()}
                     </div>
                 );
             })}
 
-            {footer && <div className="col-span-12 mt-2">{footer}</div>}
+            {mode !== 'view' && footer && (
+                <div className="col-span-12 mt-2 flex justify-end gap-3">{footer}</div>
+            )}
         </Form>
     );
 }

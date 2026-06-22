@@ -39,8 +39,15 @@ export class AuthController {
   @Post('verify')
   @Public()
   @ResponseMessage('Xác thực thành công')
-  checkCode(@Body() registerDto: CheckCodeDto) {
-    return this.authService.checkCode(registerDto);
+  checkCode(@Body() checkCodeDto: CheckCodeDto) {
+    return this.authService.checkCode(checkCodeDto);
+  }
+
+  @Post('retry-active')
+  @Public()
+  retryActive(@Body('email') email: string) {
+    console.log('email', email);
+    return this.authService.retryActive(email);
   }
 
   @Get('mail')

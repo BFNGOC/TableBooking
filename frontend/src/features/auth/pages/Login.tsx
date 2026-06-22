@@ -10,10 +10,13 @@ import { loginApi } from '../api/auth-api';
 import { LoginPayload } from '../types/auth.type';
 import { Button } from '@heroui/react';
 import { loginFormFields } from '../constants/login-form-fields';
+import ResendEmail from '../components/ResendEmail';
+import { useFormModal } from '@/shared/hooks/useFormModal';
 
 function Login() {
     const router = useRouter();
     const { showToast } = useToast();
+    const { open, openView, selectedRecord, close, mode } = useFormModal();
 
     const handleSubmit = async (data: LoginPayload) => {
         try {
@@ -35,6 +38,10 @@ function Login() {
             showToast('success', 'Đăng nhập thành công', 'Chào mừng bạn quay trở lại');
             router.push('/');
         } catch (error: any) {
+            if (error?.statusCode == 400) {
+                openView(data.email);
+                return;
+            }
             showToast('error', 'Đăng nhập thất bại', error?.message);
         }
     };
@@ -67,6 +74,8 @@ function Login() {
                 <FooterAuth href="/forgot-password" linkText="Quên mật khẩu" />
                 <FooterAuth text="Chưa có tài khoản?" href="/register" linkText="Đăng ký" />
             </div>
+
+            <ResendEmail open={open} close={close} defaultEmail={selectedRecord} mode={mode} />
         </div>
     );
 }
