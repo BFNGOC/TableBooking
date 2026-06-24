@@ -29,3 +29,10 @@ export type VerifyPayload = {
 export type RetryActivePayload = {
     email: string;
 };
+
+export type ChangePasswordPayload = {
+    email: string;
+    code: string;
+    password: string;
+    confirmPassword: string;
+};

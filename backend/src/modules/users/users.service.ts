@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
+import { ChangePasswordDto } from '@app/auth/dto/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -267,5 +268,75 @@ export class UsersService {
     });
 
     return { _id: user?._id };
+  }
+
+  async retryPassword(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundException('Tài khoản không tồn tại');
+    }
+
+    //update user
+    const codeId = uuidv4();
+
+    await user.updateOne({
+      verificationCodeId: codeId,
+      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
+    });
+
+    //send email
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Change your password account at TableBooking',
+      template: 'register',
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId,
+      },
+    });
+
+    return { _id: user?._id, email: user?.email };
+  }
+
+  async changePassword(data: ChangePasswordDto) {
+    if (data.password !== data.confirmPassword) {
+      throw new BadRequestException('Mật khẩu/xác nhận mật khẩu không hợp lệ');
+    }
+
+    const user = await this.userModel.findOne({ email: data.email });
+
+    if (!user) {
+      throw new NotFoundException('Tài khoản không tồn tại');
+    }
+
+    if (dayjs().isAfter(user.verificationCodeExpires)) {
+      throw new BadRequestException('Mã xác thực đã hết hạn');
+    }
+
+    user.password = await hashPasswordHelper(data.password);
+
+    await user.save();
+
+    //update user
+    const codeId = uuidv4();
+
+    await user.updateOne({
+      verificationCodeId: codeId,
+      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
+    });
+
+    //send email
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Change your password account at TableBooking',
+      template: 'register',
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId,
+      },
+    });
+
+    return { _id: user?._id, email: user?.email };
   }
 }

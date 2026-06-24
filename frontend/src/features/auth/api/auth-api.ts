@@ -1,5 +1,6 @@
 import { sendRequest } from '@/shared/utils/api';
 import {
+    ChangePasswordPayload,
     ILoginResponse,
     IRegisterResponse,
     LoginPayload,
@@ -38,6 +39,24 @@ export const verifyApi = async (data: VerifyPayload) => {
 export const retryActiveApi = async (data: RetryActivePayload) => {
     const res = await sendRequest<any>({
         url: '/auth/retry-active',
+        method: 'POST',
+        body: data,
+    });
+    return res;
+};
+
+export const retryPasswordApi = async (data: RetryActivePayload) => {
+    const res = await sendRequest<any>({
+        url: '/auth/retry-password',
+        method: 'POST',
+        body: data,
+    });
+    return res;
+};
+
+export const changePasswordApi = async (data: ChangePasswordPayload) => {
+    const res = await sendRequest<any>({
+        url: '/auth/change-password',
         method: 'POST',
         body: data,
     });

@@ -13,6 +13,7 @@ import { Public, ResponseMessage } from '@app/decorator/customize';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CheckCodeDto } from './dto/check-code.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,8 +47,19 @@ export class AuthController {
   @Post('retry-active')
   @Public()
   retryActive(@Body('email') email: string) {
-    console.log('email', email);
     return this.authService.retryActive(email);
+  }
+
+  @Post('retry-password')
+  @Public()
+  retryPassword(@Body('email') email: string) {
+    return this.authService.retryPassword(email);
+  }
+
+  @Post('change-password')
+  @Public()
+  changePassword(@Body() changePasswordDto: ChangePasswordDto) {
+    return this.authService.changePassword(changePasswordDto);
   }
 
   @Get('mail')

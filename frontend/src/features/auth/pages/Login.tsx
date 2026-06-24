@@ -12,11 +12,13 @@ import { Button } from '@heroui/react';
 import { loginFormFields } from '../constants/login-form-fields';
 import ResendEmail from '../components/ResendEmail';
 import { useFormModal } from '@/shared/hooks/useFormModal';
+import ForgotPassword from '../components/ForgotPassword';
 
 function Login() {
     const router = useRouter();
     const { showToast } = useToast();
-    const { open, openView, selectedRecord, close, mode } = useFormModal();
+    const resendModal = useFormModal();
+    const forgotModal = useFormModal();
 
     const handleSubmit = async (data: LoginPayload) => {
         try {
@@ -39,7 +41,7 @@ function Login() {
             router.push('/');
         } catch (error: any) {
             if (error?.statusCode == 400) {
-                openView(data.email);
+                resendModal.openView(data.email);
                 return;
             }
             showToast('error', 'Đăng nhập thất bại', error?.message);
@@ -71,11 +73,18 @@ function Login() {
             </div>
 
             <div className="mt-6 space-y-3">
-                <FooterAuth href="/forgot-password" linkText="Quên mật khẩu" />
+                <FooterAuth linkText="Quên mật khẩu" onClick={forgotModal.openCreate} />
                 <FooterAuth text="Chưa có tài khoản?" href="/register" linkText="Đăng ký" />
             </div>
 
-            <ResendEmail open={open} close={close} defaultEmail={selectedRecord} mode={mode} />
+            <ForgotPassword open={forgotModal.open} close={forgotModal.close} />
+
+            <ResendEmail
+                open={resendModal.open}
+                close={resendModal.close}
+                defaultEmail={resendModal.selectedRecord}
+                mode={resendModal.mode}
+            />
         </div>
     );
 }

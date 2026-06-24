@@ -1,5 +1,6 @@
 import { FormField } from '@/shared/types/form-field';
 import { FormFieldType } from '@/shared/types/form-field-types';
+import { passwordRegex } from '@/shared/utils/password-regex';
 
 export const registerFormFields: FormField[] = [
     {
@@ -32,6 +33,9 @@ export const registerFormFields: FormField[] = [
         validate: (value: string) => {
             if (value.length < 6) {
                 return 'Mật khẩu tối thiểu 6 ký tự';
+            }
+            if (!passwordRegex.test(value)) {
+                return 'Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt';
             }
 
             return null;

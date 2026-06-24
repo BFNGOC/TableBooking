@@ -1,40 +1,35 @@
 'use client';
 
-import { Button } from '@heroui/react';
+import CustomForm from '@/shared/components/form/CustomForm';
 import ModalCustom from '@/shared/components/modals/ModalCustom';
 import Stepper from '@/shared/components/step/Stepper';
 import { useStepper } from '@/shared/hooks/useStepper';
-import CustomForm from '@/shared/components/form/CustomForm';
-import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
-import { retryActiveApi, verifyApi } from '../api/auth-api';
 import { useToast } from '@/shared/hooks/useToast';
+import { changePasswordField, getEmailField } from '../constants/step-form-field';
+import { Button } from '@heroui/react';
+import { changePasswordApi, retryPasswordApi } from '../api/auth-api';
 import { useState } from 'react';
-import { VerifyPayload } from '../types/auth.type';
-import { getEmailField, getOtpField } from '../constants/step-form-field';
+import { ChangePasswordPayload } from '../types/auth.type';
 
-interface IResendEmailProps {
+interface IForgotPasswordProps {
     open: boolean;
     close: () => void;
-    defaultEmail?: any;
-    mode: FormModalModeType;
 }
 
-function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
+function ForgotPassword({ open, close }: IForgotPasswordProps) {
     const stepper = useStepper();
 
     const { showToast } = useToast();
 
-    const [id, setId] = useState<string | null>(null);
+    const [email, setEmail] = useState<string | null>(null);
 
-    const handleResendOtpStep0 = async () => {
+    const handleResendOtpStep0 = async (data: { email: string }) => {
         try {
-            if (!defaultEmail) return;
-
-            const res = await retryActiveApi({ email: defaultEmail });
+            const res = await retryPasswordApi({ email: data.email });
 
             if (res?.data) {
                 showToast('success', 'Gửi OTP thành công', 'Vui lòng kiểm tra email');
-                setId(res.data._id);
+                setEmail(res.data.email);
                 stepper.next();
             }
         } catch (error: any) {
@@ -42,27 +37,32 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
         }
     };
 
-    const handleverifyOtpStep1 = async (data: { code: string }) => {
+    const handleverifyOtpStep1 = async (data: any) => {
         try {
-            if (!id) return;
+            const { password, confirmPassword } = data;
+            if (!email) return;
 
-            const payload: VerifyPayload = {
-                _id: id,
-                code: data.code,
-            };
+            if (password !== confirmPassword) {
+                showToast(
+                    'error',
+                    'Xác nhận mật khẩu thất bại',
+                    'Xác nhận mật khẩu phải trùng khớp với mật khẩu.'
+                );
+                return;
+            }
 
-            const res = await verifyApi(payload);
+            const res = await changePasswordApi({ ...data, email });
 
             if (res?.data) {
                 showToast(
                     'success',
-                    'Xác thực OTP thành công',
+                    'Đổi mật khẩu thành công',
                     'Vui lòng đăng nhập để tiếp tục sử dụng hệ thống'
                 );
                 stepper.next();
             }
         } catch (error: any) {
-            showToast('error', 'Xác thực OTP thất bại', error?.message);
+            showToast('error', 'Đổi mật khẩu thất bại', error?.message);
         }
     };
 
@@ -72,17 +72,18 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
             description: 'Nhập email',
             content: (
                 <CustomForm
-                    fields={getEmailField("'Tài khoản của bạn chưa được kích hoạt'")}
-                    defaultValues={{ email: defaultEmail }}
-                    mode={mode}
+                    fields={getEmailField(
+                        'Để thực hiện thay đổi mật khẩu, vui lòng nhập email tài khoản của bạn.'
+                    )}
+                    onSubmit={handleResendOtpStep0}
                     footer={
                         <div className="flex gap-3">
-                            <Button variant="outline" onPress={stepper.previous}>
-                                Quay lại
+                            <Button variant="outline" onPress={close}>
+                                Hủy
                             </Button>
 
                             <Button variant="primary" type="submit">
-                                Xác thực
+                                Gửi mã OTP
                             </Button>
                         </div>
                     }
@@ -94,7 +95,7 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
             description: 'Xác thực',
             content: (
                 <CustomForm
-                    fields={getOtpField('Nhập mã OTP đã được gửi tới email')}
+                    fields={changePasswordField}
                     onSubmit={handleverifyOtpStep1}
                     footer={
                         <div className="flex gap-3">
@@ -112,26 +113,18 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
         },
         {
             title: 'Hoàn tất',
-            description: 'Kích hoạt thành công',
-            content: <div>Tài khoản kích hoạt thành công. Vui lòng đăng nhập lại!</div>,
+            description: 'Đổi mật khẩu thành công',
+            content: (
+                <div>
+                    Mật khẩu của bạn đã đổi thành công, vui lòng đăng nhập để tiếp tục sử dụng hệ
+                    thống!
+                </div>
+            ),
         },
     ];
 
     const renderFooter = () => {
         switch (stepper.currentStep) {
-            case 0:
-                return (
-                    <>
-                        <Button variant="outline" onPress={close}>
-                            Hủy
-                        </Button>
-
-                        <Button variant="primary" onPress={handleResendOtpStep0}>
-                            Nhận mã OTP
-                        </Button>
-                    </>
-                );
-
             case 2:
                 return (
                     <Button variant="primary" onPress={close}>
@@ -151,7 +144,7 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
                 if (!isOpen) close();
             }}
             isDismissable={false}
-            title="Kích hoạt tài khoản"
+            title="Quên mật khẩu"
             footer={renderFooter()}
         >
             <Stepper
@@ -164,4 +157,4 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
     );
 }
 
-export default ResendEmail;
+export default ForgotPassword;

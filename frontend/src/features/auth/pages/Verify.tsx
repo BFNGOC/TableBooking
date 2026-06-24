@@ -32,10 +32,10 @@ function Verify({ _id }: IVerifyProps) {
         <div className="rounded-3xl bg-white p-8 shadow-sm">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="mb-2 text-3xl font-bold text-gray-900">Tạo tài khoản</h1>
+                <h1 className="mb-2 text-3xl font-bold text-gray-900">Xác thực tài khoản</h1>
 
                 <p className="text-gray-500">
-                    Đăng ký để khám phá và đặt chỗ tại những nhà hàng tuyệt vời nhất.
+                    Vui lòng xác thực tài khoản để tiếp tục sử dụng hệ thống.
                 </p>
             </div>
 
