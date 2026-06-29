@@ -6,7 +6,7 @@ import { verifyFormField } from '../constants/verify-form-fields';
 import { VerifyPayload } from '../types/auth.type';
 import { useToast } from '@/shared/hooks/useToast';
 import { useRouter } from 'next/navigation';
-import { verifyApi } from '../api/auth-api';
+import { useVerifyMutation } from '../hooks/useAuthMutations';
 
 interface IVerifyProps {
     _id: string;
@@ -15,9 +15,10 @@ interface IVerifyProps {
 function Verify({ _id }: IVerifyProps) {
     const router = useRouter();
     const { showToast } = useToast();
+    const { mutateAsync: verify, isPending } = useVerifyMutation();
 
     const handleSubmit = async (data: VerifyPayload) => {
-        const res = await verifyApi(data);
+        const res = await verify(data);
 
         if (res?.data) {
             showToast('success', 'Xác thực thành công', 'Bạn có thể đăng nhập ngay bây giờ');
@@ -46,7 +47,11 @@ function Verify({ _id }: IVerifyProps) {
                     defaultValues={{ _id }}
                     onSubmit={handleSubmit}
                     footer={
-                        <Button type="submit" className="w-full h-12 bg-[#6f4e37]">
+                        <Button
+                            type="submit"
+                            className="w-full h-12 bg-[#6f4e37]"
+                            isPending={isPending}
+                        >
                             Xác thực
                         </Button>
                     }

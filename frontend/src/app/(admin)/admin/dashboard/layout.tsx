@@ -1,5 +1,5 @@
+import SidebarLayout from '@/shared/components/layouts/Sidebar';
 import type { ReactNode } from 'react';
-import SidebarLayout from '@/components/layouts/Sidebar';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -10,6 +10,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
         {
             label: 'Tổng quan',
             href: '/admin/dashboard',
+            exact: true,
         },
         {
             label: 'Nhà hàng',

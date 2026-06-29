@@ -1,11 +1,5 @@
-export interface IUser {
-    _id: string;
-    name: string;
-    email: string;
-    isActive: boolean;
-    accountType: string;
-    role: string;
-}
+import { IUser } from '@/features/users/types/user-type';
+
 declare module 'next-auth/jwt' {
     /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
     interface JWT {

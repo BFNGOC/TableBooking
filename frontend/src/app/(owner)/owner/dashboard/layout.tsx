@@ -1,5 +1,5 @@
+import SidebarLayout from '@/shared/components/layouts/Sidebar';
 import type { ReactNode } from 'react';
-import SidebarLayout from '@/components/layouts/Sidebar';
 
 interface OwnerLayoutProps {
     children: ReactNode;
@@ -10,6 +10,7 @@ function OwnerLayout({ children }: OwnerLayoutProps) {
         {
             label: 'Tổng quan',
             href: '/owner/dashboard',
+            exact: true,
         },
         {
             label: 'Đơn đặt bàn',

@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { IUser } from './types/next-auth';
+import { IUser } from './features/users/types/user-type';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [

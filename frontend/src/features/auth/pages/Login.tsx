@@ -6,9 +6,9 @@ import CustomForm from '@/shared/components/form/CustomForm';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useToast } from '@/shared/hooks/useToast';
-import { loginApi } from '../api/auth-api';
 import { LoginPayload } from '../types/auth.type';
 import { Button } from '@heroui/react';
+import { useLoginMutation } from '../hooks/useAuthMutations';
 import { loginFormFields } from '../constants/login-form-fields';
 import ResendEmail from '../components/ResendEmail';
 import { useFormModal } from '@/shared/hooks/useFormModal';
@@ -19,10 +19,11 @@ function Login() {
     const { showToast } = useToast();
     const resendModal = useFormModal();
     const forgotModal = useFormModal();
+    const { mutateAsync: login, isPending } = useLoginMutation();
 
     const handleSubmit = async (data: LoginPayload) => {
         try {
-            const res = await loginApi(data);
+            const res = await login(data);
 
             const result = await signIn('credentials', {
                 redirect: false,
@@ -63,7 +64,11 @@ function Login() {
                     fields={loginFormFields}
                     onSubmit={handleSubmit}
                     footer={
-                        <Button type="submit" className="w-full h-12 bg-[#6f4e37]">
+                        <Button
+                            type="submit"
+                            className="w-full h-12 bg-[#6f4e37]"
+                            isPending={isPending}
+                        >
                             Đăng nhập
                         </Button>
                     }

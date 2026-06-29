@@ -1,4 +1,4 @@
-import { IUser } from '@/shared/types/next-auth';
+import { IUser } from '@/features/users/types/user-type';
 
 export interface ILoginResponse {
     user: IUser;

@@ -1,6 +1,6 @@
 'use client';
 
-import { NavItem } from '@/types/navigation';
+import { NavItem } from '@/shared/types/navigation';
 import { Link } from '@heroui/react';
 import { usePathname } from 'next/navigation';
 

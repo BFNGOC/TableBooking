@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import NextAuthWrapper from '@/shared/library/next.auth.wrapper';
+import { ReactQueryProvider } from '@/shared/lib/react-query';
 import { Toast } from '@heroui/react';
 
 const geistSans = Geist({
@@ -27,10 +28,12 @@ export default function RootLayout({
     return (
         <html lang="vi">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <NextAuthWrapper>
-                    {children}
-                    <Toast.Provider placement="top end" />
-                </NextAuthWrapper>
+                <ReactQueryProvider>
+                    <NextAuthWrapper>
+                        {children}
+                        <Toast.Provider placement="top end" />
+                    </NextAuthWrapper>
+                </ReactQueryProvider>
             </body>
         </html>
     );
