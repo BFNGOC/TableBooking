@@ -1,23 +1,15 @@
 'use client';
 
 import SidebarLayout from '@/shared/components/layouts/Sidebar';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, type ReactNode } from 'react';
+import { useRoleGuard } from '@/shared/hooks/useRoleGuard';
+import { type ReactNode } from 'react';
 
 interface AdminLayoutProps {
     children: ReactNode;
 }
 
 function AdminLayout({ children }: AdminLayoutProps) {
-    const { data } = useSession();
-    const router = useRouter();
-
-    useEffect(() => {
-        if (data?.user?.role !== 'ADMIN') {
-            router.replace('/');
-        }
-    }, [data]);
+    useRoleGuard('ADMIN');
 
     const menus = [
         {

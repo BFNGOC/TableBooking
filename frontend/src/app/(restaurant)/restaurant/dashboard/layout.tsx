@@ -1,23 +1,15 @@
 'use client';
 
 import SidebarLayout from '@/shared/components/layouts/Sidebar';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, type ReactNode } from 'react';
+import { useRoleGuard } from '@/shared/hooks/useRoleGuard';
+import { type ReactNode } from 'react';
 
 interface OwnerLayoutProps {
     children: ReactNode;
 }
 
 function OwnerLayout({ children }: OwnerLayoutProps) {
-    const { data } = useSession();
-    const router = useRouter();
-
-    useEffect(() => {
-        if (data?.user?.role !== 'RESTAURANT') {
-            router.replace('/');
-        }
-    }, [data]);
+    useRoleGuard('RESTAURANT');
 
     const menus = [
         {
