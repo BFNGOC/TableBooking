@@ -1,6 +1,8 @@
 import { UserRole } from './user-role';
 
-export type AccountType = 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
+export type AccountType = 'LOCAL' | 'GOOGLE';
+
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 export interface IUser {
     _id: string;
@@ -9,13 +11,13 @@ export interface IUser {
     email: string;
     password?: string;
 
-    account_type: AccountType;
+    accountType: AccountType;
     role: UserRole;
 
-    is_active: boolean;
+    isActive: boolean;
 
-    verification_code_id?: string;
-    verification_code_expires?: string | Date;
+    verificationCodeId?: string;
+    verificationCodeExpires?: string | Date;
 
     address?: string;
     phone?: string;
@@ -24,4 +26,7 @@ export interface IUser {
     refreshToken?: string;
 
     lastLoginAt?: string | Date;
+
+    gender?: Gender;
+    dateOfBirth?: string | Date;
 }

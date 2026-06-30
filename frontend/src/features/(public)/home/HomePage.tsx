@@ -1,9 +1,14 @@
 'use client';
 
+import { useGetMe } from '@/features/users/hooks/useGetMe';
 import { useToast } from '@/shared/hooks/useToast';
 
 function HomePage() {
     const { showToast } = useToast();
+
+    const { data } = useGetMe();
+
+    console.log('User data in HomePage:', data);
 
     return (
         <div className="flex gap-5">
@@ -28,6 +33,8 @@ function HomePage() {
             >
                 info
             </button>
+
+            <div>{data?.name}</div>
         </div>
     );
 }

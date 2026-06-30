@@ -10,20 +10,28 @@ export enum AccountType {
 
 export enum UserRole {
   CUSTOMER = 'CUSTOMER',
-  OWNER = 'OWNER',
+  RESTAURANT = 'RESTAURANT',
   ADMIN = 'ADMIN',
+}
+
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
 }
 
 @Schema({
   timestamps: true,
 })
 export class User {
+  // Họ và tên
   @Prop({
     required: true,
     trim: true,
   })
   name!: string;
 
+  // Email
   @Prop({
     required: true,
     unique: true,
@@ -32,16 +40,13 @@ export class User {
   })
   email!: string;
 
-  @Prop()
+  // Mật khẩu
+  @Prop({
+    select: false,
+  })
   password?: string;
 
-  @Prop({
-    type: String,
-    enum: UserRole,
-    default: UserRole.CUSTOMER,
-  })
-  role!: UserRole;
-
+  // Loại tài khoản
   @Prop({
     type: String,
     enum: AccountType,
@@ -49,16 +54,84 @@ export class User {
   })
   accountType!: AccountType;
 
+  // Vai trò
+  @Prop({
+    type: String,
+    enum: UserRole,
+    default: UserRole.CUSTOMER,
+  })
+  role!: UserRole;
+
+  // Trạng thái active
   @Prop({
     default: false,
   })
   isActive!: boolean;
 
+  // OTP
   @Prop()
   verificationCodeId?: string;
 
   @Prop()
   verificationCodeExpires?: Date;
+
+  // Địa chỉ
+  @Prop({
+    trim: true,
+    default: null,
+  })
+  address?: string;
+
+  // Số điện thoại
+  @Prop({
+    trim: true,
+    default: null,
+  })
+  phone?: string;
+
+  // Avatar
+  @Prop({
+    default: null,
+  })
+  avatar?: string;
+
+  // Refresh token
+  @Prop({
+    select: false,
+    default: null,
+  })
+  refreshToken?: string;
+
+  // Last login
+  @Prop({
+    default: null,
+  })
+  lastLoginAt?: Date;
+
+  // =========================
+  // 👉 THÊM MỚI
+  // =========================
+
+  // Giới tính
+  @Prop({
+    type: String,
+    enum: Gender,
+    default: null,
+  })
+  gender?: Gender;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  dateOfBirth?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Index
+UserSchema.index({ role: 1 });
+UserSchema.index({ accountType: 1 });
+UserSchema.index({ isActive: 1 });
+UserSchema.index({ gender: 1 });
+UserSchema.index({ birthYear: 1 });

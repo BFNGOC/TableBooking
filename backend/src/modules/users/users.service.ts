@@ -7,7 +7,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose/dist/common/mongoose.decorators';
-import { User } from './schemas/user.schema';
+import { User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
 import aqp from 'api-query-params';
@@ -26,12 +26,86 @@ export class UsersService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async isEmailExist(email: string): Promise<boolean> {
-    const user = await this.userModel.exists({ email });
-    if (user) return true;
-    return false;
+  /*************************************************************
+   * HELPERS
+   *************************************************************/
+  async getUserByIdOrThrow(
+    userId: string,
+    isSelectFull = false,
+  ): Promise<UserDocument> {
+    const query = this.userModel.findById(userId);
+
+    if (isSelectFull) {
+      query.select('+password +refreshToken');
+    }
+
+    const user = await query.exec();
+
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+
+    return user;
   }
 
+  async isEmailExist(email: string, userId?: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      return false;
+    }
+
+    if (userId && user._id.toString() === userId) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /*************************************************************
+   * USER
+   *************************************************************/
+  async getMe(userId: string) {
+    const user = await this.getUserByIdOrThrow(userId);
+
+    return {
+      user,
+    };
+  }
+
+  async updateMe(userId: string, dto: UpdateUserDto) {
+    await this.getUserByIdOrThrow(userId);
+
+    if (dto.email) {
+      await this.isEmailExist(dto.email, userId);
+    }
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          name: dto.name,
+          email: dto.email,
+          phone: dto.phone,
+          address: dto.address,
+          avatar: dto.avatar,
+          gender: dto.gender,
+          dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+        },
+      },
+      {
+        new: true,
+      },
+    );
+
+    return {
+      user: updatedUser,
+    };
+  }
+
+  /*************************************************************
+   * ADMIN
+   *************************************************************/
   async create(createUserDto: CreateUserDto) {
     const { email, name, password } = createUserDto;
 
@@ -103,15 +177,14 @@ export class UsersService {
   async findOne(_id: string) {
     validateMongoId(_id);
 
-    const user = await this.userModel.findById(_id).select('-password');
+    const user = await this.userModel.findById(_id);
 
     if (!user) {
       throw new NotFoundException('User không tồn tại');
     }
 
     return {
-      message: 'Lấy user thành công',
-      data: user,
+      user,
     };
   }
 
@@ -125,12 +198,15 @@ export class UsersService {
     return user;
   }
 
+  async findByEmailWithPassword(email: string) {
+    return this.userModel.findOne({ email }).select('+password');
+  }
+
   async update(updateUserDto: UpdateUserDto) {
-    const { _id, name } = updateUserDto;
+    const { name } = updateUserDto;
 
     const updatedUser = await this.userModel
       .findByIdAndUpdate(
-        _id,
         {
           name,
         },
@@ -163,6 +239,12 @@ export class UsersService {
       message: 'Xóa user thành công',
       data: deletedUser,
     };
+  }
+
+  async updateLastLogin(id: string) {
+    await this.userModel.findByIdAndUpdate(id, {
+      lastLoginAt: new Date(),
+    });
   }
 
   async handleRegister(registerDto: CreateAuthDto) {

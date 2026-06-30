@@ -1,15 +1,43 @@
-import { IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  IsPhoneNumber,
+  IsUrl,
+  Length,
+  IsEnum,
+  IsDateString,
+} from 'class-validator';
+
+import { Gender } from '../schemas/user.schema';
 
 export class UpdateUserDto {
-  @IsMongoId({
-    message: '_id không hợp lệ',
-  })
-  @IsNotEmpty({
-    message: '_id không được để trống',
-  })
-  _id!: string;
+  @IsOptional()
+  @IsString({ message: 'Tên phải là chuỗi' })
+  @Length(2, 50, { message: 'Tên phải từ 2-50 ký tự' })
+  name?: string;
 
   @IsOptional()
-  @IsString()
-  name?: string;
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  email?: string;
+
+  @IsOptional()
+  @IsPhoneNumber('VN', { message: 'Số điện thoại không hợp lệ' })
+  phone?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Địa chỉ phải là chuỗi' })
+  address?: string;
+
+  @IsOptional()
+  @IsUrl({}, { message: 'Avatar phải là URL hợp lệ' })
+  avatar?: string;
+
+  @IsOptional()
+  @IsEnum(Gender, { message: 'Giới tính không hợp lệ' })
+  gender?: Gender;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Ngày sinh không hợp lệ' })
+  dateOfBirth?: string;
 }

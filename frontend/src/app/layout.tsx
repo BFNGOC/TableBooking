@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import NextAuthWrapper from '@/shared/library/next.auth.wrapper';
-import { ReactQueryProvider } from '@/shared/lib/react-query';
+import { ReactQueryProvider } from '@/shared/library/react-query';
 import { Toast } from '@heroui/react';
 
 const geistSans = Geist({

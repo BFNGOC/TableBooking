@@ -1,11 +1,24 @@
+'use client';
+
 import SidebarLayout from '@/shared/components/layouts/Sidebar';
-import type { ReactNode } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, type ReactNode } from 'react';
 
 interface AdminLayoutProps {
     children: ReactNode;
 }
 
 function AdminLayout({ children }: AdminLayoutProps) {
+    const { data } = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (data?.user?.role !== 'ADMIN') {
+            router.replace('/');
+        }
+    }, [data]);
+
     const menus = [
         {
             label: 'Tổng quan',

@@ -13,8 +13,6 @@ interface INavbarPublicProps {
 function NavbarPublic({ navItems }: INavbarPublicProps) {
     const { data: session } = useSession();
 
-    console.log('Session in Navbar:', session);
-
     const pathname = usePathname();
 
     return (

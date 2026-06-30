@@ -18,26 +18,37 @@ export class AuthService {
     email: string,
     pass: string,
   ): Promise<UserDocument | null> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmailWithPassword(email);
+
+    if (!user) {
+      return null;
+    }
 
     if (!user.password) {
-      throw new UnauthorizedException('Password không được để trống');
+      throw new UnauthorizedException('Password không được để trống.');
     }
 
     const isPasswordValid = await comparePasswordHelper(pass, user.password);
 
-    if (!isPasswordValid || !user) return null;
+    if (!isPasswordValid) {
+      return null;
+    }
+
+    // Cập nhật thời gian đăng nhập
+    await this.usersService.updateLastLogin(user._id.toString());
 
     return user;
   }
 
   login(user: UserDocument) {
-    const payload = { email: user.email, sub: user._id };
+    const payload = { email: user.email, sub: user._id, role: user.role };
+
     return {
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
       access_token: this.jwtService.sign(payload),
     };

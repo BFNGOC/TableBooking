@@ -11,11 +11,25 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Public } from '@app/decorator/customize';
+import { Public, ResponseMessage } from '@app/decorator/customize';
+import { CurrentUser } from '@app/decorator/current-user.decorator';
+import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('me')
+  @ResponseMessage('Lấy thông tin người dùng thành công')
+  getMe(@CurrentUser() user: AuthUser) {
+    return this.usersService.getMe(user._id);
+  }
+
+  @Patch('me')
+  @ResponseMessage('Cập nhật thông tin người dùng thành công')
+  updateMe(@CurrentUser() user: AuthUser, @Body() dto: UpdateUserDto) {
+    return this.usersService.updateMe(user._id, dto);
+  }
 
   @Post()
   @Public()
