@@ -21,10 +21,9 @@ function SidebarLayout({ menus }: ISidebarPublicProps) {
             {/* Menu */}
             <nav className="flex flex-col gap-2">
                 {menus.map((menu) => {
-                    const isActive =
-                        menu.href === '/owner/dashboard'
-                            ? pathname === menu.href
-                            : pathname.startsWith(menu.href);
+                    const isActive = menu.exact
+                        ? pathname === menu.href
+                        : pathname === menu.href || pathname.startsWith(menu.href + '/');
 
                     return (
                         <Link

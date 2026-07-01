@@ -20,3 +20,15 @@ export const userRoleUserApi = {
         return res.data;
     },
 };
+
+export const userRoleAdminApi = {
+    getAll: async (queryParams: any) => {
+        const res = await sendRequest<IUser[]>({
+            url: `${API_URL_PREFIX}`,
+            method: 'GET',
+            queryParams: queryParams,
+        });
+
+        return res.data;
+    },
+};

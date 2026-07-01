@@ -1,0 +1,33 @@
+'use client';
+
+import { FormField } from '@/shared/types/form-field';
+import { TextField, TextArea, Label, FieldError } from '@heroui/react';
+
+export default function TextAreaField({
+    label,
+    name,
+    placeholder,
+    isRequired,
+    isDisabled,
+    isReadOnly,
+    defaultValue,
+    validate,
+    className,
+}: FormField) {
+    return (
+        <TextField
+            name={name}
+            isRequired={isRequired}
+            isDisabled={isDisabled}
+            isReadOnly={isReadOnly}
+            defaultValue={defaultValue}
+            validate={validate}
+        >
+            <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>
+
+            <TextArea placeholder={placeholder} className={`${className}`} />
+
+            <FieldError />
+        </TextField>
+    );
+}

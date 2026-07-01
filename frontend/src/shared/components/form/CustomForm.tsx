@@ -6,6 +6,10 @@ import { Form } from '@heroui/react';
 import AppTextField from '../inputs/TextField';
 import { FormField } from '@/shared/types/form-field';
 import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
+import SelectField from '../select/SelectField';
+import DatePikerField from '../datepicker/DatePikerField';
+import TimeFieldCustom from '../timefield/TimeFieldCustom';
+import TextAreaField from '../inputs/TextAreaField';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
@@ -81,16 +85,16 @@ function CustomForm<T extends Record<string, any>>({
                 const renderField = () => {
                     switch (fieldWithDefaults.type) {
                         case 'select':
-                        // return <AppSelectField {...fieldWithDefaults} />;
+                            return <SelectField {...fieldWithDefaults} />;
 
-                        case 'date':
-                        // return <AppDateField {...fieldWithDefaults} />;
+                        case 'datePicker':
+                            return <DatePikerField {...fieldWithDefaults} />;
 
-                        case 'time':
-                        // return <AppTimeField {...fieldWithDefaults} />;
+                        case 'timePicker':
+                            return <TimeFieldCustom {...fieldWithDefaults} />;
 
                         case 'textarea':
-                        // return <AppTextareaField {...fieldWithDefaults} />;
+                            return <TextAreaField {...fieldWithDefaults} />;
 
                         default:
                             return (
@@ -114,7 +118,7 @@ function CustomForm<T extends Record<string, any>>({
             })}
 
             {mode !== 'view' && footer && (
-                <div className="col-span-12 mt-2 flex justify-end gap-3">{footer}</div>
+                <div className="col-span-12 mt-2 flex justify-center gap-3">{footer}</div>
             )}
         </Form>
     );

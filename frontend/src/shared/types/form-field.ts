@@ -1,3 +1,4 @@
+import { DateValue, TimeValue } from '@heroui/react';
 import { FormFieldType } from './form-field-types';
 import { FormModalModeType } from './form-modal-mode-type';
 
@@ -11,13 +12,15 @@ export interface FormField {
 
     type?: FormFieldType;
 
+    className?: string;
+
     placeholder?: string;
 
     col?: 1 | 2 | 3 | 4 | 5 | 6 | 12;
 
     options?: {
-        label: string;
-        value: string;
+        id: string;
+        text: string;
     }[];
 
     isDisabled?: any;
@@ -31,4 +34,12 @@ export interface FormField {
     validate?: (value: string) => string | null;
 
     defaultValue?: string;
+
+    defaultDate?: DateValue;
+
+    minValue?: DateValue;
+
+    maxValue?: DateValue;
+
+    defaultTime?: TimeValue;
 }

@@ -1,5 +1,7 @@
+import UserRoleAdminPage from '@/features/users/pages/UserRoleAdminPage';
+
 function UsersAdminPage() {
-    return <div>UsersAdminPage</div>;
+    return <UserRoleAdminPage />;
 }
 
 export default UsersAdminPage;

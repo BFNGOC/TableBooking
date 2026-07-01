@@ -1,3 +1,4 @@
+import { AutoFieldsPlugin } from '@app/plugins/auto-fields.plugin';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
@@ -31,6 +32,13 @@ export class User {
   })
   name!: string;
 
+  // nameSearch
+  @Prop({
+    index: true,
+    select: false,
+  })
+  nameSearch!: string;
+
   // Email
   @Prop({
     required: true,
@@ -39,6 +47,13 @@ export class User {
     trim: true,
   })
   email!: string;
+
+  // emailSearch
+  @Prop({
+    index: true,
+    select: false,
+  })
+  emailSearch!: string;
 
   // Mật khẩu
   @Prop({
@@ -108,10 +123,6 @@ export class User {
   })
   lastLoginAt?: Date;
 
-  // =========================
-  // 👉 THÊM MỚI
-  // =========================
-
   // Giới tính
   @Prop({
     type: String,
@@ -128,6 +139,10 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.plugin(AutoFieldsPlugin, {
+  search: ['name', 'email'],
+});
 
 // Index
 UserSchema.index({ role: 1 });

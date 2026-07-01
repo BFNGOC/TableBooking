@@ -14,6 +14,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Public, ResponseMessage } from '@app/decorator/customize';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
+import { FindUserDto } from './dto/find-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -40,12 +41,8 @@ export class UsersController {
 
   @Get()
   @Public()
-  async findAll(
-    @Query() query: Record<string, any>,
-    @Query('current') current: string,
-    @Query('pageSize') pageSize: string,
-  ) {
-    return this.usersService.findAll(query, +current, +pageSize);
+  async findAll(@Query() query: FindUserDto) {
+    return this.usersService.findAll(query);
   }
 
   @Get(':id')

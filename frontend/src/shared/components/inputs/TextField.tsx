@@ -14,6 +14,7 @@ function AppTextField({
     hidden,
     isReadOnly,
     defaultValue,
+    className,
 }: FormField) {
     return (
         <div className="w-full">
@@ -30,7 +31,7 @@ function AppTextField({
             >
                 <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>
 
-                <Input placeholder={placeholder} className="h-12" />
+                <Input placeholder={placeholder} className={`${className}`} />
 
                 <FieldError />
             </TextField>

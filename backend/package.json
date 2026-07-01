@@ -42,7 +42,9 @@
     "passport-jwt": "4.0.1",
     "passport-local": "1.0.0",
     "reflect-metadata": "^0.2.2",
+    "remove-accents": "^0.5.0",
     "rxjs": "^7.8.1",
+    "slugify": "^1.6.9",
     "uuid": "14.0.0"
   },
   "devDependencies": {

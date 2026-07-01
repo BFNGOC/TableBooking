@@ -10,13 +10,16 @@ import { InjectModel } from '@nestjs/mongoose/dist/common/mongoose.decorators';
 import { User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
-import aqp from 'api-query-params';
 import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 import { ChangePasswordDto } from '@app/auth/dto/change-password.dto';
+import { FindUserDto } from './dto/find-user.dto';
+import { buildPagination } from '@app/helpers/pagination.helper';
+import { buildSort } from '@app/helpers/sort.helper';
+import { normalizeKeyword } from '@app/helpers/string.helper';
 
 @Injectable()
 export class UsersService {
@@ -137,39 +140,62 @@ export class UsersService {
     };
   }
 
-  async findAll(query: Record<string, any>, current = 1, pageSize = 10) {
-    const { filter, sort } = aqp(query);
+  async findAll(query: FindUserDto) {
+    const filter: Record<string, any> = {};
 
-    delete filter.current;
-    delete filter.pageSize;
+    if (query.role) {
+      filter.role = query.role;
+    }
 
-    current = current > 0 ? current : 1;
+    if (query.isActive !== undefined) {
+      filter.isActive = query.isActive;
+    }
 
-    pageSize = pageSize > 0 ? pageSize : 10;
+    const keyword = normalizeKeyword(query.keySearch);
+
+    if (keyword) {
+      filter.$or = [
+        {
+          nameSearch: {
+            $regex: keyword,
+            $options: 'i',
+          },
+        },
+        {
+          emailSearch: {
+            $regex: keyword,
+            $options: 'i',
+          },
+        },
+      ];
+    }
+
+    const { current, pageSize, skip } = buildPagination({
+      current: query.currentPage,
+      pageSize: query.pageSize,
+    });
+
+    const sort = buildSort(query.sort);
 
     const totalItems = await this.userModel.countDocuments(filter);
 
-    const totalPages = Math.ceil(totalItems / pageSize);
-
-    const skip = (current - 1) * pageSize;
-
-    const usersResult = await this.userModel
+    const users = await this.userModel
       .find(filter)
+      .collation({
+        locale: 'vi',
+        strength: 1,
+      })
+      .sort(sort)
       .skip(skip)
-      .limit(pageSize)
-      .select('-password')
-      .sort(sort as Record<string, 1 | -1>);
+      .limit(pageSize);
 
     return {
-      message: 'Lấy danh sách user thành công',
-
-      data: usersResult,
-
+      data: users,
       meta: {
         current,
         pageSize,
-        totalPages,
         totalItems,
+        totalPages: Math.ceil(totalItems / pageSize),
       },
     };
   }
