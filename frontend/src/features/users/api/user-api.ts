@@ -1,5 +1,7 @@
 import { sendRequest } from '@/shared/utils/api';
 import { IUser } from '../types/user-type';
+import { UserFilterParams } from '../types/user-filter-params-type';
+import { UserFindAllPaginationType } from '../types/user-find-all-pagination-type';
 
 const API_URL_PREFIX = '/users';
 
@@ -22,11 +24,11 @@ export const userRoleUserApi = {
 };
 
 export const userRoleAdminApi = {
-    getAll: async (queryParams: any) => {
-        const res = await sendRequest<IUser[]>({
+    getAll: async (queryParams?: UserFilterParams) => {
+        const res = await sendRequest<UserFindAllPaginationType>({
             url: `${API_URL_PREFIX}`,
             method: 'GET',
-            queryParams: queryParams,
+            queryParams,
         });
 
         return res.data;

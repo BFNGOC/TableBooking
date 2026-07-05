@@ -1,23 +1,23 @@
 export interface PaginationOptions {
-  current?: number;
+  currentPage?: number;
   pageSize?: number;
 }
 
 export interface PaginationResult {
-  current: number;
+  currentPage: number;
   pageSize: number;
   skip: number;
 }
 
 export function buildPagination({
-  current = 1,
+  currentPage = 1,
   pageSize = 10,
 }: PaginationOptions): PaginationResult {
-  const page = Math.max(1, Number(current) || 1);
+  const page = Math.max(1, Number(currentPage) || 1);
   const limit = Math.max(1, Number(pageSize) || 10);
 
   return {
-    current: page,
+    currentPage: page,
     pageSize: limit,
     skip: (page - 1) * limit,
   };

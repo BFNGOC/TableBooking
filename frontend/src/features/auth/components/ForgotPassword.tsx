@@ -22,10 +22,18 @@ function ForgotPassword({ open, close }: IForgotPasswordProps) {
     const { showToast } = useToast();
 
     const [email, setEmail] = useState<string | null>(null);
+    const [emailValues, setEmailValues] = useState<Partial<{ email: string }>>({ email: '' });
+    const [passwordValues, setPasswordValues] = useState<Partial<ChangePasswordPayload>>({
+        code: '',
+        password: '',
+        confirmPassword: '',
+    });
 
-    const handleResendOtpStep0 = async (data: { email: string }) => {
+    const handleResendOtpStep0 = async (data: Partial<{ email: string }>) => {
+        const payloadEmail = data.email ?? '';
+
         try {
-            const res = await retryPasswordApi({ email: data.email });
+            const res = await retryPasswordApi({ email: payloadEmail });
 
             if (res?.data) {
                 showToast('success', 'Gửi OTP thành công', 'Vui lòng kiểm tra email');
@@ -37,9 +45,10 @@ function ForgotPassword({ open, close }: IForgotPasswordProps) {
         }
     };
 
-    const handleverifyOtpStep1 = async (data: any) => {
+    const handleverifyOtpStep1 = async (data: Partial<ChangePasswordPayload>) => {
         try {
-            const { password, confirmPassword } = data;
+            const password = data.password ?? '';
+            const confirmPassword = data.confirmPassword ?? '';
             if (!email) return;
 
             if (password !== confirmPassword) {
@@ -51,7 +60,12 @@ function ForgotPassword({ open, close }: IForgotPasswordProps) {
                 return;
             }
 
-            const res = await changePasswordApi({ ...data, email });
+            const res = await changePasswordApi({
+                email,
+                code: data.code ?? '',
+                password,
+                confirmPassword,
+            });
 
             if (res?.data) {
                 showToast(
@@ -75,6 +89,8 @@ function ForgotPassword({ open, close }: IForgotPasswordProps) {
                     fields={getEmailField(
                         'Để thực hiện thay đổi mật khẩu, vui lòng nhập email tài khoản của bạn.'
                     )}
+                    values={emailValues}
+                    onValuesChange={setEmailValues}
                     onSubmit={handleResendOtpStep0}
                     footer={
                         <div className="flex gap-3">
@@ -96,6 +112,8 @@ function ForgotPassword({ open, close }: IForgotPasswordProps) {
             content: (
                 <CustomForm
                     fields={changePasswordField}
+                    values={passwordValues}
+                    onValuesChange={setPasswordValues}
                     onSubmit={handleverifyOtpStep1}
                     footer={
                         <div className="flex gap-3">

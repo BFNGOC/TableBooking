@@ -35,6 +35,10 @@ export interface FormField {
 
     defaultValue?: string;
 
+    value?: any;
+
+    onChange?: (value: any) => void;
+
     defaultDate?: DateValue;
 
     minValue?: DateValue;

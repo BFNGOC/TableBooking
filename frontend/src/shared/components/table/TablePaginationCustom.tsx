@@ -1,24 +1,20 @@
-import { Table, Pagination } from '@heroui/react';
+import { Table, Pagination, Skeleton } from '@heroui/react';
 import CustomEmpty from '../empty/CustomEmpty';
+import { MetaPagination } from '@/shared/types/meta-pagination';
+import CustomCard from '../card/CustomCard';
 
-export interface IColumnTable {
+export interface ColumnTable {
     id: string;
     name: string;
 }
 
-export interface IPagination {
-    currentPage: number;
-    totalItems: number;
-    totalPages: number;
-    pageSize: number;
-}
-
-interface ITablePaginationCustomProps<T> {
-    columns: IColumnTable[];
+interface TablePaginationCustomProps<T> {
+    columns: ColumnTable[];
     data: T[];
     onChangPage: (page: number) => void;
     className?: string;
-    pagination: IPagination;
+    pagination: MetaPagination;
+    isPending: boolean;
 }
 
 const TablePaginationCustom = <T extends object>({
@@ -27,7 +23,8 @@ const TablePaginationCustom = <T extends object>({
     onChangPage,
     className,
     pagination,
-}: ITablePaginationCustomProps<T>) => {
+    isPending,
+}: TablePaginationCustomProps<T>) => {
     const { currentPage, totalPages, totalItems, pageSize } = pagination;
 
     function getVisiblePages(page: number, totalPages: number, delta = 2) {
@@ -51,10 +48,14 @@ const TablePaginationCustom = <T extends object>({
 
     const end = hasData ? Math.min(currentPage * pageSize, totalItems) : 0;
 
+    const skeletonRows = Array.from({ length: 3 }, (_, index) => ({
+        _id: `skeleton-${index}`,
+    }));
+
     return (
-        <Table className={className}>
-            <Table.ScrollContainer>
-                {hasData ? (
+        <CustomCard>
+            <Table className={className}>
+                <Table.ScrollContainer>
                     <Table.Content aria-label="Table with pagination" className="min-w-150">
                         <Table.Header columns={columns}>
                             {(column) => (
@@ -64,26 +65,27 @@ const TablePaginationCustom = <T extends object>({
                             )}
                         </Table.Header>
 
-                        <Table.Body items={data}>
+                        <Table.Body
+                            items={isPending ? skeletonRows : data}
+                            renderEmptyState={() => <CustomEmpty />}
+                        >
                             {(row: any) => (
-                                <Table.Row key={row.id}>
-                                    <Table.Collection items={columns}>
-                                        {(column) => (
-                                            <Table.Cell key={column.id}>
-                                                {row[column.id]}
-                                            </Table.Cell>
-                                        )}
-                                    </Table.Collection>
+                                <Table.Row key={row._id}>
+                                    {columns.map((column) => (
+                                        <Table.Cell key={column.id}>
+                                            {isPending ? (
+                                                <Skeleton className="h-5 w-full rounded-md" />
+                                            ) : (
+                                                row[column.id]
+                                            )}
+                                        </Table.Cell>
+                                    ))}
                                 </Table.Row>
                             )}
                         </Table.Body>
                     </Table.Content>
-                ) : (
-                    <CustomEmpty />
-                )}
-            </Table.ScrollContainer>
+                </Table.ScrollContainer>
 
-            {hasData && (
                 <Table.Footer>
                     <Pagination size="sm">
                         <Pagination.Summary>
@@ -129,8 +131,8 @@ const TablePaginationCustom = <T extends object>({
                         </Pagination.Content>
                     </Pagination>
                 </Table.Footer>
-            )}
-        </Table>
+            </Table>
+        </CustomCard>
     );
 };
 

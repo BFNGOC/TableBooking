@@ -6,6 +6,39 @@ const api = axios.create({
     withCredentials: true,
 });
 
+export const sanitizeQueryParams = <T extends Record<string, any>>(
+    queryParams?: T,
+    defaultValues?: Partial<T>
+) => {
+    if (!queryParams || typeof queryParams !== 'object') {
+        return undefined;
+    }
+
+    const sanitized = Object.entries(queryParams).reduce<Partial<T>>((acc, [key, value]) => {
+        if (value === undefined || value === null) {
+            return acc;
+        }
+
+        if (typeof value === 'string' && value.trim() === '') {
+            return acc;
+        }
+
+        if (
+            defaultValues &&
+            Object.prototype.hasOwnProperty.call(defaultValues, key) &&
+            value === defaultValues[key as keyof T]
+        ) {
+            return acc;
+        }
+
+        acc[key as keyof T] = value as T[keyof T];
+
+        return acc;
+    }, {});
+
+    return Object.keys(sanitized).length > 0 ? (sanitized as T) : undefined;
+};
+
 api.interceptors.request.use(async (config) => {
     const session = await getSession();
 
@@ -27,11 +60,13 @@ export const sendRequest = async <T>({
     useCredentials = true,
 }: IRequest): Promise<IBackendRes<T>> => {
     try {
+        const preparedQueryParams = sanitizeQueryParams(queryParams as Record<string, any>);
+
         const response = await api.request<IBackendRes<T>>({
             url,
             method,
             data: body,
-            params: queryParams,
+            params: preparedQueryParams,
             headers,
             withCredentials: useCredentials,
         });

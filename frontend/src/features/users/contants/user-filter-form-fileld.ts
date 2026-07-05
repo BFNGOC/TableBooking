@@ -1,14 +1,6 @@
 import { FormField } from '@/shared/types/form-field';
 import { FormFieldType } from '@/shared/types/form-field-types';
 import { USER_ROLE_OPTIONS } from './user-role-options';
-import { CalendarDate } from '@internationalized/date';
-
-const today = new CalendarDate(
-    new Date().getFullYear(),
-    new Date().getMonth() + 1,
-    new Date().getDate()
-);
-const minDate = new CalendarDate(2026, 7, 15);
 
 export const userFilterFormFields: FormField[] = [
     {
@@ -16,7 +8,7 @@ export const userFilterFormFields: FormField[] = [
         label: 'Họ tên hoặc email',
         type: FormFieldType.TEXT,
         placeholder: 'Nhập họ tên hoặc email cần tìm kiếm',
-        col: 6,
+        col: 4,
     },
     {
         name: 'role',
@@ -24,6 +16,17 @@ export const userFilterFormFields: FormField[] = [
         type: FormFieldType.SELECT,
         placeholder: 'Chọn vai trò',
         options: USER_ROLE_OPTIONS,
-        col: 6,
+        col: 4,
+    },
+    {
+        name: 'isActive',
+        label: 'Trạng thái',
+        type: FormFieldType.SELECT,
+        placeholder: 'Chọn trạng thái',
+        options: [
+            { id: 'true', text: 'Kích hoạt' },
+            { id: 'false', text: 'Vô hiệu hóa' },
+        ],
+        col: 4,
     },
 ];

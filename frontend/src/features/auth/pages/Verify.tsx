@@ -7,6 +7,7 @@ import { VerifyPayload } from '../types/auth.type';
 import { useToast } from '@/shared/hooks/useToast';
 import { useRouter } from 'next/navigation';
 import { useVerifyMutation } from '../hooks/useAuthMutations';
+import { useEffect, useState } from 'react';
 
 interface IVerifyProps {
     _id: string;
@@ -16,22 +17,32 @@ function Verify({ _id }: IVerifyProps) {
     const router = useRouter();
     const { showToast } = useToast();
     const { mutateAsync: verify, isPending } = useVerifyMutation();
+    const [values, setValues] = useState<Partial<VerifyPayload>>({ _id, code: '' });
 
-    const handleSubmit = async (data: VerifyPayload) => {
-        const res = await verify(data);
+    useEffect(() => {
+        setValues({ _id, code: values.code ?? '' });
+    }, [_id]);
 
-        if (res?.data) {
-            showToast('success', 'Xác thực thành công', 'Bạn có thể đăng nhập ngay bây giờ');
-            router.push('/login');
-        }
+    const handleSubmit = async (data: Partial<VerifyPayload>) => {
+        const payload: VerifyPayload = {
+            _id: data._id ?? _id,
+            code: data.code ?? '',
+        };
+
         try {
+            const res = await verify(payload);
+
+            if (res?.data) {
+                showToast('success', 'Xác thực thành công', 'Bạn có thể đăng nhập ngay bây giờ');
+                router.push('/login');
+            }
         } catch (error: any) {
             showToast('error', 'Đăng nhập thất bại', error?.message);
         }
     };
+
     return (
         <div className="rounded-3xl bg-white p-8 shadow-sm">
-            {/* Header */}
             <div className="mb-6">
                 <h1 className="mb-2 text-3xl font-bold text-gray-900">Xác thực tài khoản</h1>
 
@@ -40,11 +51,11 @@ function Verify({ _id }: IVerifyProps) {
                 </p>
             </div>
 
-            {/* Form */}
             <div className="space-y-3">
                 <CustomForm
                     fields={verifyFormField}
-                    defaultValues={{ _id }}
+                    values={values}
+                    onValuesChange={setValues}
                     onSubmit={handleSubmit}
                     footer={
                         <Button
@@ -55,7 +66,7 @@ function Verify({ _id }: IVerifyProps) {
                             Xác thực
                         </Button>
                     }
-                ></CustomForm>
+                />
             </div>
         </div>
     );

@@ -170,8 +170,8 @@ export class UsersService {
       ];
     }
 
-    const { current, pageSize, skip } = buildPagination({
-      current: query.currentPage,
+    const { currentPage, pageSize, skip } = buildPagination({
+      currentPage: query.currentPage,
       pageSize: query.pageSize,
     });
 
@@ -192,7 +192,7 @@ export class UsersService {
     return {
       data: users,
       meta: {
-        current,
+        currentPage,
         pageSize,
         totalItems,
         totalPages: Math.ceil(totalItems / pageSize),

@@ -9,15 +9,27 @@ import { useToast } from '@/shared/hooks/useToast';
 import { RegisterPayload } from '../types/auth.type';
 import { useRouter } from 'next/navigation';
 import { useRegisterMutation } from '../hooks/useAuthMutations';
+import { useState } from 'react';
 
 function Register() {
     const router = useRouter();
     const { showToast } = useToast();
     const { mutateAsync: register, isPending } = useRegisterMutation();
+    const [values, setValues] = useState<Partial<RegisterPayload>>({
+        name: '',
+        email: '',
+        password: '',
+    });
 
-    const handleSubmit = async (data: RegisterPayload) => {
+    const handleSubmit = async (data: Partial<RegisterPayload>) => {
+        const payload: RegisterPayload = {
+            name: data.name ?? '',
+            email: data.email ?? '',
+            password: data.password ?? '',
+        };
+
         try {
-            const res = await register(data);
+            const res = await register(payload);
 
             if (res?.data?.user?._id) {
                 showToast('success', 'Đăng ký thành công', 'Chào mừng bạn đến với TableBooking');
@@ -30,7 +42,6 @@ function Register() {
 
     return (
         <div className="rounded-3xl bg-white p-8 shadow-sm">
-            {/* Header */}
             <div className="mb-6">
                 <h1 className="mb-2 text-3xl font-bold text-gray-900">Tạo tài khoản</h1>
 
@@ -39,10 +50,11 @@ function Register() {
                 </p>
             </div>
 
-            {/* Form */}
             <div className="space-y-3">
                 <CustomForm
                     fields={registerFormFields}
+                    values={values}
+                    onValuesChange={setValues}
                     onSubmit={handleSubmit}
                     footer={
                         <Button
@@ -53,12 +65,10 @@ function Register() {
                             Đăng ký
                         </Button>
                     }
-                ></CustomForm>
+                />
 
                 <LoginGoogleButton />
             </div>
-
-            {/* Footer */}
 
             <div className="mt-6 space-y-3">
                 <FooterAuth text="Đã có tài khoản?" href="/login" linkText="Đăng nhập" />

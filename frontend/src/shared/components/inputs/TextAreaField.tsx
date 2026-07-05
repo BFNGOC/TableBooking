@@ -11,6 +11,8 @@ export default function TextAreaField({
     isDisabled,
     isReadOnly,
     defaultValue,
+    value,
+    onChange,
     validate,
     className,
 }: FormField) {
@@ -21,6 +23,8 @@ export default function TextAreaField({
             isDisabled={isDisabled}
             isReadOnly={isReadOnly}
             defaultValue={defaultValue}
+            value={value ?? defaultValue}
+            onChange={onChange}
             validate={validate}
         >
             <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>

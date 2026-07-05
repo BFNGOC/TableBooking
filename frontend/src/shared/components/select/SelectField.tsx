@@ -1,7 +1,7 @@
 'use client';
 
+import { FieldError, Label, ListBox, Select } from '@heroui/react';
 import { FormField } from '@/shared/types/form-field';
-import { Label, ListBox, Select, FieldError } from '@heroui/react';
 
 function SelectField({
     label,
@@ -9,24 +9,33 @@ function SelectField({
     placeholder,
     isRequired,
     isDisabled,
-    defaultValue,
+    value,
+    onChange,
     options = [],
 }: FormField) {
     return (
         <div className="w-full">
             <Select
-                className="w-[256px]"
-                placeholder={placeholder}
                 name={name}
+                placeholder={placeholder}
                 isRequired={isRequired}
                 isDisabled={isDisabled}
-                defaultValue={defaultValue}
+                selectedKey={value ?? null}
+                onChange={(value) => {
+                    if (Array.isArray(value)) {
+                        onChange?.(value[0]?.toString() ?? '');
+                    } else {
+                        onChange?.(value?.toString() ?? '');
+                    }
+                }}
             >
                 <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>
+
                 <Select.Trigger>
                     <Select.Value />
                     <Select.Indicator />
                 </Select.Trigger>
+
                 <Select.Popover>
                     <ListBox>
                         {options.map((option) => (

@@ -10,6 +10,8 @@ export default function TimeFieldCustom({
     isDisabled,
     isReadOnly,
     defaultTime,
+    value,
+    onChange,
     className,
 }: FormField) {
     return (
@@ -20,6 +22,8 @@ export default function TimeFieldCustom({
             isDisabled={isDisabled}
             isReadOnly={isReadOnly}
             defaultValue={defaultTime}
+            value={value ?? defaultTime}
+            onChange={onChange}
         >
             <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>
             <TimeField.Group className={className}>

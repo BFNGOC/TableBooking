@@ -9,14 +9,18 @@ export default function DatePikerField({
     isRequired,
     isDisabled,
     defaultDate,
+    value,
+    onChange,
     minValue,
     className,
 }: FormField) {
     return (
         <DatePicker
-            className="full"
+            className="w-full"
             name={name}
             defaultValue={defaultDate}
+            value={value ?? defaultDate}
+            onChange={(nextValue) => onChange?.(nextValue)}
             isDisabled={isDisabled}
             isRequired={isRequired}
             minValue={minValue}

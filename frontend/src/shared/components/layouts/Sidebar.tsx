@@ -1,7 +1,7 @@
 'use client';
 
 import { NavItem } from '@/shared/types/navigation';
-import { Link } from '@heroui/react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 interface ISidebarPublicProps {

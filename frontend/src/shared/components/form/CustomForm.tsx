@@ -2,48 +2,52 @@
 
 import { ReactNode } from 'react';
 import { Form } from '@heroui/react';
-
 import AppTextField from '../inputs/TextField';
-import { FormField } from '@/shared/types/form-field';
-import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
+import TextAreaField from '../inputs/TextAreaField';
 import SelectField from '../select/SelectField';
 import DatePikerField from '../datepicker/DatePikerField';
 import TimeFieldCustom from '../timefield/TimeFieldCustom';
-import TextAreaField from '../inputs/TextAreaField';
+
+import { FormField } from '@/shared/types/form-field';
+import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
-    onSubmit?: (data: T) => void | Promise<void>;
+
+    values: Partial<T>;
+
+    onValuesChange: (values: Partial<T>) => void;
+
+    onSubmit?: (values: Partial<T>) => void;
+
     footer?: ReactNode;
-    defaultValues?: Record<string, any>;
+
     mode?: FormModalModeType;
 }
 
 function CustomForm<T extends Record<string, any>>({
     fields,
+    values,
+    onValuesChange,
     onSubmit,
     footer,
-    defaultValues,
     mode = 'create',
 }: CustomFormProps<T>) {
     const isViewMode = mode === 'view';
 
-    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const updateFieldValue = (name: string, value: any) => {
+        onValuesChange({
+            ...values,
+            [name]: value,
+        });
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (isViewMode) return;
 
-        const formData = new FormData(e.currentTarget);
-
-        const data = {} as T;
-
-        formData.forEach((value, key) => {
-            (data as Record<string, any>)[key] = value.toString();
-        });
-
-        if (onSubmit) {
-            onSubmit(data);
-        }
+        onSubmit?.(values);
     };
 
     const getColSpanClass = (col?: number) => {
@@ -56,69 +60,56 @@ function CustomForm<T extends Record<string, any>>({
             6: 'col-span-6',
             12: 'col-span-12',
         };
+
         return colMap[col || 12] || 'col-span-12';
     };
 
     return (
-        <Form onSubmit={handleFormSubmit} className="grid grid-cols-12 gap-5">
+        <Form onSubmit={handleSubmit} className="grid grid-cols-12 gap-5">
             {fields.map((field) => {
-                const fieldWithDefaults = {
+                const value = values[field.name] ?? '';
+                const isDisabled = mode === 'view' ? true : field.isDisabled;
+
+                const isReadOnly = mode === 'view' ? true : field.isReadOnly;
+
+                const commonProps = {
                     ...field,
-                    defaultValue: defaultValues?.[field.name] ?? field.defaultValue,
-                };
-
-                const isDisabled = isViewMode ? true : field.isDisabled;
-
-                const isReadOnly = isViewMode ? true : field.isReadOnly;
-
-                if (fieldWithDefaults.hidden) {
-                    return (
-                        <input
-                            key={fieldWithDefaults.name}
-                            type="hidden"
-                            name={fieldWithDefaults.name}
-                            value={fieldWithDefaults.defaultValue || ''}
-                        />
-                    );
-                }
-
-                const renderField = () => {
-                    switch (fieldWithDefaults.type) {
-                        case 'select':
-                            return <SelectField {...fieldWithDefaults} />;
-
-                        case 'datePicker':
-                            return <DatePikerField {...fieldWithDefaults} />;
-
-                        case 'timePicker':
-                            return <TimeFieldCustom {...fieldWithDefaults} />;
-
-                        case 'textarea':
-                            return <TextAreaField {...fieldWithDefaults} />;
-
-                        default:
-                            return (
-                                <AppTextField
-                                    {...fieldWithDefaults}
-                                    isDisabled={isDisabled}
-                                    isReadOnly={isReadOnly}
-                                />
-                            );
-                    }
+                    value,
+                    onChange: (value: any) => updateFieldValue(field.name, value),
                 };
 
                 return (
-                    <div
-                        key={fieldWithDefaults.name}
-                        className={getColSpanClass(fieldWithDefaults.col)}
-                    >
-                        {renderField()}
+                    <div key={field.name} className={`${getColSpanClass(field.col)} w-full`}>
+                        {(() => {
+                            switch (field.type) {
+                                case 'select':
+                                    return <SelectField {...commonProps} />;
+
+                                case 'datePicker':
+                                    return <DatePikerField {...commonProps} />;
+
+                                case 'timePicker':
+                                    return <TimeFieldCustom {...commonProps} />;
+
+                                case 'textarea':
+                                    return <TextAreaField {...commonProps} />;
+
+                                default:
+                                    return (
+                                        <AppTextField
+                                            {...commonProps}
+                                            isDisabled={isDisabled}
+                                            isReadOnly={isReadOnly}
+                                        />
+                                    );
+                            }
+                        })()}
                     </div>
                 );
             })}
 
             {mode !== 'view' && footer && (
-                <div className="col-span-12 mt-2 flex justify-center gap-3">{footer}</div>
+                <div className="col-span-12 flex justify-center my-2">{footer}</div>
             )}
         </Form>
     );

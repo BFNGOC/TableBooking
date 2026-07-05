@@ -8,7 +8,7 @@ import CustomForm from '@/shared/components/form/CustomForm';
 import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
 import { retryActiveApi, verifyApi } from '../api/auth-api';
 import { useToast } from '@/shared/hooks/useToast';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { VerifyPayload } from '../types/auth.type';
 import { getEmailField, getOtpField } from '../constants/step-form-field';
 
@@ -25,12 +25,20 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
     const { showToast } = useToast();
 
     const [id, setId] = useState<string | null>(null);
+    const [emailValues, setEmailValues] = useState<Partial<{ email: string }>>({
+        email: defaultEmail ?? '',
+    });
+    const [otpValues, setOtpValues] = useState<Partial<{ code: string }>>({ code: '' });
 
-    const handleResendOtpStep0 = async () => {
+    useEffect(() => {
+        setEmailValues({ email: defaultEmail ?? '' });
+    }, [defaultEmail, open]);
+
+    const handleResendOtpStep0 = async (data: Partial<{ email: string }>) => {
+        const payloadEmail = data.email ?? '';
+
         try {
-            if (!defaultEmail) return;
-
-            const res = await retryActiveApi({ email: defaultEmail });
+            const res = await retryActiveApi({ email: payloadEmail });
 
             if (res?.data) {
                 showToast('success', 'Gửi OTP thành công', 'Vui lòng kiểm tra email');
@@ -42,13 +50,13 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
         }
     };
 
-    const handleverifyOtpStep1 = async (data: { code: string }) => {
+    const handleverifyOtpStep1 = async (data: Partial<{ code: string }>) => {
         try {
             if (!id) return;
 
             const payload: VerifyPayload = {
                 _id: id,
-                code: data.code,
+                code: data.code ?? '',
             };
 
             const res = await verifyApi(payload);
@@ -73,7 +81,9 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
             content: (
                 <CustomForm
                     fields={getEmailField("'Tài khoản của bạn chưa được kích hoạt'")}
-                    defaultValues={{ email: defaultEmail }}
+                    values={emailValues}
+                    onValuesChange={setEmailValues}
+                    onSubmit={handleResendOtpStep0}
                     mode={mode}
                     footer={
                         <div className="flex gap-3">
@@ -95,6 +105,8 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
             content: (
                 <CustomForm
                     fields={getOtpField('Nhập mã OTP đã được gửi tới email')}
+                    values={otpValues}
+                    onValuesChange={setOtpValues}
                     onSubmit={handleverifyOtpStep1}
                     footer={
                         <div className="flex gap-3">
@@ -126,7 +138,7 @@ function ResendEmail({ open, close, defaultEmail, mode }: IResendEmailProps) {
                             Hủy
                         </Button>
 
-                        <Button variant="primary" onPress={handleResendOtpStep0}>
+                        <Button variant="primary" onPress={() => handleResendOtpStep0(emailValues)}>
                             Nhận mã OTP
                         </Button>
                     </>
