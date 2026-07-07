@@ -2,6 +2,7 @@
 
 import { FormField } from '@/shared/types/form-field';
 import { DatePicker, Label, DateField, Calendar, FieldError } from '@heroui/react';
+import { parseDate, CalendarDate } from '@internationalized/date';
 
 export default function DatePikerField({
     label,
@@ -12,18 +13,26 @@ export default function DatePikerField({
     value,
     onChange,
     minValue,
+    maxValue,
     className,
 }: FormField) {
+    const pickerValue =
+        value instanceof CalendarDate
+            ? value
+            : typeof value === 'string' && value
+              ? parseDate(value.slice(0, 10))
+              : undefined;
     return (
         <DatePicker
             className="w-full"
             name={name}
             defaultValue={defaultDate}
-            value={value ?? defaultDate}
+            value={pickerValue ?? defaultDate}
             onChange={(nextValue) => onChange?.(nextValue)}
             isDisabled={isDisabled}
             isRequired={isRequired}
             minValue={minValue}
+            maxValue={maxValue}
         >
             <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>
             <DateField.Group fullWidth className={className}>

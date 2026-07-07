@@ -1,31 +1,31 @@
 import {
-  IsBoolean,
-  IsDateString,
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
   IsOptional,
   IsString,
+  IsEmail,
+  IsEnum,
+  IsDateString,
+  IsBoolean,
   Matches,
   MinLength,
 } from 'class-validator';
+
 import { AccountType, Gender, UserRole } from '../schemas/user.schema';
 
-export class CreateUserDto {
+export class UpdateUserRoleAdminDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({
-    message: 'Tên không được để trống',
-  })
-  name!: string;
+  name?: string;
 
+  @IsOptional()
   @IsEmail(
     {},
     {
       message: 'Email không hợp lệ',
     },
   )
-  email!: string;
+  email?: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(6, {
     message: 'Mật khẩu tối thiểu 6 ký tự',
@@ -33,7 +33,7 @@ export class CreateUserDto {
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/, {
     message: 'Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt',
   })
-  password!: string;
+  password?: string;
 
   @IsOptional()
   @IsEnum(UserRole)

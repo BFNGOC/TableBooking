@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Form } from '@heroui/react';
 import AppTextField from '../inputs/TextField';
 import TextAreaField from '../inputs/TextAreaField';
@@ -14,13 +14,15 @@ import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
 
-    values: Partial<T>;
+    values: Partial<T> | null;
 
     onValuesChange: (values: Partial<T>) => void;
 
     onSubmit?: (values: Partial<T>) => void;
 
     footer?: ReactNode;
+
+    footerClassName?: string;
 
     mode?: FormModalModeType;
 }
@@ -32,12 +34,19 @@ function CustomForm<T extends Record<string, any>>({
     onSubmit,
     footer,
     mode = 'create',
+    footerClassName,
 }: CustomFormProps<T>) {
     const isViewMode = mode === 'view';
 
+    const [internalValues, setInternalValues] = useState<Partial<T>>({});
+
+    const formValues = values ?? internalValues;
+
+    const setFormValues = onValuesChange ?? setInternalValues;
+
     const updateFieldValue = (name: string, value: any) => {
-        onValuesChange({
-            ...values,
+        setFormValues({
+            ...formValues,
             [name]: value,
         });
     };
@@ -47,7 +56,14 @@ function CustomForm<T extends Record<string, any>>({
 
         if (isViewMode) return;
 
-        onSubmit?.(values);
+        const form = e.currentTarget;
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        onSubmit?.(formValues);
     };
 
     const getColSpanClass = (col?: number) => {
@@ -67,7 +83,7 @@ function CustomForm<T extends Record<string, any>>({
     return (
         <Form onSubmit={handleSubmit} className="grid grid-cols-12 gap-5">
             {fields.map((field) => {
-                const value = values[field.name] ?? '';
+                const value = formValues[field.name] ?? '';
                 const isDisabled = mode === 'view' ? true : field.isDisabled;
 
                 const isReadOnly = mode === 'view' ? true : field.isReadOnly;
@@ -75,6 +91,8 @@ function CustomForm<T extends Record<string, any>>({
                 const commonProps = {
                     ...field,
                     value,
+                    isDisabled: isDisabled,
+                    isReadOnly: isReadOnly,
                     onChange: (value: any) => updateFieldValue(field.name, value),
                 };
 
@@ -95,13 +113,7 @@ function CustomForm<T extends Record<string, any>>({
                                     return <TextAreaField {...commonProps} />;
 
                                 default:
-                                    return (
-                                        <AppTextField
-                                            {...commonProps}
-                                            isDisabled={isDisabled}
-                                            isReadOnly={isReadOnly}
-                                        />
-                                    );
+                                    return <AppTextField {...commonProps} />;
                             }
                         })()}
                     </div>
@@ -109,7 +121,11 @@ function CustomForm<T extends Record<string, any>>({
             })}
 
             {mode !== 'view' && footer && (
-                <div className="col-span-12 flex justify-center my-2">{footer}</div>
+                <div
+                    className={`col-span-12 flex my-2 gap-3 ${footerClassName ?? 'justify-center'}`}
+                >
+                    {footer}
+                </div>
             )}
         </Form>
     );

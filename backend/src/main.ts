@@ -11,7 +11,11 @@ async function bootstrap() {
   const portFE = configService.get<string>('FRONTEND_API_URL');
 
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: false,
+      transform: true,
+    }),
   );
 
   app.setGlobalPrefix('api/v1', { exclude: [''] });

@@ -20,6 +20,7 @@ import { FindUserDto } from './dto/find-user.dto';
 import { buildPagination } from '@app/helpers/pagination.helper';
 import { buildSort } from '@app/helpers/sort.helper';
 import { normalizeKeyword } from '@app/helpers/string.helper';
+import { UpdateUserRoleAdminDto } from './dto/update-user-role-admin.dto';
 
 @Injectable()
 export class UsersService {
@@ -110,31 +111,21 @@ export class UsersService {
    * ADMIN
    *************************************************************/
   async create(createUserDto: CreateUserDto) {
-    const { email, name, password } = createUserDto;
-
-    //check email
-    const isEmailExist = await this.isEmailExist(email);
+    const isEmailExist = await this.isEmailExist(createUserDto.email);
 
     if (isEmailExist) {
-      throw new ConflictException(`Email đã tồn tại: ${email}`);
+      throw new ConflictException(`Email đã tồn tại: ${createUserDto.email}`);
     }
 
-    if (!password) {
-      throw new BadRequestException('Password không được để trống');
-    }
-
-    //hash password
-    const hashedPassword = await hashPasswordHelper(password);
+    const hashedPassword = await hashPasswordHelper(createUserDto.password);
 
     const createdUser = await this.userModel.create({
-      email,
-      name,
+      ...createUserDto,
       password: hashedPassword,
     });
 
     return {
-      message: 'Tạo user thành công',
-      data: {
+      user: {
         _id: createdUser._id,
       },
     };
@@ -228,18 +219,12 @@ export class UsersService {
     return this.userModel.findOne({ email }).select('+password');
   }
 
-  async update(updateUserDto: UpdateUserDto) {
-    const { name } = updateUserDto;
-
+  async update(_id: string, dto: UpdateUserRoleAdminDto) {
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(
-        {
-          name,
-        },
-        {
-          new: true,
-        },
-      )
+      .findByIdAndUpdate(_id, dto, {
+        new: true,
+        runValidators: true,
+      })
       .select('-password');
 
     if (!updatedUser) {
@@ -249,6 +234,56 @@ export class UsersService {
     return {
       message: 'Cập nhật user thành công',
       data: updatedUser,
+    };
+  }
+
+  async activateUser(_id: string) {
+    validateMongoId(_id);
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(
+        _id,
+        {
+          isActive: true,
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .select('-password');
+
+    if (!updatedUser) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    return {
+      updatedUser,
+    };
+  }
+
+  async inactiveUser(_id: string) {
+    validateMongoId(_id);
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(
+        _id,
+        {
+          isActive: false,
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .select('-password');
+
+    if (!updatedUser) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    return {
+      updatedUser,
     };
   }
 

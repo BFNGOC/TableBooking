@@ -15,6 +15,9 @@ import { Public, ResponseMessage } from '@app/decorator/customize';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 import { FindUserDto } from './dto/find-user.dto';
+import { UpdateUserRoleAdminDto } from './dto/update-user-role-admin.dto';
+import { Roles } from '@app/decorator/roles.decorator';
+import { UserRole } from './schemas/user.schema';
 
 @Controller('users')
 export class UsersController {
@@ -33,7 +36,7 @@ export class UsersController {
   }
 
   @Post()
-  @Public()
+  @Roles(UserRole.ADMIN)
   create(@Body() createUserDto: CreateUserDto) {
     console.log('CreateUserDto:', createUserDto);
     return this.usersService.create(createUserDto);
@@ -45,6 +48,7 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
+  //check
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
@@ -55,9 +59,22 @@ export class UsersController {
     return this.usersService.findByEmail(email);
   }
 
-  @Patch()
-  update(@Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(updateUserDto);
+  @Patch(':_id')
+  @Roles(UserRole.ADMIN)
+  update(@Param('_id') _id: string, @Body() dto: UpdateUserRoleAdminDto) {
+    return this.usersService.update(_id, dto);
+  }
+
+  @Post(':_id/active')
+  @Roles(UserRole.ADMIN)
+  activateUser(@Param('_id') _id: string) {
+    return this.usersService.activateUser(_id);
+  }
+
+  @Post(':_id/inactive')
+  @Roles(UserRole.ADMIN)
+  inactiveUser(@Param('_id') _id: string) {
+    return this.usersService.inactiveUser(_id);
   }
 
   @Delete(':id')

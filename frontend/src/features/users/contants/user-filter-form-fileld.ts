@@ -1,6 +1,6 @@
 import { FormField } from '@/shared/types/form-field';
 import { FormFieldType } from '@/shared/types/form-field-types';
-import { USER_ROLE_OPTIONS } from './user-role-options';
+import { USER_ROLE_OPTIONS } from './user-options';
 
 export const userFilterFormFields: FormField[] = [
     {

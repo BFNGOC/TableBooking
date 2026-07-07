@@ -2,6 +2,7 @@ import { sendRequest } from '@/shared/utils/api';
 import { IUser } from '../types/user-type';
 import { UserFilterParams } from '../types/user-filter-params-type';
 import { UserFindAllPaginationType } from '../types/user-find-all-pagination-type';
+import { CreateUserPayload, UpdateUserPayload } from '../types/user-payload';
 
 const API_URL_PREFIX = '/users';
 
@@ -29,6 +30,52 @@ export const userRoleAdminApi = {
             url: `${API_URL_PREFIX}`,
             method: 'GET',
             queryParams,
+        });
+
+        return res.data;
+    },
+    create: async (payload: CreateUserPayload) => {
+        const res = await sendRequest<IUser>({
+            url: `${API_URL_PREFIX}`,
+            method: 'POST',
+            body: payload,
+        });
+
+        return res.data;
+    },
+
+    update: async (_id: string, payload: UpdateUserPayload) => {
+        const res = await sendRequest<IUser>({
+            url: `${API_URL_PREFIX}/${_id}`,
+            method: 'PATCH',
+            body: payload,
+        });
+
+        return res.data;
+    },
+
+    delete: async (_id: string) => {
+        const res = await sendRequest<IUser>({
+            url: `${API_URL_PREFIX}/${_id}`,
+            method: 'DELETE',
+        });
+
+        return res.data;
+    },
+
+    active: async (_id: string) => {
+        const res = await sendRequest<IUser>({
+            url: `${API_URL_PREFIX}/${_id}/active`,
+            method: 'POST',
+        });
+
+        return res.data;
+    },
+
+    inactive: async (_id: string) => {
+        const res = await sendRequest<IUser>({
+            url: `${API_URL_PREFIX}/${_id}/inactive`,
+            method: 'POST',
         });
 
         return res.data;

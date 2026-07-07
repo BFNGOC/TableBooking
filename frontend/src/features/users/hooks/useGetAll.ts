@@ -7,10 +7,8 @@ import { UserFilterParams } from '../types/user-filter-params-type';
 export const useGetAll = (queryParams: UserFilterParams) => {
     const sanitizedQueryParams = sanitizeQueryParams(queryParams, {
         currentPage: 1,
-        pageSize: 1,
+        pageSize: 10,
     });
-
-    console.log(sanitizedQueryParams);
 
     return useQuery({
         queryKey: [

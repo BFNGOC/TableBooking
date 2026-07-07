@@ -3,13 +3,14 @@ import CustomEmpty from '../empty/CustomEmpty';
 import { MetaPagination } from '@/shared/types/meta-pagination';
 import CustomCard from '../card/CustomCard';
 
-export interface ColumnTable {
+export interface ColumnTable<T = any> {
     id: string;
     name: string;
+    render?: (value: any, record: T) => React.ReactNode;
 }
 
 interface TablePaginationCustomProps<T> {
-    columns: ColumnTable[];
+    columns: ColumnTable<T>[];
     data: T[];
     onChangPage: (page: number) => void;
     className?: string;
@@ -72,11 +73,17 @@ const TablePaginationCustom = <T extends object>({
                             {(row: any) => (
                                 <Table.Row key={row._id}>
                                     {columns.map((column) => (
-                                        <Table.Cell key={column.id}>
+                                        <Table.Cell key={String(column.id)}>
                                             {isPending ? (
                                                 <Skeleton className="h-5 w-full rounded-md" />
                                             ) : (
-                                                row[column.id]
+                                                (() => {
+                                                    const value = row[column.id as keyof T];
+
+                                                    return column.render
+                                                        ? column.render(value, row)
+                                                        : value;
+                                                })()
                                             )}
                                         </Table.Cell>
                                     ))}

@@ -19,7 +19,7 @@ export interface FormField {
     col?: 1 | 2 | 3 | 4 | 5 | 6 | 12;
 
     options?: {
-        id: string;
+        id: any;
         text: string;
     }[];
 
