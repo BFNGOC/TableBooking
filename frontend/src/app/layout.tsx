@@ -4,6 +4,7 @@ import './globals.css';
 import NextAuthWrapper from '@/shared/library/next.auth.wrapper';
 import { ReactQueryProvider } from '@/shared/library/react-query';
 import { Toast } from '@heroui/react';
+import AppInit from './AppInit';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -30,7 +31,7 @@ export default function RootLayout({
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <ReactQueryProvider>
                     <NextAuthWrapper>
-                        {children}
+                        <AppInit>{children}</AppInit>
                         <Toast.Provider placement="top end" />
                     </NextAuthWrapper>
                 </ReactQueryProvider>

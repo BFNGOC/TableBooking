@@ -17,7 +17,7 @@ declare global {
         error?: string | string[];
         message: string;
         statusCode: number | string;
-        data?: T;
+        data: T;
     }
 
     interface IModelPaginate<T> {

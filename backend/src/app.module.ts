@@ -11,11 +11,13 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.ad
 import { TransformInterceptor } from './core/transform.interceptor';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { RolesGuard } from './guards/role.guard';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
     UsersModule,
     AuthModule,
+    UploadModule,
 
     ConfigModule.forRoot({
       isGlobal: true,
@@ -60,6 +62,8 @@ import { RolesGuard } from './guards/role.guard';
       }),
       inject: [ConfigService],
     }),
+
+    UploadModule,
   ],
 
   controllers: [AppController],

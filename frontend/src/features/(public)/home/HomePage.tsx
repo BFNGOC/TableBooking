@@ -8,7 +8,7 @@ function HomePage() {
 
     const { data } = useGetMe();
 
-    console.log('User data in HomePage:', data);
+    console.log('User data in HomePage:', data?.name);
 
     return (
         <div className="flex gap-5">

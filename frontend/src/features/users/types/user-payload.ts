@@ -1,3 +1,4 @@
+import { ImageType } from '@/features/upload/types/image';
 import { UserRole } from './user-role';
 import { AccountType, Gender } from './user-type';
 
@@ -11,7 +12,7 @@ export interface CreateUserPayload {
     isActive?: boolean;
     phone?: string;
     address?: string;
-    avatar?: string;
+    avatar?: ImageType | null;
     gender?: Gender;
     dateOfBirth?: string;
 }
@@ -26,7 +27,7 @@ export interface UpdateUserPayload {
     isActive?: boolean;
     phone?: string;
     address?: string;
-    avatar?: string;
+    avatar?: ImageType | null;
     gender?: Gender;
     dateOfBirth?: string;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import AvatarCustom from '@/shared/components/avatar/UserAvatar';
 import SidebarLayout from '@/shared/components/layouts/Sidebar';
 import { useRoleGuard } from '@/shared/hooks/useRoleGuard';
 import { type ReactNode } from 'react';
@@ -26,7 +27,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
             href: '/admin/dashboard/users',
         },
         {
-            label: 'Cài đặt',
+            label: <AvatarCustom />,
             href: '/admin/dashboard/settings',
         },
     ];

@@ -1,3 +1,4 @@
+import { ImageType } from '@app/modules/upload/types/image.type';
 import { AutoFieldsPlugin } from '@app/plugins/auto-fields.plugin';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
@@ -106,9 +107,10 @@ export class User {
 
   // Avatar
   @Prop({
+    type: ImageType,
     default: null,
   })
-  avatar?: string;
+  avatar?: ImageType;
 
   // Refresh token
   @Prop({

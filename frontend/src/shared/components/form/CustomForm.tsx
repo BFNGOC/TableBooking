@@ -10,6 +10,7 @@ import TimeFieldCustom from '../timefield/TimeFieldCustom';
 
 import { FormField } from '@/shared/types/form-field';
 import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
+import UploadImageCustom from '../upload/UploadImageCustom';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
@@ -111,6 +112,9 @@ function CustomForm<T extends Record<string, any>>({
 
                                 case 'textarea':
                                     return <TextAreaField {...commonProps} />;
+
+                                case 'image':
+                                    return <UploadImageCustom {...commonProps} />;
 
                                 default:
                                     return <AppTextField {...commonProps} />;

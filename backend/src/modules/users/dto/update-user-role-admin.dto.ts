@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 
 import { AccountType, Gender, UserRole } from '../schemas/user.schema';
+import { ImageType } from '@app/modules/upload/types/image.type';
 
 export class UpdateUserRoleAdminDto {
   @IsOptional()
@@ -56,8 +57,7 @@ export class UpdateUserRoleAdminDto {
   address?: string;
 
   @IsOptional()
-  @IsString()
-  avatar?: string;
+  avatar?: ImageType;
 
   @IsOptional()
   @IsEnum(Gender)

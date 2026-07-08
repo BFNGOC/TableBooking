@@ -70,11 +70,9 @@ export class UsersService {
    * USER
    *************************************************************/
   async getMe(userId: string) {
-    const user = await this.getUserByIdOrThrow(userId);
+    const user = this.getUserByIdOrThrow(userId);
 
-    return {
-      user,
-    };
+    return user;
   }
 
   async updateMe(userId: string, dto: UpdateUserDto) {
@@ -103,7 +101,7 @@ export class UsersService {
     );
 
     return {
-      user: updatedUser,
+      updatedUser,
     };
   }
 
@@ -282,9 +280,7 @@ export class UsersService {
       throw new NotFoundException('User không tồn tại');
     }
 
-    return {
-      updatedUser,
-    };
+    return updatedUser;
   }
 
   async remove(_id: string) {

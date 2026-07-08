@@ -74,11 +74,11 @@ export const userAccountFormField: FormField[] = [
 ];
 
 export const userProfileFormField: FormField[] = [
-    // {
-    //     name: 'avatar',
-    //     label: 'Ảnh đại diện',
-    //     type: FormFieldType.FILE,
-    // },
+    {
+        name: 'avatar',
+        label: 'Ảnh đại diện',
+        type: FormFieldType.IMAGE,
+    },
     {
         name: 'phone',
         label: 'Số điện thoại',

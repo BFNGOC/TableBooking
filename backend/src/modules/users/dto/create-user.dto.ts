@@ -10,6 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { AccountType, Gender, UserRole } from '../schemas/user.schema';
+import { ImageType } from '@app/modules/upload/types/image.type';
 
 export class CreateUserDto {
   @IsString()
@@ -56,8 +57,7 @@ export class CreateUserDto {
   address?: string;
 
   @IsOptional()
-  @IsString()
-  avatar?: string;
+  avatar?: ImageType;
 
   @IsOptional()
   @IsEnum(Gender)

@@ -1,3 +1,4 @@
+import { ImageType } from '@/features/upload/types/image';
 import { UserRole } from './user-role';
 
 export type AccountType = 'LOCAL' | 'GOOGLE';
@@ -21,7 +22,7 @@ export interface IUser {
 
     address?: string;
     phone?: string;
-    avatar?: string;
+    avatar?: ImageType | null;
 
     refreshToken?: string;
 

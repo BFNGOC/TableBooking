@@ -46,4 +46,9 @@ export interface FormField {
     maxValue?: DateValue;
 
     defaultTime?: TimeValue;
+
+    //image
+    multiple?: boolean;
+
+    maxFiles?: number;
 }
