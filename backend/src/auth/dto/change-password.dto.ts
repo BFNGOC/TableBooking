@@ -5,6 +5,7 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ChangePasswordDto {
   @IsNotEmpty({ message: 'Email không được để trống' })
@@ -14,6 +15,7 @@ export class ChangePasswordDto {
       message: 'Email không đúng định dạng',
     },
   )
+  @ApiProperty({ description: 'Email đăng ký', example: 'user@example.com' })
   email!: string;
 
   @IsNotEmpty({ message: 'Password không được để trống' })
@@ -23,6 +25,11 @@ export class ChangePasswordDto {
   })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/, {
     message: 'Password phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt',
+  })
+  @ApiProperty({
+    description: 'Mật khẩu mới',
+    minLength: 6,
+    example: 'N3wP@ssw0rd',
   })
   password!: string;
 
@@ -35,9 +42,15 @@ export class ChangePasswordDto {
     message:
       'Xác nhận mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt',
   })
+  @ApiProperty({
+    description: 'Xác nhận mật khẩu',
+    minLength: 6,
+    example: 'N3wP@ssw0rd',
+  })
   confirmPassword!: string;
 
   @IsNotEmpty({ message: 'Mã xác thực không được để trống' })
   @IsString({ message: 'Mã xác thực phải là chuỗi ký tự' })
+  @ApiProperty({ description: 'Mã xác thực', example: '654321' })
   code!: string;
 }
