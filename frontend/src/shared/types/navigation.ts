@@ -1,6 +1,13 @@
+import { ReactNode } from 'react';
+
 export interface NavItem {
-    label?: string | React.ReactNode | null;
-    href: string;
-    icon?: React.ReactNode;
+    label: ReactNode;
+
+    href?: string;
+
+    icon?: ReactNode;
+
     exact?: boolean;
+
+    children?: NavItem[];
 }

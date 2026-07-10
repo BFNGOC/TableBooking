@@ -1,18 +1,17 @@
 'use client';
 
-import { NavItem } from '@/shared/types/navigation';
 import { Button, Skeleton } from '@heroui/react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, LogOut, Settings, User, CalendarDays, CircleHelp, Store } from 'lucide-react';
+import { Home, LogOut, Settings, User, CalendarDays, Store, ShieldUser } from 'lucide-react';
 import UserAvatar from '../avatar/UserAvatar';
-import DropDownCustom from '../dropdown/DropdownCustom';
+import DropDownCustom, { DropdownItem } from '../dropdown/DropdownCustom';
 import { useToast } from '@/shared/hooks/useToast';
 import { useAuth } from '@/shared/hooks/useAuth';
 
 interface INavbarPublicProps {
-    navItems: NavItem[];
+    navItems: { label: string; href: string }[];
 }
 
 function NavbarPublic({ navItems }: INavbarPublicProps) {
@@ -24,7 +23,7 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
 
     const pathname = usePathname();
 
-    const dropdownItems = [
+    const dropdownItems: DropdownItem[] = [
         {
             id: 'user',
             label: <UserAvatar />,
@@ -58,6 +57,21 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
             label: 'Đăng ký nhà hàng',
             icon: <Store size={16} />,
             onAction: () => router.push('/restaurant/onboarding'),
+            role: ['CUSTOMER'],
+        },
+        {
+            id: 'restaurantDashboard',
+            label: 'Đi tới trang chủ nhà hàng',
+            icon: <Store size={16} />,
+            onAction: () => router.push('/restaurant/dashboard'),
+            role: ['RESTAURANT'],
+        },
+        {
+            id: 'adminDashboard',
+            label: 'Đi tới trang chủ admin',
+            icon: <ShieldUser size={16} />,
+            onAction: () => router.push('/admin/dashboard'),
+            role: ['ADMIN'],
         },
         {
             id: 'logout',
@@ -115,15 +129,20 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
                     <DropDownCustom items={dropdownItems as any} trigger={<UserAvatar />} />
                 ) : (
                     <div className="flex items-center gap-3">
-                        <Link href="/login">
-                            <Button variant="ghost" className="text-[#6f4e37]">
-                                Đăng nhập
-                            </Button>
-                        </Link>
+                        <Button
+                            variant="ghost"
+                            onPress={() => router.push('/login')}
+                            className="text-[#6f4e37]"
+                        >
+                            Đăng nhập
+                        </Button>
 
-                        <Link href="/register">
-                            <Button className="bg-[#6f4e37] text-white">Đăng ký</Button>
-                        </Link>
+                        <Button
+                            className="bg-[#6f4e37] text-white"
+                            onPress={() => router.push('/register')}
+                        >
+                            Đăng ký
+                        </Button>
                     </div>
                 )}
             </div>

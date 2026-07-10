@@ -1,7 +1,7 @@
 'use client';
 
-import UserAvatar from '@/shared/components/avatar/UserAvatar';
-import SidebarLayout from '@/shared/components/layouts/Sidebar';
+import SidebarLayout from '@/shared/components/layouts/sidebar/Sidebar';
+import { NavItem } from '@/shared/types/navigation';
 import { type ReactNode } from 'react';
 
 interface AdminLayoutProps {
@@ -9,7 +9,7 @@ interface AdminLayoutProps {
 }
 
 function AdminLayout({ children }: AdminLayoutProps) {
-    const menus = [
+    const menus: NavItem[] = [
         {
             label: 'Tổng quan',
             href: '/admin/dashboard',
@@ -17,15 +17,20 @@ function AdminLayout({ children }: AdminLayoutProps) {
         },
         {
             label: 'Nhà hàng',
-            href: '/admin/dashboard/restaurants',
+            children: [
+                {
+                    label: 'Danh sách',
+                    href: '/admin/dashboard/restaurants',
+                },
+                {
+                    label: 'Chờ duyệt',
+                    href: '/admin/dashboard/restaurants/pending',
+                },
+            ],
         },
         {
             label: 'Người dùng',
             href: '/admin/dashboard/users',
-        },
-        {
-            label: <UserAvatar />,
-            href: '/admin/dashboard/settings',
         },
     ];
 

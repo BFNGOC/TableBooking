@@ -1,7 +1,7 @@
 'use client';
 
-import UserAvatar from '@/shared/components/avatar/UserAvatar';
-import SidebarLayout from '@/shared/components/layouts/Sidebar';
+import SidebarLayout from '@/shared/components/layouts/sidebar/Sidebar';
+import { NavItem } from '@/shared/types/navigation';
 import { type ReactNode } from 'react';
 
 interface RestaurantProps {
@@ -9,23 +9,76 @@ interface RestaurantProps {
 }
 
 function Restaurant({ children }: RestaurantProps) {
-    const menus = [
+    const menus: NavItem[] = [
         {
             label: 'Tổng quan',
             href: '/restaurant/dashboard',
             exact: true,
         },
         {
+            label: 'Quản lý nhà hàng',
+            children: [
+                {
+                    label: 'Thông tin',
+                    href: '/restaurant/dashboard/profile',
+                },
+                {
+                    label: 'Quản lý bàn',
+                    children: [
+                        {
+                            label: 'Danh sách bàn',
+                            href: '/restaurant/dashboard/tables',
+                        },
+                        {
+                            label: 'Loại bàn',
+                            href: '/restaurant/dashboard/tables/types',
+                        },
+                    ],
+                },
+                {
+                    label: 'Menu',
+                    children: [
+                        {
+                            label: 'Danh mục',
+                            href: '/restaurant/dashboard/menu/categories',
+                        },
+                        {
+                            label: 'Món ăn',
+                            href: '/restaurant/dashboard/menu/items',
+                        },
+                        {
+                            label: 'Combo',
+                            href: '/restaurant/dashboard/menu/combos',
+                        },
+                    ],
+                },
+            ],
+        },
+        {
             label: 'Đơn đặt bàn',
-            href: '/restaurant/dashboard/bookings',
+            children: [
+                {
+                    label: 'Hôm nay',
+                    href: '/restaurant/dashboard/bookings',
+                },
+                {
+                    label: 'Lịch sử',
+                    href: '/restaurant/dashboard/bookings/history',
+                },
+            ],
         },
         {
-            label: 'Quản lý bàn',
-            href: '/restaurant/dashboard/tables',
-        },
-        {
-            label: <UserAvatar />,
-            href: '/restaurant/dashboard/settings',
+            label: 'Tài khoản',
+            children: [
+                {
+                    label: 'Thông tin',
+                    href: '/restaurant/dashboard/settings',
+                },
+                {
+                    label: 'Đổi mật khẩu',
+                    href: '/restaurant/dashboard/security',
+                },
+            ],
         },
     ];
 

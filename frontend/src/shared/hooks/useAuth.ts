@@ -15,5 +15,6 @@ export function useAuth() {
         isUnauthenticated: status === 'unauthenticated',
         isAuthLoading,
         hasUser: !!query.data,
+        role: session?.user?.role,
     };
 }
