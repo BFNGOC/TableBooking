@@ -32,7 +32,11 @@ function Register() {
             const res = await register(payload);
 
             if (res?.data?.user?._id) {
-                showToast('success', 'Đăng ký thành công', 'Chào mừng bạn đến với TableBooking');
+                showToast(
+                    'success',
+                    'Đăng ký thành công',
+                    'Vui lòng kiểm tra email để xác nhận tài khoản của bạn'
+                );
                 router.push(`/verify-email/${res.data.user._id}`);
             }
         } catch (error: any) {

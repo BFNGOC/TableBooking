@@ -2,13 +2,16 @@
 
 import { useGetMe } from '@/features/users/hooks/useGetMe';
 import { useToast } from '@/shared/hooks/useToast';
+import { useSession } from 'next-auth/react';
 
-function HomePage() {
+function CustomerHomePage() {
     const { showToast } = useToast();
+
+    const { data: session } = useSession();
 
     const { data } = useGetMe();
 
-    console.log('User data in HomePage:', data?.name);
+    console.log('User data in CustomerHomePage:', data?.name);
 
     return (
         <div className="flex gap-5">
@@ -35,8 +38,9 @@ function HomePage() {
             </button>
 
             <div>{data?.name}</div>
+            <div>{session?.user?.role}</div>
         </div>
     );
 }
 
-export default HomePage;
+export default CustomerHomePage;

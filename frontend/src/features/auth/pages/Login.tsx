@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useToast } from '@/shared/hooks/useToast';
 import { LoginPayload } from '../types/auth.type';
-import { Button } from '@heroui/react';
+import { Button, Link } from '@heroui/react';
 import { useLoginMutation } from '../hooks/useAuthMutations';
 import { loginFormFields } from '../constants/login-form-fields';
 import ResendEmail from '../components/ResendEmail';
@@ -87,7 +87,11 @@ function Login() {
             </div>
 
             <div className="mt-6 space-y-3">
-                <FooterAuth linkText="Quên mật khẩu" onClick={forgotModal.openCreate} />
+                <p className="text-center text-sm text-gray-500">
+                    <Link className="font-semibold text-[#6f4e37]" onClick={forgotModal.openCreate}>
+                        Quên mật khẩu
+                    </Link>
+                </p>
                 <FooterAuth text="Chưa có tài khoản?" href="/register" linkText="Đăng ký" />
             </div>
 

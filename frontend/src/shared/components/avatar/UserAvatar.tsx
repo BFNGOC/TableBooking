@@ -1,5 +1,5 @@
-import { useGetMe } from '@/features/users/hooks/useGetMe';
-import { Avatar } from '@heroui/react';
+import { useAuth } from '@/shared/hooks/useAuth';
+import { Avatar, Skeleton } from '@heroui/react';
 
 interface UserAvatarProps {
     size?: 'sm' | 'md' | 'lg';
@@ -7,11 +7,24 @@ interface UserAvatarProps {
 }
 
 function UserAvatar({ size = 'md', className }: UserAvatarProps) {
-    const { data: user } = useGetMe();
+    const { user, isAuthLoading } = useAuth();
 
     const displayName = user?.name?.trim() || 'User';
     const avatarUrl = user?.avatar?.url;
     const fallbackInitial = displayName.charAt(0).toUpperCase();
+
+    if (isAuthLoading) {
+        return (
+            <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+
+                <div className="flex min-w-0 flex-col gap-2">
+                    <Skeleton className="h-4 w-24 rounded-md" />
+                    <Skeleton className="h-3 w-36 rounded-md" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex items-center gap-3">

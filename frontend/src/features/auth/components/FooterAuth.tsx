@@ -1,10 +1,10 @@
 'use client';
 
-import { Link } from '@heroui/react';
+import Link from 'next/link';
 
 interface IFooterAuthProps {
     text?: string;
-    href?: string;
+    href: string;
     linkText: string;
     onClick?: any;
 }
@@ -13,7 +13,11 @@ function FooterAuth({ text, href, linkText, onClick }: IFooterAuthProps) {
     return (
         <p className="text-center text-sm text-gray-500">
             {text}{' '}
-            <Link href={href} className="font-semibold text-[#6f4e37]" onClick={onClick}>
+            <Link
+                href={href}
+                className="font-semibold text-[#6f4e37] hover:underline"
+                onClick={onClick}
+            >
                 {linkText}
             </Link>
         </p>

@@ -1,33 +1,31 @@
 'use client';
 
+import UserAvatar from '@/shared/components/avatar/UserAvatar';
 import SidebarLayout from '@/shared/components/layouts/Sidebar';
-import { useRoleGuard } from '@/shared/hooks/useRoleGuard';
 import { type ReactNode } from 'react';
 
-interface OwnerLayoutProps {
+interface RestaurantProps {
     children: ReactNode;
 }
 
-function OwnerLayout({ children }: OwnerLayoutProps) {
-    useRoleGuard('RESTAURANT');
-
+function Restaurant({ children }: RestaurantProps) {
     const menus = [
         {
             label: 'Tổng quan',
-            href: '/owner/dashboard',
+            href: '/restaurant/dashboard',
             exact: true,
         },
         {
             label: 'Đơn đặt bàn',
-            href: '/owner/dashboard/bookings',
+            href: '/restaurant/dashboard/bookings',
         },
         {
             label: 'Quản lý bàn',
-            href: '/owner/dashboard/tables',
+            href: '/restaurant/dashboard/tables',
         },
         {
-            label: 'Cài đặt',
-            href: '/owner/dashboard/settings',
+            label: <UserAvatar />,
+            href: '/restaurant/dashboard/settings',
         },
     ];
 
@@ -42,4 +40,4 @@ function OwnerLayout({ children }: OwnerLayoutProps) {
     );
 }
 
-export default OwnerLayout;
+export default Restaurant;

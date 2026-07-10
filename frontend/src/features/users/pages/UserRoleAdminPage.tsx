@@ -22,6 +22,7 @@ import { useCrudMutation } from '@/shared/hooks/useCrudMutation';
 import { CreateUserPayload, UpdateUserPayload } from '../types/user-payload';
 import { formatSectionFormValues } from '@/shared/utils/format-section-form-values';
 import { useToast } from '@/shared/hooks/useToast';
+import { userQueryKeys } from '../contants/query-key';
 
 function UserRoleAdminPage() {
     const { showToast } = useToast();
@@ -44,12 +45,12 @@ function UserRoleAdminPage() {
     });
 
     const createMutation = useCrudMutation({
-        queryKey: ['users'],
+        queryKey: userQueryKeys.GET_ALL,
         api: create,
     });
 
     const updateMutation = useCrudMutation<{ _id: string; payload: UpdateUserPayload }>({
-        queryKey: ['users'],
+        queryKey: userQueryKeys.GET_ALL,
         api: ({ _id, payload }) => update(_id, payload),
     });
 

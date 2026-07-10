@@ -1,21 +1,23 @@
 'use client';
 
 import { NavItem } from '@/shared/types/navigation';
-import { Button } from '@heroui/react';
-import { Link } from '@heroui/react';
-import { signOut, useSession } from 'next-auth/react';
+import { Button, Skeleton } from '@heroui/react';
+import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, LogOut, Settings, User, CalendarDays, CircleHelp } from 'lucide-react';
+import { Home, LogOut, Settings, User, CalendarDays, CircleHelp, Store } from 'lucide-react';
 import UserAvatar from '../avatar/UserAvatar';
 import DropDownCustom from '../dropdown/DropdownCustom';
 import { useToast } from '@/shared/hooks/useToast';
+import { useAuth } from '@/shared/hooks/useAuth';
 
 interface INavbarPublicProps {
     navItems: NavItem[];
 }
 
 function NavbarPublic({ navItems }: INavbarPublicProps) {
-    const { data: session } = useSession();
+    const { user, isAuthLoading } = useAuth();
+
     const router = useRouter();
 
     const { showToast } = useToast();
@@ -52,10 +54,10 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
             onAction: () => router.push('/settings?tab=security'),
         },
         {
-            id: 'support',
-            label: 'Hỗ trợ',
-            icon: <CircleHelp size={16} />,
-            onAction: () => router.push('/support'),
+            id: 'restaurant',
+            label: 'Đăng ký nhà hàng',
+            icon: <Store size={16} />,
+            onAction: () => router.push('/restaurant/onboarding'),
         },
         {
             id: 'logout',
@@ -100,7 +102,16 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
                 </nav>
 
                 {/* Actions */}
-                {session?.user ? (
+                {isAuthLoading ? (
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+
+                        <div className="flex flex-col gap-2">
+                            <Skeleton className="h-4 w-24 rounded-md" />
+                            <Skeleton className="h-3 w-36 rounded-md" />
+                        </div>
+                    </div>
+                ) : user ? (
                     <DropDownCustom items={dropdownItems as any} trigger={<UserAvatar />} />
                 ) : (
                     <div className="flex items-center gap-3">

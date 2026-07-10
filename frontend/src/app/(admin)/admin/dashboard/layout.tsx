@@ -1,8 +1,7 @@
 'use client';
 
-import AvatarCustom from '@/shared/components/avatar/UserAvatar';
+import UserAvatar from '@/shared/components/avatar/UserAvatar';
 import SidebarLayout from '@/shared/components/layouts/Sidebar';
-import { useRoleGuard } from '@/shared/hooks/useRoleGuard';
 import { type ReactNode } from 'react';
 
 interface AdminLayoutProps {
@@ -10,8 +9,6 @@ interface AdminLayoutProps {
 }
 
 function AdminLayout({ children }: AdminLayoutProps) {
-    useRoleGuard('ADMIN');
-
     const menus = [
         {
             label: 'Tổng quan',
@@ -27,7 +24,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
             href: '/admin/dashboard/users',
         },
         {
-            label: <AvatarCustom />,
+            label: <UserAvatar />,
             href: '/admin/dashboard/settings',
         },
     ];

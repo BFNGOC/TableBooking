@@ -14,7 +14,7 @@ function SidebarLayout({ menus }: ISidebarPublicProps) {
     return (
         <aside className="w-64 border-r border-gray-200 bg-[#e3d9d3] p-4">
             {/* Logo */}
-            <Link href="/owner/dashboard" className="mb-8 block text-2xl font-bold text-[#6f4e37]">
+            <Link href="#" className="mb-8 block text-2xl font-bold text-[#6f4e37]">
                 TableBooking
             </Link>
 
