@@ -1,3 +1,5 @@
+'use client';
+
 import { UserRole } from '@/features/users/types/user-role';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Dropdown } from '@heroui/react';
