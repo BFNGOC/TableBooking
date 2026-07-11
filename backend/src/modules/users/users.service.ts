@@ -7,10 +7,16 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose/dist/common/mongoose.decorators';
-import { User, UserDocument } from './schemas/user.schema';
+import {
+  AccountType,
+  User,
+  UserDocument,
+  UserRole,
+} from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
 import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
+import { GoogleLoginDto } from '@app/auth/dto/google-login.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -215,6 +221,32 @@ export class UsersService {
 
   async findByEmailWithPassword(email: string) {
     return this.userModel.findOne({ email }).select('+password');
+  }
+
+  async findByEmailOptional(email: string) {
+    return this.userModel.findOne({ email });
+  }
+
+  async findOrCreateGoogleUser(data: GoogleLoginDto) {
+    const existingUser = await this.findByEmailOptional(data.email);
+
+    if (existingUser) {
+      throw new ConflictException('Email đã được sử dụng');
+    }
+
+    return this.userModel.create({
+      name: data.name,
+      email: data.email,
+      accountType: AccountType.GOOGLE,
+      role: UserRole.CUSTOMER,
+      isActive: true,
+      avatar: data.avatar
+        ? {
+            url: data.avatar,
+            publicId: data.avatar,
+          }
+        : undefined,
+    });
   }
 
   async update(_id: string, dto: UpdateUserRoleAdminDto) {
