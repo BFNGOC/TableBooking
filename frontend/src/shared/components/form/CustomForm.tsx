@@ -26,6 +26,8 @@ interface CustomFormProps<T extends Record<string, any>> {
     footerClassName?: string;
 
     mode?: FormModalModeType;
+
+    onUploadLoadingChange?: (isLoading: boolean) => void;
 }
 
 function CustomForm<T extends Record<string, any>>({
@@ -36,6 +38,7 @@ function CustomForm<T extends Record<string, any>>({
     footer,
     mode = 'create',
     footerClassName,
+    onUploadLoadingChange,
 }: CustomFormProps<T>) {
     const isViewMode = mode === 'view';
 
@@ -114,7 +117,12 @@ function CustomForm<T extends Record<string, any>>({
                                     return <TextAreaField {...commonProps} />;
 
                                 case 'image':
-                                    return <UploadImageCustom {...commonProps} />;
+                                    return (
+                                        <UploadImageCustom
+                                            {...commonProps}
+                                            onLoadingChange={onUploadLoadingChange}
+                                        />
+                                    );
 
                                 default:
                                     return <AppTextField {...commonProps} />;

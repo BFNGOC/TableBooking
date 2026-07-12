@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button, Tabs } from '@heroui/react';
 
 import ModalCustom from './ModalCustom';
@@ -49,6 +50,8 @@ function ModalFormTabs<T extends Record<string, any>>({
     onSubmit,
     isPending = false,
 }: ModalFormTabsProps<T>) {
+    const [uploadLoading, setUploadLoading] = useState(false);
+
     const visibleSections = sections.filter((section) => {
         if (typeof section.hidden === 'function') {
             return !section.hidden({
@@ -88,6 +91,7 @@ function ModalFormTabs<T extends Record<string, any>>({
                             onValuesChange={onValuesChange}
                             onSubmit={onSubmit}
                             mode={mode}
+                            onUploadLoadingChange={setUploadLoading}
                             footer={
                                 mode !== 'view' && (
                                     <>
@@ -98,8 +102,8 @@ function ModalFormTabs<T extends Record<string, any>>({
                                         <Button
                                             type="submit"
                                             variant="danger-soft"
-                                            isPending={isPending}
-                                            isDisabled={isPending}
+                                            isPending={isPending || uploadLoading}
+                                            isDisabled={isPending || uploadLoading}
                                         >
                                             Lưu
                                         </Button>
