@@ -2,10 +2,18 @@
 
 import { Button } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { signIn } from "next-auth/react";
 
-function LoginGoogleButton({ onClick }: { onClick: () => void }) {
+function LoginGoogleButton() {
+	const handleGoogleLogin = async () => {
+		await signIn("google", {
+			callbackUrl: "/",
+			redirect: true,
+		});
+	};
+
 	return (
-		<Button className="w-full" variant="tertiary" onPress={onClick}>
+		<Button className="w-full" variant="tertiary" onPress={handleGoogleLogin}>
 			<Icon icon="devicon:google" />
 			Sign in with Google
 		</Button>
