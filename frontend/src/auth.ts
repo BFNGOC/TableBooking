@@ -48,7 +48,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 						idToken: account.id_token,
 						providerId: account.providerAccountId,
 					});
-					console.log("Google response:", response);
 					const backendPayload = response?.data ?? response;
 					const backendUser = backendPayload?.user;
 					const accessToken = backendPayload?.access_token;
