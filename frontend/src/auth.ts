@@ -37,7 +37,47 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 		signIn: "/login",
 	},
 	callbacks: {
-		jwt({ token, user }) {
+		async signIn({ user, account, profile }) {
+			if (
+				account?.provider === "google" &&
+				account.id_token &&
+				profile?.email
+			) {
+				try {
+					const response = await googleLoginApi({
+						idToken: account.id_token,
+						providerId: account.providerAccountId,
+					});
+					console.log("Google response:", response);
+					const backendPayload = response?.data ?? response;
+					const backendUser = backendPayload?.user;
+					const accessToken = backendPayload?.access_token;
+					console.log({
+						backendPayload,
+						backendUser,
+						accessToken,
+					});
+					if (!backendUser || !accessToken) {
+						return false;
+					}
+
+					const mappedUser = buildUserFromBackend(backendUser);
+					Object.assign(user, mappedUser, { accessToken });
+					return true;
+				} catch (error) {
+					console.error("Google signIn callback failed", error);
+					return false;
+				}
+			}
+
+			return true;
+		},
+		jwt({ token, user, account }) {
+			if (account?.provider === "google") {
+				token.idToken = account.id_token;
+				token.providerAccountId = account.providerAccountId;
+			}
+
 			if (user) {
 				token.user = user;
 			}
@@ -45,7 +85,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 			return token;
 		},
 		session({ session, token }) {
-			session.user = token.user as IUser;
+			const user = token.user as IUser & {
+				id?: string;
+				emailVerified?: Date | null;
+			};
+			session.user = {
+				...user,
+				id: user._id ?? user.id ?? "",
+				emailVerified: user.emailVerified ?? null,
+			};
+			session.idToken = token.idToken as string | undefined;
+			session.providerAccountId = token.providerAccountId as
+				| string
+				| undefined;
 			return session;
 		},
 		authorized: async ({ auth }) => {

@@ -42,8 +42,6 @@ export class AuthController {
   @Public()
   @ResponseMessage('Đăng nhập Google thành công')
   loginWithGoogle(@Body() googleLoginDto: GoogleLoginDto) {
-    console.log('api google login');
-    console.log('googleLoginDto', googleLoginDto);
     return this.authService.loginWithGoogle(googleLoginDto);
   }
 

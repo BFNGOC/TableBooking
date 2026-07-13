@@ -16,9 +16,7 @@ export type LoginPayload = {
 };
 
 export type LoginGooglePayload = {
-	email: string;
-	name: string;
-	avatar?: string;
+	idToken: string;
 	providerId?: string;
 };
 

@@ -14,7 +14,6 @@ import ResendEmail from '../components/ResendEmail';
 import { useFormModal } from '@/shared/hooks/useFormModal';
 import ForgotPassword from '../components/ForgotPassword';
 import { useState } from 'react';
-import { useGoogleLogin } from '../hooks/useGoogleLogin';
 import { getRedirectPathByRole } from '../utils/redireact-path-role';
 
 function Login() {
@@ -23,7 +22,6 @@ function Login() {
     const resendModal = useFormModal();
     const forgotModal = useFormModal();
     const { mutateAsync: login, isPending } = useLoginMutation();
-    const { handleGoogleLogin } = useGoogleLogin();
     const [values, setValues] = useState<Partial<LoginPayload>>({
         email: '',
         password: '',
@@ -89,7 +87,7 @@ function Login() {
                     }
                 />
 
-                <LoginGoogleButton onClick={handleGoogleLogin} />
+                <LoginGoogleButton />
             </div>
 
             <div className="mt-6 space-y-3">

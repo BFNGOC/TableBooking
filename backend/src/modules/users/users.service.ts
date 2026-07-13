@@ -27,6 +27,7 @@ import { buildPagination } from '@app/helpers/pagination.helper';
 import { buildSort } from '@app/helpers/sort.helper';
 import { normalizeKeyword } from '@app/helpers/string.helper';
 import { UpdateUserRoleAdminDto } from './dto/update-user-role-admin.dto';
+import { GoogleUserInfo } from '@app/auth/types/google-user-info.type';
 
 @Injectable()
 export class UsersService {
@@ -227,16 +228,41 @@ export class UsersService {
     return this.userModel.findOne({ email });
   }
 
-  async findOrCreateGoogleUser(data: GoogleLoginDto) {
+  async findOrCreateGoogleUser(data: GoogleUserInfo) {
+    // 1. Tìm theo email
     const existingUser = await this.findByEmailOptional(data.email);
 
     if (existingUser) {
-      throw new ConflictException('Email đã được sử dụng');
+      // Nếu tài khoản local chưa liên kết Google
+      if (!existingUser.googleId) {
+        existingUser.googleId = data.googleId;
+        existingUser.isActive = true;
+
+        if (data.avatar && !existingUser.avatar) {
+          existingUser.avatar = {
+            url: data.avatar,
+            publicId: data.avatar,
+          };
+        }
+
+        await existingUser.save();
+      }
+
+      // Nếu đã liên kết Google thì kiểm tra đúng Google Account
+      if (existingUser.googleId !== data.googleId) {
+        throw new ConflictException(
+          'Email này đã được liên kết với tài khoản Google khác',
+        );
+      }
+
+      return existingUser;
     }
 
+    // 2. Chưa có email -> tạo mới
     return this.userModel.create({
       name: data.name,
       email: data.email,
+      googleId: data.googleId,
       accountType: AccountType.GOOGLE,
       role: UserRole.CUSTOMER,
       isActive: true,

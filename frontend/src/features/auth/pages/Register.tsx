@@ -11,12 +11,10 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useRegisterMutation } from "../hooks/useAuthMutations";
 import { useState } from "react";
-import { useGoogleLogin } from "../hooks/useGoogleLogin";
 
 function Register() {
 	const router = useRouter();
 	const { showToast } = useToast();
-	const { handleGoogleLogin } = useGoogleLogin();
 	const { mutateAsync: register, isPending } = useRegisterMutation();
 	const [values, setValues] = useState<Partial<RegisterPayload>>({
 		name: "",
@@ -77,7 +75,7 @@ function Register() {
 					}
 				/>
 
-				<LoginGoogleButton onClick={handleGoogleLogin} />
+				<LoginGoogleButton />
 			</div>
 
 			<div className="mt-6 space-y-3">
