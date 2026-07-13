@@ -23,6 +23,7 @@ import { CreateUserPayload, UpdateUserPayload } from '../types/user-payload';
 import { formatSectionFormValues } from '@/shared/utils/format-section-form-values';
 import { useToast } from '@/shared/hooks/useToast';
 import { userQueryKeys } from '../contants/query-key';
+import { useUploadImage } from '@/features/upload/hook/useUploadImage';
 
 function UserRoleAdminPage() {
     const { showToast } = useToast();
@@ -43,6 +44,8 @@ function UserRoleAdminPage() {
             isActive: undefined,
         },
     });
+
+    const uploadMutation = useUploadImage();
 
     const createMutation = useCrudMutation({
         queryKey: userQueryKeys.GET_ALL,
@@ -243,7 +246,9 @@ function UserRoleAdminPage() {
                 sections={userSections}
                 onClose={close}
                 onSubmit={handleSubmitUser}
-                isPending={createMutation.isPending || updateMutation.isPending}
+                isPending={
+                    createMutation.isPending || updateMutation.isPending || uploadMutation.isPending
+                }
             />
         </div>
     );

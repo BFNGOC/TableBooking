@@ -51,4 +51,6 @@ export interface FormField {
     multiple?: boolean;
 
     maxFiles?: number;
+
+    onLoadingChange?: (isLoading: boolean) => void;
 }

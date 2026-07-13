@@ -14,6 +14,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CheckCodeDto } from './dto/check-code.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -35,6 +36,13 @@ export class AuthController {
   @ResponseMessage('Đăng ký thành công')
   register(@Body() registerDto: CreateAuthDto) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('google')
+  @Public()
+  @ResponseMessage('Đăng nhập Google thành công')
+  loginWithGoogle(@Body() googleLoginDto: GoogleLoginDto) {
+    return this.authService.loginWithGoogle(googleLoginDto);
   }
 
   @Post('verify')

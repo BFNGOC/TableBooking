@@ -11,6 +11,7 @@ declare global {
         useCredentials?: boolean;
         headers?: any;
         nextOption?: any;
+        accessToken?: string;
     }
 
     interface IBackendRes<T> {

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { getSession } from 'next-auth/react';
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_API_URL,
@@ -39,18 +38,6 @@ export const sanitizeQueryParams = <T extends Record<string, any>>(
     return Object.keys(sanitized).length > 0 ? (sanitized as T) : undefined;
 };
 
-api.interceptors.request.use(async (config) => {
-    const session = await getSession();
-
-    const accessToken = (session?.user as any)?.accessToken;
-
-    if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-
-    return config;
-});
-
 export const sendRequest = async <T>({
     url,
     method,
@@ -58,24 +45,28 @@ export const sendRequest = async <T>({
     queryParams,
     headers,
     useCredentials = true,
+    accessToken,
 }: IRequest): Promise<IBackendRes<T>> => {
     try {
-        const preparedQueryParams = sanitizeQueryParams(queryParams as Record<string, any>);
+        const preparedQueryParams = sanitizeQueryParams(queryParams);
 
         const response = await api.request<IBackendRes<T>>({
             url,
             method,
             data: body,
             params: preparedQueryParams,
-            headers,
             withCredentials: useCredentials,
+            headers: {
+                ...headers,
+                ...(accessToken && {
+                    Authorization: `Bearer ${accessToken}`,
+                }),
+            },
         });
 
         return response.data;
     } catch (error: any) {
-        if (error.response) {
-            throw error.response.data;
-        }
+        if (error.response) throw error.response.data;
 
         throw {
             message: error.message,

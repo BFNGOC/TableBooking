@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Button, Label, Spinner } from '@heroui/react';
 import { ImagePlus, Trash2 } from 'lucide-react';
@@ -20,6 +20,7 @@ function UploadImageCustom({
     onChange,
     multiple,
     maxFiles = 10,
+    onLoadingChange,
 }: FormField) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -72,6 +73,10 @@ function UploadImageCustom({
 
     const isLoading =
         uploadMutation.isPending || uploadsMutation.isPending || deleteMutation.isPending;
+
+    useEffect(() => {
+        onLoadingChange?.(isLoading);
+    }, [isLoading, onLoadingChange]);
 
     return (
         <div className="flex flex-col gap-2">

@@ -1,20 +1,20 @@
-import { sendRequest } from '@/shared/utils/api';
 import { IUser } from '../types/user-type';
 import { UserFilterParams } from '../types/user-filter-params-type';
 import { UserFindAllPaginationType } from '../types/user-find-all-pagination-type';
 import { CreateUserPayload, UpdateUserPayload } from '../types/user-payload';
+import { clientRequest } from '@/shared/library/axios/client-api';
 
 const API_URL_PREFIX = '/users';
 
 export const userRoleUserApi = {
     getMe: async () => {
-        const res = await sendRequest<IUser>({ url: `${API_URL_PREFIX}/me`, method: 'GET' });
+        const res = await clientRequest<IUser>({ url: `${API_URL_PREFIX}/me`, method: 'GET' });
 
         return res.data;
     },
 
     update: async (payload: any) => {
-        const res = await sendRequest<IUser>({
+        const res = await clientRequest<IUser>({
             url: `${API_URL_PREFIX}/me`,
             method: 'PUT',
             body: payload,
@@ -26,7 +26,7 @@ export const userRoleUserApi = {
 
 export const userRoleAdminApi = {
     getAll: async (queryParams?: UserFilterParams) => {
-        const res = await sendRequest<UserFindAllPaginationType>({
+        const res = await clientRequest<UserFindAllPaginationType>({
             url: `${API_URL_PREFIX}`,
             method: 'GET',
             queryParams,
@@ -35,7 +35,7 @@ export const userRoleAdminApi = {
         return res.data;
     },
     create: async (payload: CreateUserPayload) => {
-        const res = await sendRequest<IUser>({
+        const res = await clientRequest<IUser>({
             url: `${API_URL_PREFIX}`,
             method: 'POST',
             body: payload,
@@ -45,7 +45,7 @@ export const userRoleAdminApi = {
     },
 
     update: async (_id: string, payload: UpdateUserPayload) => {
-        const res = await sendRequest<IUser>({
+        const res = await clientRequest<IUser>({
             url: `${API_URL_PREFIX}/${_id}`,
             method: 'PATCH',
             body: payload,
@@ -55,7 +55,7 @@ export const userRoleAdminApi = {
     },
 
     delete: async (_id: string) => {
-        const res = await sendRequest<IUser>({
+        const res = await clientRequest<IUser>({
             url: `${API_URL_PREFIX}/${_id}`,
             method: 'DELETE',
         });
@@ -64,7 +64,7 @@ export const userRoleAdminApi = {
     },
 
     active: async (_id: string) => {
-        const res = await sendRequest<IUser>({
+        const res = await clientRequest<IUser>({
             url: `${API_URL_PREFIX}/${_id}/active`,
             method: 'POST',
         });
@@ -73,7 +73,7 @@ export const userRoleAdminApi = {
     },
 
     inactive: async (_id: string) => {
-        const res = await sendRequest<IUser>({
+        const res = await clientRequest<IUser>({
             url: `${API_URL_PREFIX}/${_id}/inactive`,
             method: 'POST',
         });

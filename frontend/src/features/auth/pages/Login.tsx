@@ -4,7 +4,7 @@ import LoginGoogleButton from '@/shared/components/buttons/LoginGoogleButton';
 import FooterAuth from '../components/FooterAuth';
 import CustomForm from '@/shared/components/form/CustomForm';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { getSession, signIn } from 'next-auth/react';
 import { useToast } from '@/shared/hooks/useToast';
 import { LoginPayload } from '../types/auth.type';
 import { Button, Link } from '@heroui/react';
@@ -14,6 +14,7 @@ import ResendEmail from '../components/ResendEmail';
 import { useFormModal } from '@/shared/hooks/useFormModal';
 import ForgotPassword from '../components/ForgotPassword';
 import { useState } from 'react';
+import { getRedirectPathByRole } from '../utils/redireact-path-role';
 
 function Login() {
     const router = useRouter();
@@ -45,8 +46,11 @@ function Login() {
                 return;
             }
 
+            const session = await getSession();
+            const redirectPath = getRedirectPathByRole(session?.user?.role as string | undefined);
+
             showToast('success', 'Đăng nhập thành công', 'Chào mừng bạn quay trở lại');
-            router.push('/');
+            router.replace(redirectPath);
         } catch (error: any) {
             if (error?.statusCode == 400) {
                 resendModal.openView(payload.email);

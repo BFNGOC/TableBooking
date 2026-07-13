@@ -70,6 +70,13 @@ export class User {
   })
   accountType!: AccountType;
 
+  @Prop({
+    unique: true,
+    sparse: true,
+    index: true,
+  })
+  googleId?: string;
+
   // Vai trò
   @Prop({
     type: String,

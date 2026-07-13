@@ -1,4 +1,4 @@
-import { sendRequest } from '@/shared/utils/api';
+import { clientRequest } from '@/shared/library/axios/client-api';
 import { uploadApiResponse } from '../types/upload-api-response';
 
 const API_URL_PREFIX = '/upload';
@@ -7,7 +7,7 @@ export const uploadImageApi = async (file: File) => {
     const formData = new FormData();
     formData.append('image', file);
 
-    const res = await sendRequest<uploadApiResponse>({
+    const res = await clientRequest<uploadApiResponse>({
         url: `${API_URL_PREFIX}/image`,
         method: 'POST',
         body: formData as unknown as { [key: string]: any },
@@ -23,7 +23,7 @@ export const uploadImagesApi = async (files: File[]) => {
         formData.append('images', file);
     });
 
-    const res = await sendRequest<uploadApiResponse[]>({
+    const res = await clientRequest<uploadApiResponse[]>({
         url: `${API_URL_PREFIX}/images`,
         method: 'POST',
         body: formData as unknown as { [key: string]: any },
@@ -33,7 +33,7 @@ export const uploadImagesApi = async (files: File[]) => {
 };
 
 export const deleteImageApi = async (publicId: string) => {
-    const res = await sendRequest<uploadApiResponse>({
+    const res = await clientRequest<uploadApiResponse>({
         url: `${API_URL_PREFIX}/image`,
         method: 'DELETE',
         body: { publicId },
@@ -43,7 +43,7 @@ export const deleteImageApi = async (publicId: string) => {
 };
 
 export const deleteImagesApi = async (publicIds: string[]) => {
-    const res = await sendRequest<uploadApiResponse[]>({
+    const res = await clientRequest<uploadApiResponse[]>({
         url: `${API_URL_PREFIX}/images`,
         method: 'DELETE',
         body: { publicIds },

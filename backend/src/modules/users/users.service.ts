@@ -7,10 +7,16 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose/dist/common/mongoose.decorators';
-import { User, UserDocument } from './schemas/user.schema';
+import {
+  AccountType,
+  User,
+  UserDocument,
+  UserRole,
+} from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
 import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
+import { GoogleLoginDto } from '@app/auth/dto/google-login.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -21,6 +27,7 @@ import { buildPagination } from '@app/helpers/pagination.helper';
 import { buildSort } from '@app/helpers/sort.helper';
 import { normalizeKeyword } from '@app/helpers/string.helper';
 import { UpdateUserRoleAdminDto } from './dto/update-user-role-admin.dto';
+import { GoogleUserInfo } from '@app/auth/types/google-user-info.type';
 
 @Injectable()
 export class UsersService {
@@ -215,6 +222,57 @@ export class UsersService {
 
   async findByEmailWithPassword(email: string) {
     return this.userModel.findOne({ email }).select('+password');
+  }
+
+  async findByEmailOptional(email: string) {
+    return this.userModel.findOne({ email });
+  }
+
+  async findOrCreateGoogleUser(data: GoogleUserInfo) {
+    // 1. Tìm theo email
+    const existingUser = await this.findByEmailOptional(data.email);
+
+    if (existingUser) {
+      // Nếu tài khoản local chưa liên kết Google
+      if (!existingUser.googleId) {
+        existingUser.googleId = data.googleId;
+        existingUser.isActive = true;
+
+        if (data.avatar && !existingUser.avatar) {
+          existingUser.avatar = {
+            url: data.avatar,
+            publicId: data.avatar,
+          };
+        }
+
+        await existingUser.save();
+      }
+
+      // Nếu đã liên kết Google thì kiểm tra đúng Google Account
+      if (existingUser.googleId !== data.googleId) {
+        throw new ConflictException(
+          'Email này đã được liên kết với tài khoản Google khác',
+        );
+      }
+
+      return existingUser;
+    }
+
+    // 2. Chưa có email -> tạo mới
+    return this.userModel.create({
+      name: data.name,
+      email: data.email,
+      googleId: data.googleId,
+      accountType: AccountType.GOOGLE,
+      role: UserRole.CUSTOMER,
+      isActive: true,
+      avatar: data.avatar
+        ? {
+            url: data.avatar,
+            publicId: data.avatar,
+          }
+        : undefined,
+    });
   }
 
   async update(_id: string, dto: UpdateUserRoleAdminDto) {
