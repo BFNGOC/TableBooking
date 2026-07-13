@@ -7,10 +7,13 @@ import TextAreaField from '../inputs/TextAreaField';
 import SelectField from '../select/SelectField';
 import DatePikerField from '../datepicker/DatePikerField';
 import TimeFieldCustom from '../timefield/TimeFieldCustom';
+import AutocompleteCustom from '../autocomplete/AutocompleteCustom';
+import { RadioCustom } from '../radio/RadioCustom';
 
 import { FormField } from '@/shared/types/form-field';
 import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
 import UploadImageCustom from '../upload/UploadImageCustom';
+import { CheckboxCustom } from '../checkbox/CheckboxCustom';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
@@ -113,8 +116,18 @@ function CustomForm<T extends Record<string, any>>({
                                 case 'timePicker':
                                     return <TimeFieldCustom {...commonProps} />;
 
+                                case 'autocomplete':
+                                    return <AutocompleteCustom {...commonProps} />;
+
                                 case 'textarea':
                                     return <TextAreaField {...commonProps} />;
+
+                                case 'checkbox':
+                                case 'checkboxGroup':
+                                    return <CheckboxCustom {...commonProps} />;
+
+                                case 'radio':
+                                    return <RadioCustom {...commonProps} />;
 
                                 case 'image':
                                     return (

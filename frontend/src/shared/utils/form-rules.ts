@@ -25,6 +25,16 @@ export const formRules = {
         return null;
     },
 
+    phone: (value: string) => {
+        if (!value) return 'Số điện thoại là bắt buộc';
+
+        if (!/^[0-9]{9,11}$/.test(value)) {
+            return 'Số điện thoại phải gồm 9 đến 11 chữ số';
+        }
+
+        return null;
+    },
+
     required: (label: string) => (value: string) => {
         if (!value?.trim()) {
             return `${label} là bắt buộc`;

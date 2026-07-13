@@ -1,10 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { CreateRestaurantDto } from './dto/create-restaurant.dto';
-import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
+import { RestaurantOnboardingDto } from './dto/create-restaurant.dto';
+import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
+import { Restaurant } from './schemas/restaurant.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { CUISINE_TYPES } from '@app/shared/dto/constants/cuisine-type.constant';
 
 @Injectable()
 export class RestaurantsService {
-  create(createRestaurantDto: CreateRestaurantDto) {
+  constructor(
+    @InjectModel(Restaurant.name)
+    private restaurantModel: Model<Restaurant>,
+  ) {}
+
+  getCuisineTypes() {
+    return CUISINE_TYPES.map((item) => ({
+      id: item,
+      text: item,
+    }));
+  }
+
+  create(RestaurantOnboardingDto: RestaurantOnboardingDto) {
     return 'This action adds a new restaurant';
   }
 
@@ -16,7 +32,7 @@ export class RestaurantsService {
     return `This action returns a #${id} restaurant`;
   }
 
-  update(id: number, updateRestaurantDto: UpdateRestaurantDto) {
+  update(id: number, UpdateRestaurantProfileDto: UpdateRestaurantProfileDto) {
     return `This action updates a #${id} restaurant`;
   }
 

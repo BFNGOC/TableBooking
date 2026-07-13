@@ -1,4 +1,4 @@
-import RestaurantOnboardingPage from '@/features/(restaurant)/onboarding/pages/RestaurantOnboardingPage';
+import RestaurantOnboardingPage from '@/features/restaurant/pages/RestaurantOnboardingPage';
 
 function RestaurantOnboarding() {
     return <RestaurantOnboardingPage />;

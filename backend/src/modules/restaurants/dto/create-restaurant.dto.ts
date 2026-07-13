@@ -1,11 +1,13 @@
 import {
   IsArray,
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsString,
   Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { CUISINE_TYPES } from '@app/shared/dto/constants/cuisine-type.constant';
 
 export class RestaurantOnboardingDto {
   @ApiProperty({
@@ -45,7 +47,10 @@ export class RestaurantOnboardingDto {
     example: ['BBQ', 'Hải sản'],
   })
   @IsArray()
-  @IsString({ each: true })
+  @IsIn(CUISINE_TYPES, {
+    each: true,
+    message: 'Cuisine type không hợp lệ',
+  })
   cuisineTypes!: string[];
 
   @ApiProperty({
