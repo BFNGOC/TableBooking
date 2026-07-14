@@ -16,11 +16,14 @@ export interface FormField {
 
     placeholder?: string;
 
+    description?: string;
+
     col?: 1 | 2 | 3 | 4 | 5 | 6 | 12;
 
     options?: {
         id: any;
         text: string;
+        description?: string;
     }[];
 
     isDisabled?: any;
@@ -53,4 +56,6 @@ export interface FormField {
     maxFiles?: number;
 
     onLoadingChange?: (isLoading: boolean) => void;
+
+    selectionMode?: 'single' | 'multiple';
 }

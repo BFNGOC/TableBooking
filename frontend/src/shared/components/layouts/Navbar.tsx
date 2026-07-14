@@ -56,7 +56,7 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
             id: 'restaurant',
             label: 'Đăng ký nhà hàng',
             icon: <Store size={16} />,
-            onAction: () => router.push('/restaurant/onboarding'),
+            onAction: () => router.push('/restaurant-onboarding'),
             role: ['CUSTOMER'],
         },
         {

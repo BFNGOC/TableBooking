@@ -12,12 +12,14 @@ import { TransformInterceptor } from './core/transform.interceptor';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { RolesGuard } from './guards/role.guard';
 import { UploadModule } from './modules/upload/upload.module';
+import { RestaurantsModule } from './modules/restaurants/restaurants.module';
 
 @Module({
   imports: [
     UsersModule,
     AuthModule,
     UploadModule,
+    RestaurantsModule,
 
     ConfigModule.forRoot({
       isGlobal: true,
