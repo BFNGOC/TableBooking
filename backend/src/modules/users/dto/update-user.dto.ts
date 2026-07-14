@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 
 import { Gender } from '../schemas/user.schema';
+import { ImageType } from '@app/modules/upload/types/image.type';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateUserDto {
@@ -43,12 +44,11 @@ export class UpdateUserDto {
   address?: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'Avatar phải là URL hợp lệ' })
   @ApiPropertyOptional({
-    description: 'Avatar URL',
-    example: 'https://example.com/avatar2.jpg',
+    description: 'Avatar image object',
+    example: { url: 'https://example.com/avatar.jpg' },
   })
-  avatar?: string;
+  avatar?: ImageType;
 
   @IsOptional()
   @IsEnum(Gender, { message: 'Giới tính không hợp lệ' })

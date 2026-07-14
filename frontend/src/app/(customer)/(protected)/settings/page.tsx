@@ -1,5 +1,7 @@
+import UserProfilePage from "@/features/users/pages/UserProfilePage";
+
 function SettingsCustomerPage() {
-    return <div>SettingsCustomerPage</div>;
+	return <UserProfilePage />;
 }
 
 export default SettingsCustomerPage;
