@@ -1,5 +1,5 @@
 import { ImageType } from '@app/modules/upload/types/image.type';
-import { AutoFieldsPlugin } from '@app/plugins/auto-fields.plugin';
+import { AutoSlugPlugin } from '@app/plugins/auto-slug.plugin';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
@@ -247,12 +247,6 @@ export class Restaurant {
   userId!: Types.ObjectId;
 
   @Prop({
-    default: '',
-    index: true,
-  })
-  search!: string;
-
-  @Prop({
     required: true,
     unique: true,
     index: true,
@@ -262,6 +256,6 @@ export class Restaurant {
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
 
-RestaurantSchema.plugin(AutoFieldsPlugin, {
-  search: ['restaurantName', 'address', 'representativeName', 'taxCode'],
+RestaurantSchema.plugin(AutoSlugPlugin, {
+  slug: ['restaurantName'],
 });

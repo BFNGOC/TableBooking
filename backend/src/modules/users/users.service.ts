@@ -16,7 +16,6 @@ import {
 import { Model } from 'mongoose';
 import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
 import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
-import { GoogleLoginDto } from '@app/auth/dto/google-login.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -25,9 +24,10 @@ import { ChangePasswordDto } from '@app/auth/dto/change-password.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { buildPagination } from '@app/helpers/pagination.helper';
 import { buildSort } from '@app/helpers/sort.helper';
-import { normalizeKeyword } from '@app/helpers/string.helper';
+
 import { UpdateUserRoleAdminDto } from './dto/update-user-role-admin.dto';
 import { GoogleUserInfo } from '@app/auth/types/google-user-info.type';
+import { UserSearchService } from './user-search.service';
 
 @Injectable()
 export class UsersService {
@@ -35,6 +35,7 @@ export class UsersService {
     @InjectModel(User.name)
     private userModel: Model<User>,
     private readonly mailerService: MailerService,
+    private readonly userSearchService: UserSearchService,
   ) {}
 
   /*************************************************************
@@ -129,6 +130,8 @@ export class UsersService {
       password: hashedPassword,
     });
 
+    await this.userSearchService.index(createdUser);
+
     return {
       user: {
         _id: createdUser._id,
@@ -147,24 +150,7 @@ export class UsersService {
       filter.isActive = query.isActive;
     }
 
-    const keyword = normalizeKeyword(query.keySearch);
-
-    if (keyword) {
-      filter.$or = [
-        {
-          nameSearch: {
-            $regex: keyword,
-            $options: 'i',
-          },
-        },
-        {
-          emailSearch: {
-            $regex: keyword,
-            $options: 'i',
-          },
-        },
-      ];
-    }
+    const keyword = query.keySearch?.trim();
 
     const { currentPage, pageSize, skip } = buildPagination({
       currentPage: query.currentPage,
@@ -173,6 +159,35 @@ export class UsersService {
 
     const sort = buildSort(query.sort);
 
+    /**
+     * Có keyword
+     * => Elasticsearch
+     */
+    if (keyword) {
+      const searchResult = await this.userSearchService.search(keyword, {
+        currentPage,
+        pageSize,
+        filter,
+      });
+
+      return {
+        data: searchResult.data,
+
+        meta: {
+          currentPage,
+          pageSize,
+
+          totalItems: searchResult.totalItems,
+
+          totalPages: Math.ceil(searchResult.totalItems / pageSize),
+        },
+      };
+    }
+
+    /**
+     * Không keyword
+     * => MongoDB
+     */
     const totalItems = await this.userModel.countDocuments(filter);
 
     const users = await this.userModel
@@ -187,10 +202,13 @@ export class UsersService {
 
     return {
       data: users,
+
       meta: {
         currentPage,
         pageSize,
+
         totalItems,
+
         totalPages: Math.ceil(totalItems / pageSize),
       },
     };
@@ -255,7 +273,7 @@ export class UsersService {
       return existingUser;
     }
 
-    return this.userModel.create({
+    const createdUser = await this.userModel.create({
       name: data.name,
       email: data.email,
       googleId: data.googleId,
@@ -269,6 +287,10 @@ export class UsersService {
           }
         : undefined,
     });
+
+    await this.userSearchService.index(createdUser);
+
+    return createdUser;
   }
 
   async update(_id: string, dto: UpdateUserRoleAdminDto) {
@@ -282,6 +304,8 @@ export class UsersService {
     if (!updatedUser) {
       throw new NotFoundException('User không tồn tại');
     }
+
+    await this.userSearchService.update(updatedUser);
 
     return {
       message: 'Cập nhật user thành công',
@@ -309,6 +333,8 @@ export class UsersService {
       throw new NotFoundException('User không tồn tại');
     }
 
+    await this.userSearchService.update(updatedUser);
+
     return {
       updatedUser,
     };
@@ -334,6 +360,8 @@ export class UsersService {
       throw new NotFoundException('User không tồn tại');
     }
 
+    await this.userSearchService.update(updatedUser);
+
     return updatedUser;
   }
 
@@ -345,6 +373,8 @@ export class UsersService {
     if (!deletedUser) {
       throw new NotFoundException('User không tồn tại');
     }
+
+    await this.userSearchService.delete(_id);
 
     return {
       message: 'Xóa user thành công',
@@ -531,5 +561,19 @@ export class UsersService {
     });
 
     return { _id: user?._id, email: user?.email };
+  }
+
+  async test(id: string) {
+    const user = await this.userModel.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    return this.userSearchService.index(user);
+  }
+
+  async search(keyword: string) {
+    return this.userSearchService.search(keyword);
   }
 }

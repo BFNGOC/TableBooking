@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { RestaurantOnboardingPayload } from '../types/restaurant.dto';
 import { useToast } from '@/shared/hooks/useToast';
 import { useState } from 'react';
@@ -8,9 +9,9 @@ import { Button } from '@heroui/react';
 import { createOnboardingFormField } from '../constants/onboarding-form-field';
 import { useCuisineTypes } from '../hooks/useCuisineTypes';
 import { useOnboarding } from '../hooks/useOnboarding';
-import { ensureRequiredFields } from '@/shared/utils/ensure-required-fields';
 
 function RestaurantOnboardingPage() {
+    const router = useRouter();
     const { showToast } = useToast();
     // const { mutateAsync: register, isPending } = useRegisterMutation();
 
@@ -21,25 +22,11 @@ function RestaurantOnboardingPage() {
     const [values, setValues] = useState<Partial<RestaurantOnboardingPayload>>({});
 
     const handleSubmit = async (payload: Partial<RestaurantOnboardingPayload>) => {
-        try {
-            const safePayload = ensureRequiredFields(payload, [
-                'restaurantName',
-                'representativeName',
-                'phone',
-                'email',
-                'address',
-                'cuisineTypes',
-                'taxCode',
-            ]);
+        const res = await onboarding(payload);
 
-            const res = await onboarding(safePayload);
+        console.log(res);
 
-            console.log(res);
-
-            // router.push(`/verify-email/${res.user._id}`);
-        } catch (error) {
-            showToast('error', 'Thiếu thông tin', error instanceof Error ? error.message : 'Có lỗi xảy ra');
-        }
+        // router.push(`/verify-email/${res.user._id}`);
     };
 
     return (

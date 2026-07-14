@@ -13,6 +13,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { RolesGuard } from './guards/role.guard';
 import { UploadModule } from './modules/upload/upload.module';
 import { RestaurantsModule } from './modules/restaurants/restaurants.module';
+import { SearchModule } from './modules/search/elasticsearch.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RestaurantsModule } from './modules/restaurants/restaurants.module';
     AuthModule,
     UploadModule,
     RestaurantsModule,
+    SearchModule,
 
     ConfigModule.forRoot({
       isGlobal: true,

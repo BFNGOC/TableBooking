@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { UserReindexService } from './user-reindex.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Public, ResponseMessage } from '@app/decorator/customize';
@@ -21,7 +22,10 @@ import { UserRole } from './schemas/user.schema';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly userReindexService: UserReindexService,
+  ) {}
 
   @Get('me')
   @ResponseMessage('Lấy thông tin người dùng thành công')
@@ -80,5 +84,23 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  @Get('test-search/:id')
+  @Public()
+  async test(@Param('id') id: string) {
+    return this.usersService.test(id);
+  }
+
+  @Get('search')
+  @Public()
+  async search(@Query('keyword') keyword: string) {
+    return this.usersService.search(keyword);
+  }
+
+  @Post('reindex')
+  @Public()
+  async reindex() {
+    return this.userReindexService.reindex();
   }
 }
