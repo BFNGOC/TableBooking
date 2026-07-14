@@ -109,6 +109,12 @@ export const userProfileFormField: FormField[] = [
 
 export const userProfileRoleUserFormField: FormField[] = [
 	{
+		name: "avatar",
+		label: "Ảnh đại diện",
+		type: FormFieldType.IMAGE,
+		col: 12,
+	},
+	{
 		name: "name",
 		label: "Họ và tên",
 		type: FormFieldType.TEXT,
@@ -138,5 +144,35 @@ export const userProfileRoleUserFormField: FormField[] = [
 			return null;
 		},
 	},
-	...userProfileFormField,
+	{
+		name: "phone",
+		label: "Số điện thoại",
+		type: FormFieldType.TEXT,
+		placeholder: "0123456789",
+		col: 6,
+	},
+
+	{
+		name: "dateOfBirth",
+		label: "Ngày sinh",
+		type: FormFieldType.DATE_PICKER,
+		placeholder: "2000/01/02",
+		maxValue: todayDate,
+		col: 6,
+	},
+
+	{
+		name: "gender",
+		label: "Giới tính",
+		type: FormFieldType.SELECT,
+		options: USER_GENDER_TYPE_OPTIONS,
+		col: 6,
+	},
+	{
+		name: "address",
+		label: "Địa chỉ",
+		type: FormFieldType.TEXT,
+		placeholder: "Khu A, HCM",
+		col: 12,
+	},
 ];

@@ -25,6 +25,19 @@ export default function UserProfilePage() {
 
 	const [formValues, setFormValues] = useState<Partial<IUser>>({});
 
+	const resetFormValues = () => {
+		if (data) {
+			setFormValues({
+				...data,
+				dateOfBirth: data.dateOfBirth
+					? new Date(data.dateOfBirth).toISOString().slice(0, 10)
+					: "",
+			});
+		} else {
+			setFormValues({});
+		}
+	};
+
 	useEffect(() => {
 		if (data) {
 			setFormValues({
@@ -36,10 +49,7 @@ export default function UserProfilePage() {
 		}
 	}, [data]);
 
-	const updateMutation = useCrudMutation<{
-		_id: string;
-		payload: UpdateUserPayload;
-	}>({
+	const updateMutation = useCrudMutation<UpdateUserPayload>({
 		queryKey: userQueryKeys.ME,
 		api: userRoleUserApi.update,
 	});
@@ -55,8 +65,7 @@ export default function UserProfilePage() {
 
 		const payload = formatSectionFormValues(values, userSections, "toApi");
 
-		// PATCH /users/me expects the update payload directly
-		updateMutation.mutate(payload as UpdateUserPayload, {
+		updateMutation.mutate(payload, {
 			onSuccess: (res: any) => {
 				showToast(
 					"success",
@@ -86,31 +95,25 @@ export default function UserProfilePage() {
 			>
 				<CustomForm
 					footer={
-						<Button
-							type="submit"
-							color="primary"
-							isLoading={
-								updateMutation.isPending ||
-								updateMutation.isLoading
-							}
-						>
-							Lưu thay đổi
-						</Button>
+						<div className=" w-full flex justify-end gap-4">
+							<Button
+								type="button"
+								variant="outline"
+								onPress={resetFormValues}
+							>
+								Hủy
+							</Button>
+
+							<Button
+								type="submit"
+								variant="primary"
+								isPending={updateMutation.isPending}
+							>
+								Lưu thay đổi
+							</Button>
+						</div>
 					}
-					fields={profileFields.map((f) => ({
-						...f,
-						col:
-							f.col ??
-							(f.name === "avatar"
-								? 4
-								: f.name === "address"
-									? 12
-									: f.name === "dateOfBirth" ||
-										  f.name === "gender" ||
-										  f.name === "phone"
-										? 6
-										: 6),
-					}))}
+					fields={profileFields}
 					values={formValues}
 					onValuesChange={setFormValues}
 					onSubmit={handleSubmit}

@@ -16,7 +16,7 @@ export const userRoleUserApi = {
 		return res.data;
 	},
 
-	update: async (payload: any) => {
+	update: async (payload: UpdateUserPayload) => {
 		const res = await clientRequest<IUser>({
 			url: `${API_URL_PREFIX}/me`,
 			method: "PATCH",
