@@ -57,15 +57,15 @@ export default function UserProfilePage() {
 		api: userRoleUserApi.update,
 	});
 
-	const handleSubmit = (values: Partial<IUser>) => {
-		const userSections = [
-			{
-				key: "profile",
-				title: "Thông tin",
-				fields: profileFields,
-			},
-		];
+	const userSections = [
+		{
+			key: "profile",
+			title: "Thông tin",
+			fields: profileFields,
+		},
+	];
 
+	const handleSubmit = (values: Partial<IUser>) => {
 		const payload = formatSectionFormValues(values, userSections, "toApi");
 
 		updateMutation.mutate(payload, {
