@@ -12,6 +12,7 @@ import { useToast } from "@/shared/hooks/useToast";
 import { useGetMe } from "@/features/users/hooks/useGetMe";
 import { userRoleUserApi } from "@/features/users/api/user-api";
 import { userQueryKeys } from "@/features/users/constants/query-key";
+import SkeletonProfile from "@/features/users/components/SkeletonProfile";
 import { IUser } from "@/features/users/types/user-type";
 import { userProfileRoleUserFormField } from "@/features/users/constants/user-section-form-field";
 import { useCrudMutation } from "@/shared/hooks/useCrudMutation";
@@ -84,8 +85,6 @@ export default function UserProfilePage() {
 		});
 	};
 
-	if (isLoading) return <div className="p-6">Đang tải thông tin...</div>;
-
 	return (
 		<div className="p-6">
 			<CustomCard
@@ -93,32 +92,36 @@ export default function UserProfilePage() {
 				headerTitle="Chỉnh sửa thông tin cá nhân"
 				subtitle="Cập nhật tên, email, số điện thoại, địa chỉ và ảnh đại diện."
 			>
-				<CustomForm
-					footer={
-						<div className=" w-full flex justify-end gap-4">
-							<Button
-								type="button"
-								variant="outline"
-								onPress={resetFormValues}
-							>
-								Hủy
-							</Button>
+				{isLoading ? (
+					<SkeletonProfile />
+				) : (
+					<CustomForm
+						footer={
+							<div className=" w-full flex justify-end gap-4">
+								<Button
+									type="button"
+									variant="outline"
+									onPress={resetFormValues}
+								>
+									Hủy
+								</Button>
 
-							<Button
-								type="submit"
-								variant="primary"
-								isPending={updateMutation.isPending}
-							>
-								Lưu thay đổi
-							</Button>
-						</div>
-					}
-					fields={profileFields}
-					values={formValues}
-					onValuesChange={setFormValues}
-					onSubmit={handleSubmit}
-					mode="edit"
-				/>
+								<Button
+									type="submit"
+									variant="primary"
+									isPending={updateMutation.isPending}
+								>
+									Lưu thay đổi
+								</Button>
+							</div>
+						}
+						fields={profileFields}
+						values={formValues}
+						onValuesChange={setFormValues}
+						onSubmit={handleSubmit}
+						mode="edit"
+					/>
+				)}
 			</CustomCard>
 		</div>
 	);
