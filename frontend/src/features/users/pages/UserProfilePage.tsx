@@ -16,6 +16,7 @@ import SkeletonProfile from "@/features/users/components/SkeletonProfile";
 import { IUser } from "@/features/users/types/user-type";
 import { userProfileRoleUserFormField } from "@/features/users/constants/user-section-form-field";
 import { useCrudMutation } from "@/shared/hooks/useCrudMutation";
+import ForgotPassword from "@/features/auth/components/ForgotPassword";
 
 const profileFields: FormField[] = userProfileRoleUserFormField;
 
@@ -25,6 +26,7 @@ export default function UserProfilePage() {
 	const { showToast } = useToast();
 
 	const [formValues, setFormValues] = useState<Partial<IUser>>({});
+	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
 	const resetFormValues = () => {
 		if (data) {
@@ -84,7 +86,6 @@ export default function UserProfilePage() {
 			},
 		});
 	};
-
 	return (
 		<div className="p-6">
 			<CustomCard
@@ -92,6 +93,17 @@ export default function UserProfilePage() {
 				headerTitle="Chỉnh sửa thông tin cá nhân"
 				subtitle="Cập nhật tên, email, số điện thoại, địa chỉ và ảnh đại diện."
 			>
+				{" "}
+				{data?.accountType === "LOCAL" && (
+					<div className="mb-4 flex justify-start">
+						<Button
+							variant="primary"
+							onPress={() => setIsPasswordModalOpen(true)}
+						>
+							Đổi mật khẩu
+						</Button>
+					</div>
+				)}
 				{isLoading ? (
 					<SkeletonProfile />
 				) : (
@@ -123,6 +135,13 @@ export default function UserProfilePage() {
 					/>
 				)}
 			</CustomCard>
+
+			<ForgotPassword
+				open={isPasswordModalOpen}
+				close={() => setIsPasswordModalOpen(false)}
+				mode="change"
+				defaultEmail={data?.email}
+			/>
 		</div>
 	);
 }
