@@ -59,24 +59,10 @@ export const createOnboardingFormField = (cuisineOptions: Option[]): FormField[]
         col: 6,
     },
     {
-        name: 'interests',
-        label: 'Select your interests',
-        type: 'checkboxGroup',
-        selectionMode: 'multiple',
-        options: [
-            { id: 'coding', text: 'Coding' },
-            { id: 'design', text: 'Design' },
-            { id: 'writing', text: 'Writing' },
-        ],
-    },
-    {
-        name: 'plan',
-        label: 'Plan selection',
-        type: FormFieldType.RADIO,
-        options: [
-            { id: 'basic', text: 'Basic Plan' },
-            { id: 'premium', text: 'Premium Plan' },
-            { id: 'business', text: 'Business Plan' },
-        ],
+        name: 'taxCode',
+        label: 'Mã số thuế',
+        type: FormFieldType.TEXT,
+        placeholder: 'xxxxxxxxxx',
+        isRequired: true,
     },
 ];

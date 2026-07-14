@@ -1,4 +1,5 @@
 import { ImageType } from '@app/modules/upload/types/image.type';
+import { AutoFieldsPlugin } from '@app/plugins/auto-fields.plugin';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
@@ -112,6 +113,7 @@ export class Restaurant {
   @Prop({
     default: '',
     trim: true,
+    unique: true,
   })
   taxCode?: string;
 
@@ -229,7 +231,7 @@ export class Restaurant {
    */
   @Prop({
     enum: RestaurantStatus,
-    default: RestaurantStatus.ACTIVE,
+    default: RestaurantStatus.INACTIVE,
   })
   status?: RestaurantStatus;
 
@@ -243,6 +245,23 @@ export class Restaurant {
     unique: true,
   })
   userId!: Types.ObjectId;
+
+  @Prop({
+    default: '',
+    index: true,
+  })
+  search!: string;
+
+  @Prop({
+    required: true,
+    unique: true,
+    index: true,
+  })
+  slug!: string;
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
+
+RestaurantSchema.plugin(AutoFieldsPlugin, {
+  search: ['restaurantName', 'address', 'representativeName', 'taxCode'],
+});

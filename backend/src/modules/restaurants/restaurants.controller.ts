@@ -11,6 +11,8 @@ import { RestaurantsService } from './restaurants.service';
 import { RestaurantOnboardingDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
 import { Public } from '@app/decorator/customize';
+import { CurrentUser } from '@app/decorator/current-user.decorator';
+import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -22,9 +24,15 @@ export class RestaurantsController {
     return this.restaurantsService.getCuisineTypes();
   }
 
-  @Post()
-  create(@Body() RestaurantOnboardingDto: RestaurantOnboardingDto) {
-    return this.restaurantsService.create(RestaurantOnboardingDto);
+  @Post('onboarding')
+  createOnboarding(
+    @CurrentUser() user: AuthUser,
+    @Body() RestaurantOnboardingDto: RestaurantOnboardingDto,
+  ) {
+    return this.restaurantsService.createOnboarding(
+      user._id,
+      RestaurantOnboardingDto,
+    );
   }
 
   @Get()
