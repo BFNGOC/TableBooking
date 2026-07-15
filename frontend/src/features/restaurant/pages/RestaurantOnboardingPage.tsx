@@ -2,31 +2,26 @@
 
 import { useRouter } from 'next/navigation';
 import { RestaurantOnboardingPayload } from '../types/restaurant.dto';
-import { useToast } from '@/shared/hooks/useToast';
 import { useState } from 'react';
 import CustomForm from '@/shared/components/form/CustomForm';
 import { Button } from '@heroui/react';
 import { createOnboardingFormField } from '../constants/onboarding-form-field';
 import { useCuisineTypes } from '../hooks/useCuisineTypes';
-import { useOnboarding } from '../hooks/useOnboarding';
+import { useOnboarding } from '../hooks/useRestaurantRoleCustomer';
 
 function RestaurantOnboardingPage() {
     const router = useRouter();
-    const { showToast } = useToast();
-    // const { mutateAsync: register, isPending } = useRegisterMutation();
 
     const { data: cuisineTypes } = useCuisineTypes();
 
-    const { mutateAsync: onboarding } = useOnboarding();
+    const { mutateAsync: onboarding, isPending } = useOnboarding();
 
     const [values, setValues] = useState<Partial<RestaurantOnboardingPayload>>({});
 
     const handleSubmit = async (payload: Partial<RestaurantOnboardingPayload>) => {
-        const res = await onboarding(payload);
+        const res = await onboarding(payload as RestaurantOnboardingPayload);
 
-        console.log(res);
-
-        // router.push(`/verify-email/${res.user._id}`);
+        router.push(`/restaurant-onboarding/verify-email/${res._id}`);
     };
 
     return (
@@ -49,7 +44,7 @@ function RestaurantOnboardingPage() {
                         <Button
                             type="submit"
                             className="w-full h-12 bg-[#6f4e37]"
-                            // isPending={isPending}
+                            isPending={isPending}
                         >
                             Gửi yêu cùa hợp tác
                         </Button>

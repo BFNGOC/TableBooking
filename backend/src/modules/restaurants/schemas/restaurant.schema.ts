@@ -11,6 +11,7 @@ export enum RestaurantStatus {
 }
 
 export enum RestaurantVerifyStatus {
+  EMAIL_PENDING = 'EMAIL_PENDING',
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
@@ -168,15 +169,11 @@ export class Restaurant {
    * ============================================================
    */
 
-  @Prop({
-    required: true,
-  })
-  openingTime!: string;
+  @Prop()
+  openingTime?: string;
 
-  @Prop({
-    required: true,
-  })
-  closingTime!: string;
+  @Prop()
+  closingTime?: string;
 
   /**
    * ============================================================
@@ -246,8 +243,14 @@ export class Restaurant {
   })
   userId!: Types.ObjectId;
 
+  // OTP
+  @Prop()
+  verificationCodeId?: string;
+
+  @Prop()
+  verificationCodeExpires?: Date;
+
   @Prop({
-    required: true,
     unique: true,
     index: true,
   })

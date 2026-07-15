@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import { RestaurantOnboardingDto } from './dto/create-restaurant.dto';
@@ -13,6 +14,9 @@ import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
 import { Public } from '@app/decorator/customize';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
+import { Roles } from '@app/decorator/roles.decorator';
+import { UserRole } from '../users/schemas/user.schema';
+import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -24,7 +28,13 @@ export class RestaurantsController {
     return this.restaurantsService.getCuisineTypes();
   }
 
+  @Get('/me')
+  getCurrentUserRestaurant(@CurrentUser() user: AuthUser) {
+    return this.restaurantsService.getCurrentUserRestaurant(user._id);
+  }
+
   @Post('onboarding')
+  @Roles(UserRole.CUSTOMER)
   createOnboarding(
     @CurrentUser() user: AuthUser,
     @Body() RestaurantOnboardingDto: RestaurantOnboardingDto,
@@ -35,9 +45,15 @@ export class RestaurantsController {
     );
   }
 
+  @Post('resend-email')
+  resendEmail(@CurrentUser() user: AuthUser) {
+    return this.restaurantsService.resendEmail(user.email);
+  }
+
   @Get()
-  findAll() {
-    return this.restaurantsService.findAll();
+  @Public()
+  findAll(@Query('keyword') keyword?: string) {
+    return this.restaurantsService.findAll(keyword);
   }
 
   @Get(':id')
@@ -56,5 +72,11 @@ export class RestaurantsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.restaurantsService.remove(+id);
+  }
+
+  @Post('verify-email')
+  @Roles(UserRole.CUSTOMER)
+  verifyEmail(@Body() data: CheckCodeDto) {
+    return this.restaurantsService.handleverifyEmail(data);
   }
 }

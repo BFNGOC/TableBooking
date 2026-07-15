@@ -6,6 +6,7 @@ export enum RestaurantStatus {
 }
 
 export enum RestaurantVerifyStatus {
+    EMAIL_PENDING = 'EMAIL_PENDING',
     PENDING = 'PENDING',
     APPROVED = 'APPROVED',
     REJECTED = 'REJECTED',
@@ -47,6 +48,12 @@ export interface IRestaurant {
     status?: RestaurantStatus;
 
     userId?: string;
+
+    slug?: string;
+
+    verificationCodeId?: string;
+
+    verificationCodeExpires?: Date;
 
     createdAt?: string | Date;
     updatedAt?: string | Date;
