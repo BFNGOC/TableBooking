@@ -16,7 +16,7 @@ function CustomCard({
     footerContent,
 }: ICustomCardProps) {
     return (
-        <Card className={`w-full  border shadow-md ${className ? className : ''}`}>
+        <Card className={`w-full bg-[#f5efeb] border shadow-md ${className}`}>
             {headerTitle && (
                 <Card.Header>
                     <Card.Title>{headerTitle}</Card.Title>

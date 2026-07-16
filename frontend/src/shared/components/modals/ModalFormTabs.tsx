@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Tabs } from '@heroui/react';
+import { Button, Form, Tabs } from '@heroui/react';
 
 import ModalCustom from './ModalCustom';
 import CustomForm from '../form/CustomForm';
@@ -22,7 +22,7 @@ export interface FormSection<T = any> {
 interface ModalFormTabsProps<T extends Record<string, any>> {
     isOpen: boolean;
 
-    title: string;
+    title: string | ((params: { mode: FormModalModeType; values: Partial<T> | null }) => string);
 
     mode?: FormModalModeType;
 
@@ -62,59 +62,111 @@ function ModalFormTabs<T extends Record<string, any>>({
         return !section.hidden;
     });
 
+    const [selectedTab, setSelectedTab] = useState(visibleSections[0]?.key ?? '');
+
+    const modalTitle = typeof title === 'function' ? title({ mode, values }) : title;
+
     return (
         <ModalCustom
             open={isOpen}
             onOpenChange={(open) => {
                 if (!open) onClose();
             }}
-            title={title}
+            title={modalTitle}
             size="lg"
         >
-            <Tabs variant="secondary" className="my-3">
-                <Tabs.ListContainer>
-                    <Tabs.List aria-label="Thông tin">
+            <Form
+                onInvalid={(e) => {
+                    e.preventDefault();
+
+                    const target = e.target as HTMLInputElement;
+
+                    const section = visibleSections.find((section) =>
+                        section.fields.some((field) => field.name === target.name)
+                    );
+
+                    if (!section) return;
+
+                    if (section.key !== selectedTab) {
+                        setSelectedTab(section.key);
+
+                        requestAnimationFrame(() => {
+                            target.focus();
+                            target.reportValidity();
+                        });
+                    }
+                }}
+                onSubmit={(e) => {
+                    console.log('submit');
+                    e.preventDefault();
+
+                    const form = e.currentTarget;
+
+                    if (!form.checkValidity()) {
+                        form.reportValidity();
+                        console.log('Form is invalid');
+                        return;
+                    }
+
+                    onSubmit(values ?? {});
+                }}
+                className=""
+            >
+                <Tabs
+                    variant="secondary"
+                    className="my-3"
+                    selectedKey={selectedTab}
+                    onSelectionChange={(key) => setSelectedTab(String(key))}
+                >
+                    {visibleSections.length > 1 && (
+                        <Tabs.ListContainer className="sticky top-0 z-10 bg-white">
+                            <Tabs.List aria-label="Thông tin">
+                                {visibleSections.map((section) => (
+                                    <Tabs.Tab key={section.key} id={section.key}>
+                                        {section.title}
+                                        <Tabs.Indicator />
+                                    </Tabs.Tab>
+                                ))}
+                            </Tabs.List>
+                        </Tabs.ListContainer>
+                    )}
+
+                    <div className="mt-4">
                         {visibleSections.map((section) => (
-                            <Tabs.Tab key={section.key} id={section.key}>
-                                {section.title}
-                                <Tabs.Indicator />
-                            </Tabs.Tab>
+                            <div
+                                key={section.key}
+                                className={selectedTab === section.key ? 'block' : 'hidden'}
+                            >
+                                <CustomForm
+                                    fields={section.fields}
+                                    values={values}
+                                    onValuesChange={onValuesChange}
+                                    mode={mode}
+                                    onUploadLoadingChange={setUploadLoading}
+                                    renderForm={false}
+                                />
+                            </div>
                         ))}
-                    </Tabs.List>
-                </Tabs.ListContainer>
+                    </div>
+                </Tabs>
 
-                {visibleSections.map((section) => (
-                    <Tabs.Panel key={section.key} id={section.key}>
-                        <CustomForm
-                            fields={section.fields}
-                            values={values}
-                            onValuesChange={onValuesChange}
-                            onSubmit={onSubmit}
-                            mode={mode}
-                            onUploadLoadingChange={setUploadLoading}
-                            footer={
-                                mode !== 'view' && (
-                                    <>
-                                        <Button type="button" variant="outline" onPress={onClose}>
-                                            Hủy
-                                        </Button>
+                {mode !== 'view' && (
+                    <div className="mt-6 flex justify-end gap-3">
+                        <Button variant="outline" onPress={onClose}>
+                            Hủy
+                        </Button>
 
-                                        <Button
-                                            type="submit"
-                                            variant="danger-soft"
-                                            isPending={isPending || uploadLoading}
-                                            isDisabled={isPending || uploadLoading}
-                                        >
-                                            Lưu
-                                        </Button>
-                                    </>
-                                )
-                            }
-                            footerClassName="justify-end"
-                        />
-                    </Tabs.Panel>
-                ))}
-            </Tabs>
+                        <Button
+                            type="submit"
+                            variant="danger-soft"
+                            isPending={isPending || uploadLoading}
+                            isDisabled={isPending || uploadLoading}
+                        >
+                            Lưu
+                        </Button>
+                    </div>
+                )}
+            </Form>
         </ModalCustom>
     );
 }

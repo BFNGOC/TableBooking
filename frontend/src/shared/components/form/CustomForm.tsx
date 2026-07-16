@@ -31,6 +31,8 @@ interface CustomFormProps<T extends Record<string, any>> {
     mode?: FormModalModeType;
 
     onUploadLoadingChange?: (isLoading: boolean) => void;
+
+    renderForm?: boolean;
 }
 
 function CustomForm<T extends Record<string, any>>({
@@ -42,6 +44,7 @@ function CustomForm<T extends Record<string, any>>({
     mode = 'create',
     footerClassName,
     onUploadLoadingChange,
+    renderForm = true,
 }: CustomFormProps<T>) {
     const isViewMode = mode === 'view';
 
@@ -59,6 +62,7 @@ function CustomForm<T extends Record<string, any>>({
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        console.log('submit');
         e.preventDefault();
 
         if (isViewMode) return;
@@ -87,19 +91,51 @@ function CustomForm<T extends Record<string, any>>({
         return colMap[col || 12] || 'col-span-12';
     };
 
-    return (
-        <Form onSubmit={handleSubmit} className="grid grid-cols-12 gap-5">
+    const context = {
+        mode,
+        dataForm: formValues,
+    };
+
+    const content = (
+        <div className="grid grid-cols-12 gap-5">
             {fields.map((field) => {
                 const value = formValues[field.name] ?? '';
-                const isDisabled = mode === 'view' ? true : field.isDisabled;
 
-                const isReadOnly = mode === 'view' ? true : field.isReadOnly;
+                const isRequired =
+                    mode === 'view'
+                        ? false
+                        : typeof field.isRequired === 'function'
+                          ? field.isRequired(context)
+                          : field.isRequired;
+
+                const isDisabled =
+                    mode === 'view'
+                        ? true
+                        : typeof field.isDisabled === 'function'
+                          ? field.isDisabled(context)
+                          : field.isDisabled;
+
+                const isReadOnly =
+                    mode === 'view'
+                        ? true
+                        : typeof field.isReadOnly === 'function'
+                          ? field.isReadOnly(context)
+                          : field.isReadOnly;
+
+                const isHidden =
+                    typeof field.hidden === 'function' ? field.hidden(context) : field.hidden;
+
+                if (isHidden) {
+                    return null;
+                }
 
                 const commonProps = {
                     ...field,
                     value,
                     isDisabled: isDisabled,
                     isReadOnly: isReadOnly,
+                    isRequired: isRequired,
+                    hidden: isHidden,
                     onChange: (value: any) => updateFieldValue(field.name, value),
                 };
 
@@ -144,7 +180,6 @@ function CustomForm<T extends Record<string, any>>({
                     </div>
                 );
             })}
-
             {mode !== 'view' && footer && (
                 <div
                     className={`col-span-12 flex my-2 gap-3 ${footerClassName ?? 'justify-center'}`}
@@ -152,8 +187,14 @@ function CustomForm<T extends Record<string, any>>({
                     {footer}
                 </div>
             )}
-        </Form>
+        </div>
     );
+
+    if (!renderForm) {
+        return content;
+    }
+
+    return <Form onSubmit={handleSubmit}>{content}</Form>;
 }
 
 export default CustomForm;

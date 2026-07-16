@@ -7,7 +7,7 @@ import CustomForm from '@/shared/components/form/CustomForm';
 import { Button } from '@heroui/react';
 import { createOnboardingFormField } from '../constants/onboarding-form-field';
 import { useCuisineTypes } from '../hooks/useCuisineTypes';
-import { useOnboarding } from '../hooks/useRestaurantRoleCustomer';
+import { useOnboarding } from '../hooks/useRestaurantOnboarding';
 
 function RestaurantOnboardingPage() {
     const router = useRouter();

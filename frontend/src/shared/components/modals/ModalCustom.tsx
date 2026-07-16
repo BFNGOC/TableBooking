@@ -42,11 +42,11 @@ function ModalCustom({
                         <Modal.CloseTrigger />
                         <Modal.Header>
                             {icon && (
-                                <Modal.Icon className="bg-default text-foreground">
+                                <Modal.Icon className="bg-default text-foreground text-lg">
                                     {icon}
                                 </Modal.Icon>
                             )}
-                            <Modal.Heading>{title}</Modal.Heading>
+                            <Modal.Heading className="text-lg">{title}</Modal.Heading>
                         </Modal.Header>
                         <Modal.Body>{children}</Modal.Body>
                         {footer && <Modal.Footer>{footer}</Modal.Footer>}
