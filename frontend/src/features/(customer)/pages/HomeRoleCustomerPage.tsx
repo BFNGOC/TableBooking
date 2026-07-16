@@ -7,8 +7,8 @@ import { Heart, Users, Handshake, Eye, ArrowRight } from "lucide-react";
 import { useGetMe } from "@/features/users/hooks/useGetMe";
 import { useToast } from "@/shared/hooks/useToast";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
-import RestaurantCard from "../components/RestaurantCard";
-import Search from "../components/Search";
+import RecommendedRestaurantCard from "@/features/restaurant/components/RecommendedRestaurantCard";
+import Search from "../../restaurant/components/Search";
 
 interface CustomerHomePageProps {
 	restaurants: IRestaurant[];
@@ -93,7 +93,7 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 				</div>
 			</section>
 
-			<div className="space-y-12 pb-20 max-w-375 md:px-5 lg:px-6">
+			<div className="space-y-12 pb-20 max-w-375 md:px-5 lg:px-20">
 				{/* FEATURED RESTAURANTS SECTION */}
 				<section className="space-y-6 ">
 					<div className="flex items-end justify-between border-b border-gray-100 pb-4">
@@ -122,7 +122,7 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 					{featuredRestaurants.length > 0 ? (
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
 							{featuredRestaurants.map((restaurant) => (
-								<RestaurantCard
+								<RecommendedRestaurantCard
 									key={restaurant._id}
 									restaurant={restaurant}
 								/>

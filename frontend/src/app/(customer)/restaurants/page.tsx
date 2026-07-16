@@ -1,5 +1,7 @@
+import RestaurantsRoleCustomerPage from "@/features/restaurant/pages/RestaurantsRoleCustomerPage";
+
 function RestaurantsPublicPage() {
-    return <div>RestaurantsPublicPage</div>;
+	return <RestaurantsRoleCustomerPage />;
 }
 
 export default RestaurantsPublicPage;

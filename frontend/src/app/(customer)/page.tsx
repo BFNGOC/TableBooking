@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import CustomerHomePage from "@/features/(customer)/pages/CustomerHomePage";
+import CustomerHomePage from "@/features/(customer)/pages/HomeRoleCustomerPage";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import restaurantsData from "../../../data/restaurants-mock-data.json";
 

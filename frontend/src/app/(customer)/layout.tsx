@@ -24,7 +24,7 @@ function PublicLayout({ children }: PublicLayoutProps) {
 			</div>
 
 			<div className="flex-1 bg-[#f5efeb]">
-				<main className="mx-auto w-full">{children}</main>
+				<main className="w-full">{children}</main>
 			</div>
 
 			<Footer />
