@@ -4,13 +4,13 @@ import { Clock3, CircleX, Eye, Home, RefreshCcw } from 'lucide-react';
 
 import { Button, Card, Separator } from '@heroui/react';
 
-import { useRestaurantMe } from '../hooks/useRestaurantMe';
 import Link from 'next/link';
 import ModalFormTabs, { FormSection } from '@/shared/components/modals/ModalFormTabs';
-import { IRestaurant } from '../types/restaurant.type';
 import { useFormModal } from '@/shared/hooks/useFormModal';
-import { createOnboardingFormField } from '../constants/onboarding-form-field';
-import { useCuisineTypes } from '../hooks/useCuisineTypes';
+import { useRestaurantMe } from '../../hooks/useRestaurantMe';
+import { IRestaurant } from '../../types/restaurant.type';
+import { useCuisineTypes } from '../../hooks/useCuisineTypes';
+import { createOnboardingFormField } from '../../constants/onboarding-form-field';
 
 function PendingOnboardingPage() {
     const { data: restaurantMe } = useRestaurantMe();

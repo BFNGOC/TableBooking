@@ -1,10 +1,12 @@
+import {
+  RestaurantStatus,
+  RestaurantVerifyStatus,
+} from './schemas/restaurant.schema';
 import { RestaurantDocument } from './schemas/restaurant.schema';
 
 export const RESTAURANT_ADMIN_SEARCH_INDEX = 'restaurants_admin';
 
 export interface RestaurantAdminSearchDocument {
-  id: string;
-
   restaurantName: string;
 
   restaurantCode: string;
@@ -17,23 +19,33 @@ export interface RestaurantAdminSearchDocument {
 
   address?: string;
 
-  status: string;
+  status?: RestaurantStatus;
 
-  verifyStatus: string;
+  verifyStatus?: RestaurantVerifyStatus;
+
+  onboardingRequestedAt?: Date;
 }
 
 export function toRestaurantAdminSearchDocument(
   restaurant: RestaurantDocument,
 ): RestaurantAdminSearchDocument {
   return {
-    id: restaurant.id,
     restaurantName: restaurant.restaurantName,
+
     restaurantCode: restaurant.restaurantCode,
-    address: restaurant.address ?? '',
-    representativeName: restaurant.representativeName ?? '',
-    email: restaurant.email ?? '',
-    taxCode: restaurant.taxCode ?? '',
-    status: restaurant.status ?? '',
-    verifyStatus: restaurant.verifyStatus ?? '',
+
+    representativeName: restaurant.representativeName,
+
+    email: restaurant.email,
+
+    taxCode: restaurant.taxCode,
+
+    address: restaurant.address,
+
+    status: restaurant.status,
+
+    verifyStatus: restaurant.verifyStatus,
+
+    onboardingRequestedAt: restaurant.onboardingRequestedAt,
   };
 }

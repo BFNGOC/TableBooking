@@ -1,5 +1,5 @@
 import { getRestaurantMeServerApi } from '@/features/restaurant/api/restaurant-server-api';
-import PendingOnboardingPage from '@/features/restaurant/pages/PendingOnboardingPage';
+import PendingOnboardingPage from '@/features/restaurant/pages/onboarding/PendingOnboardingPage';
 import { RestaurantVerifyStatus } from '@/features/restaurant/types/restaurant.type';
 import { redirectToCorrectPage } from '@/features/restaurant/utils/redirectOnboardingPage';
 import { redirect } from 'next/navigation';

@@ -21,6 +21,7 @@ function AdminLayout({ children }: AdminLayoutProps) {
                 {
                     label: 'Danh sách',
                     href: '/admin/dashboard/restaurants',
+                    exact: true,
                 },
                 {
                     label: 'Chờ duyệt',

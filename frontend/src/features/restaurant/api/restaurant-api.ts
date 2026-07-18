@@ -1,6 +1,8 @@
 import { clientRequest } from '@/shared/library/axios/client-api';
 import { RestaurantOnboardingPayload } from '../types/restaurant.dto';
 import { IRestaurant } from '../types/restaurant.type';
+import { RestaurantFilterRoleAdminParams } from '../types/restaurant-filter-params-type';
+import { RestaurantListAdminResponse } from '../types/restaurant-response-type';
 
 const API_URL_PREFIX = '/restaurants';
 
@@ -44,6 +46,18 @@ export const restaurantRoleCustomerApi = {
         const res = await clientRequest({
             url: `${API_URL_PREFIX}/resend-email`,
             method: 'POST',
+        });
+
+        return res.data;
+    },
+};
+
+export const restaurantRoleAdminApi = {
+    getAll: async (queryParams: RestaurantFilterRoleAdminParams) => {
+        const res = await clientRequest<RestaurantListAdminResponse>({
+            url: `${API_URL_PREFIX}/admin`,
+            method: 'GET',
+            queryParams,
         });
 
         return res.data;

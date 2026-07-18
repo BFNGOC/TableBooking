@@ -15,10 +15,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { CUISINE_TYPES } from '@app/shared/dto/constants/cuisine-type.constant';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
-import { RestaurantSearchService } from './restaurant-search.service';
+import { RestaurantSearchService } from './restaurant-admin-search.service';
 import { CounterService } from '../counter/counter.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
+import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
+import { buildPagination } from '@app/helpers/pagination.helper';
+import { parseSort } from '@app/helpers/search-sort.util';
 
 @Injectable()
 export class RestaurantsService {
@@ -29,6 +32,18 @@ export class RestaurantsService {
     private readonly restaurantSearchService: RestaurantSearchService,
     private readonly counterService: CounterService,
   ) {}
+
+  async reindexAll() {
+    const restaurants = await this.restaurantModel.find();
+
+    for (const restaurant of restaurants) {
+      await this.restaurantSearchService.index(restaurant);
+    }
+
+    return {
+      total: restaurants.length,
+    };
+  }
 
   getCuisineTypes() {
     return CUISINE_TYPES.map((item) => ({
@@ -159,23 +174,43 @@ export class RestaurantsService {
     return { _id: restaurant?._id };
   }
 
-  async findAll(keyword?: string) {
-    if (!keyword?.trim()) {
-      return this.restaurantModel.find().exec();
-    }
+  /***********************************
+   *  ADMIN
+   ***********************************/
+  async findAll(query: FindRestaurantAdminDto) {
+    const { currentPage, pageSize } = buildPagination({
+      currentPage: query.currentPage,
+      pageSize: query.pageSize,
+    });
 
-    const searchResult = await this.restaurantSearchService.search(keyword, {
-      currentPage: 1,
-      pageSize: 10,
+    const searchResult = await this.restaurantSearchService.search({
+      keyword: query.keySearch,
+      currentPage,
+      pageSize,
+
+      filter: {
+        restaurantCode: query.restaurantCode,
+        status: query.status,
+        verifyStatus: query.verifyStatus,
+        taxCode: query.taxCode,
+
+        fromDate: query.fromDate,
+        toDate: query.toDate,
+      },
+
+      sort: parseSort(query.sort),
     });
 
     return {
       data: searchResult.data,
+
       meta: {
-        currentPage: 1,
-        pageSize: 10,
+        currentPage,
+        pageSize,
+
         totalItems: searchResult.totalItems,
-        totalPages: Math.ceil(searchResult.totalItems / 10),
+
+        totalPages: Math.ceil(searchResult.totalItems / pageSize),
       },
     };
   }

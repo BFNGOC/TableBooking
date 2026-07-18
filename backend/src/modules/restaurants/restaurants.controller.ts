@@ -17,10 +17,17 @@ import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 import { Roles } from '@app/decorator/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
+import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
 
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
+
+  @Get('admin/reindex')
+  @Public()
+  async reindex() {
+    return this.restaurantsService.reindexAll();
+  }
 
   @Get('/cuisine-types')
   @Public()
@@ -50,10 +57,10 @@ export class RestaurantsController {
     return this.restaurantsService.resendEmail(user.email);
   }
 
-  @Get()
+  @Get('admin')
   @Public()
-  findAll(@Query('keyword') keyword?: string) {
-    return this.restaurantsService.findAll(keyword);
+  findAll(@Query() query: FindRestaurantAdminDto) {
+    return this.restaurantsService.findAll(query);
   }
 
   @Get(':id')

@@ -1,13 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { RestaurantOnboardingPayload } from '../types/restaurant.dto';
+import { RestaurantOnboardingPayload } from '../../types/restaurant.dto';
 import { useState } from 'react';
 import CustomForm from '@/shared/components/form/CustomForm';
 import { Button } from '@heroui/react';
-import { createOnboardingFormField } from '../constants/onboarding-form-field';
-import { useCuisineTypes } from '../hooks/useCuisineTypes';
-import { useOnboarding } from '../hooks/useRestaurantOnboarding';
+import { createOnboardingFormField } from '../../constants/onboarding-form-field';
+import { useCuisineTypes } from '../../hooks/useCuisineTypes';
+import { useOnboarding } from '../../hooks/useRestaurantOnboarding';
 
 function RestaurantOnboardingPage() {
     const router = useRouter();

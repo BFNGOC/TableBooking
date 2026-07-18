@@ -47,6 +47,8 @@ export interface IRestaurant {
     verifyNote?: string;
     status?: RestaurantStatus;
 
+    onboardingRequestedAt?: Date;
+
     userId?: string;
 
     slug?: string;

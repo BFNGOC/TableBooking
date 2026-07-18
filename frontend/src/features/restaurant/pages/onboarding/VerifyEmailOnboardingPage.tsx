@@ -7,10 +7,10 @@ import { useEffect, useState } from 'react';
 import {
     useResendVerifyEmailOnboarding,
     useVerifyEmailOnboarding,
-} from '../hooks/useRestaurantOnboarding';
+} from '../../hooks/useRestaurantOnboarding';
 import { VerifyPayload } from '@/features/auth/types/auth.type';
 import { verifyFormField } from '@/features/auth/constants/verify-form-fields';
-import { useRestaurantMe } from '../hooks/useRestaurantMe';
+import { useRestaurantMe } from '../../hooks/useRestaurantMe';
 import CountdownResend from '@/shared/components/countdown/CountdownResend';
 
 interface IVerifyProps {

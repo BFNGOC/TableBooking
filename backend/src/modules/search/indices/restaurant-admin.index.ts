@@ -45,10 +45,6 @@ export async function createRestaurantAdminIndex(
 
     mappings: {
       properties: {
-        id: {
-          type: 'keyword',
-        },
-
         restaurantName: {
           type: 'text',
           analyzer: 'restaurant_index_analyzer',
@@ -56,24 +52,10 @@ export async function createRestaurantAdminIndex(
         },
 
         restaurantCode: {
-          type: 'text',
-          analyzer: 'restaurant_index_analyzer',
-          search_analyzer: 'restaurant_search_analyzer',
+          type: 'keyword',
         },
 
         representativeName: {
-          type: 'text',
-          analyzer: 'restaurant_index_analyzer',
-          search_analyzer: 'restaurant_search_analyzer',
-        },
-
-        email: {
-          type: 'text',
-          analyzer: 'restaurant_index_analyzer',
-          search_analyzer: 'restaurant_search_analyzer',
-        },
-
-        taxCode: {
           type: 'text',
           analyzer: 'restaurant_index_analyzer',
           search_analyzer: 'restaurant_search_analyzer',
@@ -85,12 +67,26 @@ export async function createRestaurantAdminIndex(
           search_analyzer: 'restaurant_search_analyzer',
         },
 
+        // tìm chính xác
+        email: {
+          type: 'keyword',
+        },
+
+        // tìm chính xác
+        taxCode: {
+          type: 'keyword',
+        },
+
         status: {
           type: 'keyword',
         },
 
         verifyStatus: {
           type: 'keyword',
+        },
+
+        onboardingRequestedAt: {
+          type: 'date',
         },
       },
     },

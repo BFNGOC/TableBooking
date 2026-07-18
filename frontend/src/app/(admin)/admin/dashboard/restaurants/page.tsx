@@ -1,5 +1,7 @@
-function RestaurantsAdminPage() {
-    return <div>RestaurantsAdminPage</div>;
+import RestaurantsRoleAdminPage from '@/features/restaurant/pages/admin/RestaurantsRoleAdminPage';
+
+function RestaurantsAdmin() {
+    return <RestaurantsRoleAdminPage />;
 }
 
-export default RestaurantsAdminPage;
+export default RestaurantsAdmin;

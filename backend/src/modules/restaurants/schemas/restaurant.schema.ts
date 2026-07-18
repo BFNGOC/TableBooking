@@ -204,7 +204,7 @@ export class Restaurant {
    */
   @Prop({
     enum: RestaurantVerifyStatus,
-    default: RestaurantVerifyStatus.PENDING,
+    default: RestaurantVerifyStatus.EMAIL_PENDING,
   })
   verifyStatus?: RestaurantVerifyStatus;
 
@@ -216,6 +216,13 @@ export class Restaurant {
     default: '',
   })
   verifyNote?: string;
+
+  /**
+   * Thời điểm user gửi yêu cầu đăng ký nhà hàng
+   */
+
+  @Prop()
+  onboardingRequestedAt?: Date;
 
   /**
    * ============================================================
