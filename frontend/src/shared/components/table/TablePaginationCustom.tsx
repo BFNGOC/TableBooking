@@ -5,7 +5,7 @@ import CustomCard from '../card/CustomCard';
 
 export interface ColumnTable<T = any> {
     id: string;
-    name: string;
+    name: string | React.ReactNode;
     render?: (value: any, record: T) => React.ReactNode;
 }
 
@@ -60,7 +60,10 @@ const TablePaginationCustom = <T extends object>({
                     <Table.Content aria-label="Table with pagination" className="min-w-150">
                         <Table.Header columns={columns}>
                             {(column) => (
-                                <Table.Column key={column.id} isRowHeader={column.id === 'name'}>
+                                <Table.Column
+                                    key={column.id}
+                                    isRowHeader={column.id === columns[0]?.id}
+                                >
                                     {column.name}
                                 </Table.Column>
                             )}

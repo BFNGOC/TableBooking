@@ -22,6 +22,7 @@ import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
 import { buildPagination } from '@app/helpers/pagination.helper';
 import { parseSort } from '@app/helpers/search-sort.util';
+import { VerifyStatusCountAggregate } from './types/restaurant-types';
 
 @Injectable()
 export class RestaurantsService {
@@ -215,6 +216,111 @@ export class RestaurantsService {
     };
   }
 
+  async getVerifyStatusCount() {
+    const result =
+      await this.restaurantModel.aggregate<VerifyStatusCountAggregate>([
+        {
+          $group: {
+            _id: '$verifyStatus',
+            count: {
+              $sum: 1,
+            },
+          },
+        },
+      ]);
+
+    const response = {
+      total: 0,
+
+      emailPending: 0,
+
+      pending: 0,
+
+      approved: 0,
+
+      rejected: 0,
+    };
+
+    result.forEach((item) => {
+      response.total += item.count;
+
+      switch (item._id) {
+        case RestaurantVerifyStatus.EMAIL_PENDING:
+          response.emailPending = item.count;
+          break;
+
+        case RestaurantVerifyStatus.PENDING:
+          response.pending = item.count;
+          break;
+
+        case RestaurantVerifyStatus.APPROVED:
+          response.approved = item.count;
+          break;
+
+        case RestaurantVerifyStatus.REJECTED:
+          response.rejected = item.count;
+          break;
+      }
+    });
+
+    return response;
+  }
+
+  async getAdminDetail(id: string) {
+    const restaurant = await this.restaurantModel
+      .findById(id)
+      .populate({
+        path: 'userId',
+        select: 'name email phone avatar',
+      })
+      .lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    // onboarding chưa hoàn thành
+    if (
+      restaurant.verifyStatus === RestaurantVerifyStatus.EMAIL_PENDING ||
+      restaurant.verifyStatus === RestaurantVerifyStatus.PENDING
+    ) {
+      return {
+        type: 'ONBOARDING',
+        data: {
+          _id: restaurant._id,
+
+          restaurantCode: restaurant.restaurantCode,
+
+          restaurantName: restaurant.restaurantName,
+
+          verifyStatus: restaurant.verifyStatus,
+
+          verifyNote: restaurant.verifyNote,
+
+          taxCode: restaurant.taxCode,
+
+          representativeName: restaurant.representativeName,
+
+          status: restaurant.status,
+
+          address: restaurant.address,
+
+          email: restaurant.email,
+
+          phone: restaurant.phone,
+
+          onboardingRequestedAt: restaurant.onboardingRequestedAt,
+
+          user: restaurant.userId,
+        },
+      };
+    }
+
+    return {
+      type: 'RESTAURANT',
+      data: restaurant,
+    };
+  }
   findOne(id: number) {
     return `This action returns a #${id} restaurant`;
   }

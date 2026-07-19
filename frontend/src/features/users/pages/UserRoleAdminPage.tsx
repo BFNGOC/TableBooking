@@ -207,6 +207,8 @@ function UserRoleAdminPage() {
 
     const formValues = formatSectionFormValues(selectedRecord, userSections, 'toForm');
 
+    console.log(formValues);
+
     return (
         <div className="flex flex-col h-full gap-4">
             <PageHeader

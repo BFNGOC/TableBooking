@@ -7,6 +7,12 @@ export interface FieldContext<T = Record<string, any>> {
     dataForm: Partial<T>;
 }
 
+export interface options {
+    id: any;
+    text: string;
+    description?: string;
+}
+
 export interface FormField {
     label?: string;
     name: string;
@@ -21,11 +27,7 @@ export interface FormField {
 
     col?: 1 | 2 | 3 | 4 | 5 | 6 | 12;
 
-    options?: {
-        id: any;
-        text: string;
-        description?: string;
-    }[];
+    options?: options[];
 
     isDisabled?: boolean | ((context: FieldContext) => boolean);
 

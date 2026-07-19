@@ -58,9 +58,21 @@ export class RestaurantsController {
   }
 
   @Get('admin')
-  @Public()
+  @Roles(UserRole.ADMIN)
   findAll(@Query() query: FindRestaurantAdminDto) {
     return this.restaurantsService.findAll(query);
+  }
+
+  @Get('admin/verify-status-count')
+  @Roles(UserRole.ADMIN)
+  getVerifyStatusCount() {
+    return this.restaurantsService.getVerifyStatusCount();
+  }
+
+  @Get('admin/:id')
+  @Roles(UserRole.ADMIN)
+  async getAdminDetail(@Param('id') id: string) {
+    return this.restaurantsService.getAdminDetail(id);
   }
 
   @Get(':id')

@@ -14,6 +14,7 @@ import { FormField } from '@/shared/types/form-field';
 import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
 import UploadImageCustom from '../upload/UploadImageCustom';
 import { CheckboxCustom } from '../checkbox/CheckboxCustom';
+import { getNestedValue, setNestedValue } from '@/shared/utils/object-path';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
@@ -55,10 +56,9 @@ function CustomForm<T extends Record<string, any>>({
     const setFormValues = onValuesChange ?? setInternalValues;
 
     const updateFieldValue = (name: string, value: any) => {
-        setFormValues({
-            ...formValues,
-            [name]: value,
-        });
+        const newValues = setNestedValue(formValues, name, value);
+
+        setFormValues(newValues);
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -99,7 +99,7 @@ function CustomForm<T extends Record<string, any>>({
     const content = (
         <div className="grid grid-cols-12 gap-5">
             {fields.map((field) => {
-                const value = formValues[field.name] ?? '';
+                const value = getNestedValue(formValues, field.name) ?? field.value ?? '';
 
                 const isRequired =
                     mode === 'view'

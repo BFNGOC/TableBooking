@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Form, Tabs } from '@heroui/react';
+import { Button, Form, Spinner, Tabs } from '@heroui/react';
 
 import ModalCustom from './ModalCustom';
 import CustomForm from '../form/CustomForm';
@@ -75,98 +75,106 @@ function ModalFormTabs<T extends Record<string, any>>({
             title={modalTitle}
             size="lg"
         >
-            <Form
-                onInvalid={(e) => {
-                    e.preventDefault();
+            {isPending ? (
+                <div className="flex h-60 items-center justify-center">
+                    <Spinner />
+                </div>
+            ) : (
+                <Form
+                    onInvalid={(e) => {
+                        e.preventDefault();
 
-                    const target = e.target as HTMLInputElement;
+                        const target = e.target as HTMLInputElement;
 
-                    const section = visibleSections.find((section) =>
-                        section.fields.some((field) => field.name === target.name)
-                    );
+                        const section = visibleSections.find((section) =>
+                            section.fields.some((field) => field.name === target.name)
+                        );
 
-                    if (!section) return;
+                        if (!section) return;
 
-                    if (section.key !== selectedTab) {
-                        setSelectedTab(section.key);
+                        if (section.key !== selectedTab) {
+                            setSelectedTab(section.key);
 
-                        requestAnimationFrame(() => {
-                            target.focus();
-                            target.reportValidity();
-                        });
-                    }
-                }}
-                onSubmit={(e) => {
-                    console.log('submit');
-                    e.preventDefault();
+                            requestAnimationFrame(() => {
+                                target.focus();
+                                target.reportValidity();
+                            });
+                        }
+                    }}
+                    onSubmit={(e) => {
+                        console.log('submit');
+                        e.preventDefault();
 
-                    const form = e.currentTarget;
+                        const form = e.currentTarget;
 
-                    if (!form.checkValidity()) {
-                        form.reportValidity();
-                        console.log('Form is invalid');
-                        return;
-                    }
+                        if (!form.checkValidity()) {
+                            form.reportValidity();
+                            console.log('Form is invalid');
+                            return;
+                        }
 
-                    onSubmit(values ?? {});
-                }}
-                className=""
-            >
-                <Tabs
-                    variant="secondary"
-                    className="my-3"
-                    selectedKey={selectedTab}
-                    onSelectionChange={(key) => setSelectedTab(String(key))}
+                        onSubmit(values ?? {});
+                    }}
+                    className=""
                 >
-                    {visibleSections.length > 1 && (
-                        <Tabs.ListContainer className="sticky top-0 z-10 bg-white">
+                    <Tabs
+                        variant="secondary"
+                        className="my-3"
+                        selectedKey={selectedTab}
+                        onSelectionChange={(key) => setSelectedTab(String(key))}
+                    >
+                        <Tabs.ListContainer className="w-full flex flex-row flex-nowrap gap-6 justify-start overflow-x-auto">
                             <Tabs.List aria-label="Thông tin">
                                 {visibleSections.map((section) => (
-                                    <Tabs.Tab key={section.key} id={section.key}>
+                                    <Tabs.Tab
+                                        key={section.key}
+                                        id={section.key}
+                                        className="whitespace-nowrap min-w-max px-2 h-12 text-sm font-medium data-[selected=true]:text-primary"
+                                    >
                                         {section.title}
                                         <Tabs.Indicator />
                                     </Tabs.Tab>
                                 ))}
                             </Tabs.List>
                         </Tabs.ListContainer>
-                    )}
 
-                    <div className="mt-4">
-                        {visibleSections.map((section) => (
-                            <div
-                                key={section.key}
-                                className={selectedTab === section.key ? 'block' : 'hidden'}
+                        <div className="mt-4">
+                            {visibleSections.map((section) => (
+                                <div
+                                    key={section.key}
+                                    className={selectedTab === section.key ? 'block' : 'hidden'}
+                                >
+                                    <CustomForm
+                                        fields={section.fields}
+                                        values={values}
+                                        onValuesChange={onValuesChange}
+                                        mode={mode}
+                                        onUploadLoadingChange={setUploadLoading}
+                                        renderForm={false}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </Tabs>
+
+                    {mode !== 'view' && (
+                        <div className="mt-6 flex justify-end gap-3">
+                            <Button variant="outline" onPress={onClose}>
+                                Hủy
+                            </Button>
+
+                            <Button
+                                type="submit"
+                                variant="danger-soft"
+                                isPending={isPending || uploadLoading}
+                                isDisabled={isPending || uploadLoading}
                             >
-                                <CustomForm
-                                    fields={section.fields}
-                                    values={values}
-                                    onValuesChange={onValuesChange}
-                                    mode={mode}
-                                    onUploadLoadingChange={setUploadLoading}
-                                    renderForm={false}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </Tabs>
-
-                {mode !== 'view' && (
-                    <div className="mt-6 flex justify-end gap-3">
-                        <Button variant="outline" onPress={onClose}>
-                            Hủy
-                        </Button>
-
-                        <Button
-                            type="submit"
-                            variant="danger-soft"
-                            isPending={isPending || uploadLoading}
-                            isDisabled={isPending || uploadLoading}
-                        >
-                            Lưu
-                        </Button>
-                    </div>
-                )}
-            </Form>
+                                Lưu
+                            </Button>
+                        </div>
+                    )}
+                </Form>
+            )}
         </ModalCustom>
     );
 }

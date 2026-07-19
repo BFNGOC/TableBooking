@@ -1,6 +1,16 @@
 import { FilterParams } from '@/shared/types/filter-params-type';
-import { RestaurantVerifyStatus } from './restaurant.type';
+import { RestaurantStatus, RestaurantVerifyStatus } from './restaurant.type';
 
 export interface RestaurantFilterRoleAdminParams extends FilterParams {
+    restaurantCode: string;
+
+    taxCode?: string;
+
     verifyStatus: RestaurantVerifyStatus;
+
+    status?: RestaurantStatus;
+
+    fromDate?: string;
+
+    toDate?: string;
 }

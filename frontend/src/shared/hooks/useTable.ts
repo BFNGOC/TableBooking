@@ -70,6 +70,14 @@ const useTable = <T, P>({
         pageSize: DEFAULT_PAGINATION.pageSize,
     };
 
+    const handleParamsChange = (values: Partial<P>) => {
+        setParams((prev) => ({
+            ...prev,
+            ...values,
+            currentPage: DEFAULT_PAGINATION.currentPage,
+        }));
+    };
+
     /**
      * Filter
      */
@@ -211,6 +219,8 @@ const useTable = <T, P>({
         setParams,
 
         setFilterValues,
+
+        handleParamsChange,
 
         handleFilterChange,
 

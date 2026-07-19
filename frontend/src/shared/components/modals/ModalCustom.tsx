@@ -37,8 +37,8 @@ function ModalCustom({
     return (
         <Modal isOpen={open} onOpenChange={onOpenChange}>
             <Modal.Backdrop isDismissable={isDismissable}>
-                <Modal.Container size={size}>
-                    <Modal.Dialog className={dialogClassName}>
+                <Modal.Container className="!w-fit !max-w-[90vw] !min-w-[550px] mx-auto">
+                    <Modal.Dialog className={`${dialogClassName} !w-fit !max-w-none`}>
                         <Modal.CloseTrigger />
                         <Modal.Header>
                             {icon && (
