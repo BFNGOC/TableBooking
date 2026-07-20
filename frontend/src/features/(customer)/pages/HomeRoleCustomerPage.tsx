@@ -67,7 +67,7 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 	return (
 		<div className="space-y-16">
 			{/* HERO SECTION */}
-			<section className="relative w-full h-[520px] md:h-[580px] overflow-hidden shadow-xl">
+			<section className="relative w-full h-[520px] md:h-[640px] overflow-hidden shadow-xl">
 				{/* Background Image */}
 				<div
 					className="absolute inset-0 bg-cover bg-center transition-transform duration-10000 scale-105"

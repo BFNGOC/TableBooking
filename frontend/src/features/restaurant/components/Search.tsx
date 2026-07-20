@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
 import CustomForm from "@/shared/components/form/CustomForm";
-import searchRestaurantFormFields from "../constants/search-restaurant-form-field";
+import searchRestaurantFormFields from "../constants/restaurant-search-form-field";
 import { FormFieldType } from "@/shared/types/form-field-types";
 import { Button } from "@heroui/react/button";
 

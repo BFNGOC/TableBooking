@@ -22,7 +22,7 @@ function RestaurantOnboardingPage() {
     const [values, setValues] = useState<Partial<RestaurantOnboardingPayload>>({});
 
     const handleSubmit = async (payload: Partial<RestaurantOnboardingPayload>) => {
-        const res = await onboarding(payload);
+        const res = await onboarding(payload as RestaurantOnboardingPayload);
 
         console.log(res);
 

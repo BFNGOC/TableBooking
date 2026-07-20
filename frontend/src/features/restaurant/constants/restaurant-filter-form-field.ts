@@ -1,5 +1,6 @@
 import { FormField } from "@/shared/types/form-field";
 import { FormFieldType } from "@/shared/types/form-field-types";
+import { PRICE_RANGE_OPTIONS } from "./restaurant-options";
 
 export const filterRestaurantFormFields: FormField[] = [
 	{
@@ -7,13 +8,7 @@ export const filterRestaurantFormFields: FormField[] = [
 		name: "priceRange",
 		type: FormFieldType.SELECT,
 		placeholder: "Chọn giá",
-		options: [
-			{ id: "under-500", text: "Dưới 500k" },
-			{ id: "500-800", text: "500k - 800k" },
-			{ id: "800-1200", text: "800k - 1200k" },
-			{ id: "1200-2000", text: "1200k - 2000k" },
-			{ id: "above-2000", text: "Trên 2000k" },
-		],
+		options: PRICE_RANGE_OPTIONS,
 		col: 12,
 	},
 	{

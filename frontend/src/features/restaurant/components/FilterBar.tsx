@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@heroui/react";
 import { RotateCcw } from "lucide-react";
 import CustomForm from "@/shared/components/form/CustomForm";
-import filterRestaurantFormFields from "../constants/filter-restaurant-form-field";
+import filterRestaurantFormFields from "../constants/restaurant-filter-form-field";
 import { FormField } from "@/shared/types/form-field";
 import { FormFieldType } from "@/shared/types/form-field-types";
 
