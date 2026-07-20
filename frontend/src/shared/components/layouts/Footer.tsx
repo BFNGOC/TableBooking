@@ -112,7 +112,7 @@ function Footer() {
 					</div>
 				</div>
 
-				<div className="mt-10 flex flex-col gap-4 border-t border-gray-200 pt-6 text-sm text-[#5b483b] md:flex-row md:items-center md:justify-between">
+				<div className="mt-10 flex flex-col gap-4 pt-6 text-sm text-[#5b483b] md:flex-row md:items-center md:justify-between">
 					<p>© 2024 TableSpot. Nền tảng đặt bàn cao cấp.</p>
 
 					<div className="flex items-center gap-3">

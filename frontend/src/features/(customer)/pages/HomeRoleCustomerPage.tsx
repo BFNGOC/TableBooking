@@ -88,7 +88,7 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 
 					{/* Search Bar Component */}
 					<div className="w-full max-w-4xl px-2">
-						<Search />
+						<Search className="w-full max-w-5xl mx-auto bg-[#bbb3ae] rounded-4xl py-4 px-6 shadow-xl" />
 					</div>
 				</div>
 			</section>

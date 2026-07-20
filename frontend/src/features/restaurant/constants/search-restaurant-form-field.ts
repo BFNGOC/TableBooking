@@ -20,12 +20,12 @@ export const searchRestaurantFormFields: FormField[] = [
 		name: "q",
 		type: FormFieldType.TEXT,
 		placeholder: "Địa điểm, nhà hàng...",
-		col: 5,
+		col: 4,
 	},
 	{
 		name: "date",
 		type: FormFieldType.DATE,
-		col: 3,
+		col: 2,
 	},
 	{
 		name: "time",

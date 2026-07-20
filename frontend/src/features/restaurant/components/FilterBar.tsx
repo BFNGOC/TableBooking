@@ -23,7 +23,6 @@ const FilterBar: React.FC<FilterBarProps> = ({
 		useState<Partial<Record<string, any>>>(initialValues);
 
 	const resetFilters = () => {
-
 		// If initialValues provided, reset to them; otherwise clear fields.
 		if (initialValues && Object.keys(initialValues).length > 0) {
 			setValues(initialValues);
@@ -34,13 +33,19 @@ const FilterBar: React.FC<FilterBarProps> = ({
 		const empty: Partial<Record<string, any>> = {};
 
 		filterRestaurantFormFields.forEach((f) => {
-			if (f.type === FormFieldType.CHECKBOX_GROUP || f.type === FormFieldType.CHECKBOX) {
+			if (
+				f.type === FormFieldType.CHECKBOX_GROUP ||
+				f.type === FormFieldType.CHECKBOX
+			) {
 				empty[f.name] = [];
-			} else if (f.type === FormFieldType.RADIO || f.type === FormFieldType.RADIO_GROUP) {
+			} else if (
+				f.type === FormFieldType.RADIO ||
+				f.type === FormFieldType.RADIO_GROUP
+			) {
 				// set undefined so RadioCustom treats it as unselected
 				empty[f.name] = undefined;
 			} else {
-				empty[f.name] = '';
+				empty[f.name] = "";
 			}
 		});
 
@@ -69,7 +74,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 	);
 
 	return (
-		<div className="w-full bg-[#f5efeb] border border-[#e6d8c9] p-5 shadow-sm">
+		<div className="w-full bg-[#fff8f5] border-r border-[#e6d8c9] p-5">
 			<div className="flex items-center justify-between mb-4">
 				<div>
 					<div className="text-sm font-bold uppercase tracking-[0.2em] text-[#3d2a21]">
