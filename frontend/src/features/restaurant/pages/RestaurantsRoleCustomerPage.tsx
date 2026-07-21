@@ -14,7 +14,6 @@ interface RestaurantsRoleCustomerPageProps {
 }
 
 const ITEMS_PER_PAGE = 6;
-
 const SORT_OPTIONS = [
 	{ id: "default", text: "Phù hợp nhất" },
 	{ id: "rating-desc", text: "Đánh giá cao nhất" },
@@ -26,33 +25,23 @@ function RestaurantsRoleCustomerPage({
 	restaurants = [],
 }: RestaurantsRoleCustomerPageProps) {
 	const searchParams = useSearchParams();
-
-	// Read URL query parameter for search
 	const searchQuery = searchParams.get("q") || "";
-
-	// Filter state
 	const [activeFilters, setActiveFilters] = useState<
 		Partial<Record<string, any>>
 	>({});
-	// Sorting state
 	const [sortBy, setSortBy] = useState<string>("default");
-	// Pagination state
 	const [currentPage, setCurrentPage] = useState<number>(1);
-	// Mobile filter visibility state
 	const [showMobileFilter, setShowMobileFilter] = useState<boolean>(false);
 
-	// Reset page when search or filters change
 	useEffect(() => {
 		setCurrentPage(1);
 	}, [searchQuery, activeFilters, sortBy]);
 
-	// Filter & Sort Logic
 	const filteredRestaurants = useMemo(() => {
 		let result = restaurants.filter(
 			(r) => r.status === "ACTIVE" || r.status === undefined,
 		);
 
-		// 1. Filter by search query (name, description, or address)
 		if (searchQuery.trim() !== "") {
 			const q = searchQuery.toLowerCase();
 			result = result.filter(
@@ -63,7 +52,6 @@ function RestaurantsRoleCustomerPage({
 			);
 		}
 
-		// 2. Filter by Price Range
 		if (activeFilters.priceRange) {
 			const range = activeFilters.priceRange;
 			result = result.filter((r) => {
@@ -85,7 +73,6 @@ function RestaurantsRoleCustomerPage({
 			});
 		}
 
-		// 3. Filter by Cuisine
 		if (activeFilters.cuisine) {
 			const filterCuisine = activeFilters.cuisine;
 			result = result.filter((r) => {
@@ -125,7 +112,6 @@ function RestaurantsRoleCustomerPage({
 			});
 		}
 
-		// 4. Filter by Rating
 		if (activeFilters.rating) {
 			const filterRating = parseFloat(activeFilters.rating);
 			result = result.filter((r) => {
@@ -139,7 +125,6 @@ function RestaurantsRoleCustomerPage({
 			});
 		}
 
-		// 5. Filter by Amenities (checkboxGroup returns array of strings)
 		if (activeFilters.amenities && activeFilters.amenities.length > 0) {
 			const selectedAmenities = activeFilters.amenities as string[];
 			result = result.filter((r) => {
@@ -166,7 +151,7 @@ function RestaurantsRoleCustomerPage({
 						);
 					}
 					if (amenity === "free-wifi") {
-						return true; // assumed
+						return true;
 					}
 					if (amenity === "smoking-area") {
 						return (
@@ -181,7 +166,6 @@ function RestaurantsRoleCustomerPage({
 			});
 		}
 
-		// 6. Sort Results
 		if (sortBy === "rating-desc") {
 			result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 		} else if (sortBy === "price-asc") {
@@ -193,7 +177,6 @@ function RestaurantsRoleCustomerPage({
 		return result;
 	}, [restaurants, searchQuery, activeFilters, sortBy]);
 
-	// Pagination calculations
 	const totalPages = Math.ceil(filteredRestaurants.length / ITEMS_PER_PAGE);
 	const paginatedRestaurants = useMemo(() => {
 		const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -202,7 +185,6 @@ function RestaurantsRoleCustomerPage({
 
 	const handlePageChange = (page: number) => {
 		setCurrentPage(page);
-		// Scroll smoothly to list container
 		const container = document.getElementById("restaurant-list-container");
 		if (container) {
 			container.scrollIntoView({ behavior: "smooth" });

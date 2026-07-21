@@ -14,6 +14,45 @@ interface CustomerHomePageProps {
 	restaurants: IRestaurant[];
 }
 
+const diningStyles = [
+	{
+		title: "Lãng mạn",
+		subtitle: "Hẹn hò & Kỷ niệm",
+		description:
+			"Không gian ấm cúng, lung linh ánh nến lý tưởng cho các cặp đôi.",
+		icon: <Heart className="text-[#e28c5c] shrink-0" size={24} />,
+		bgIcon: "bg-[#fdf5f0]",
+		hoverBorder: "hover:border-[#e28c5c]/30",
+	},
+	{
+		title: "Gia đình",
+		subtitle: "Ấm cúng & Gần gũi",
+		description:
+			"Bàn tiệc rộng rãi, thực đơn phong phú cho mọi thành viên.",
+		icon: <Users className="text-[#e28c5c] shrink-0" size={24} />,
+		bgIcon: "bg-[#fdf5f0]",
+		hoverBorder: "hover:border-[#e28c5c]/30",
+	},
+	{
+		title: "Tiếp khách",
+		subtitle: "Sang trọng & Riêng tư",
+		description:
+			"Không gian yên tĩnh, trang trọng, phục vụ chuyên nghiệp đẳng cấp.",
+		icon: <Handshake className="text-[#e28c5c] shrink-0" size={24} />,
+		bgIcon: "bg-[#fdf5f0]",
+		hoverBorder: "hover:border-[#e28c5c]/30",
+	},
+	{
+		title: "View đẹp",
+		subtitle: "Toàn cảnh thành phố",
+		description:
+			"Khung cảnh lung linh từ rooftop hoặc cửa kính panorama ấn tượng.",
+		icon: <Eye className="text-[#e28c5c] shrink-0" size={24} />,
+		bgIcon: "bg-[#fdf5f0]",
+		hoverBorder: "hover:border-[#e28c5c]/30",
+	},
+];
+
 function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 	const { showToast } = useToast();
 	const { data: session } = useSession();
@@ -24,45 +63,6 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 	const featuredRestaurants = restaurants
 		.filter((r) => r.status === "ACTIVE" || r.status === undefined)
 		.slice(0, 4);
-
-	const diningStyles = [
-		{
-			title: "Lãng mạn",
-			subtitle: "Hẹn hò & Kỷ niệm",
-			description:
-				"Không gian ấm cúng, lung linh ánh nến lý tưởng cho các cặp đôi.",
-			icon: <Heart className="text-[#e28c5c] shrink-0" size={24} />,
-			bgIcon: "bg-[#fdf5f0]",
-			hoverBorder: "hover:border-[#e28c5c]/30",
-		},
-		{
-			title: "Gia đình",
-			subtitle: "Ấm cúng & Gần gũi",
-			description:
-				"Bàn tiệc rộng rãi, thực đơn phong phú cho mọi thành viên.",
-			icon: <Users className="text-[#e28c5c] shrink-0" size={24} />,
-			bgIcon: "bg-[#fdf5f0]",
-			hoverBorder: "hover:border-[#e28c5c]/30",
-		},
-		{
-			title: "Tiếp khách",
-			subtitle: "Sang trọng & Riêng tư",
-			description:
-				"Không gian yên tĩnh, trang trọng, phục vụ chuyên nghiệp đẳng cấp.",
-			icon: <Handshake className="text-[#e28c5c] shrink-0" size={24} />,
-			bgIcon: "bg-[#fdf5f0]",
-			hoverBorder: "hover:border-[#e28c5c]/30",
-		},
-		{
-			title: "View đẹp",
-			subtitle: "Toàn cảnh thành phố",
-			description:
-				"Khung cảnh lung linh từ rooftop hoặc cửa kính panorama ấn tượng.",
-			icon: <Eye className="text-[#e28c5c] shrink-0" size={24} />,
-			bgIcon: "bg-[#fdf5f0]",
-			hoverBorder: "hover:border-[#e28c5c]/30",
-		},
-	];
 
 	return (
 		<div className="space-y-16">

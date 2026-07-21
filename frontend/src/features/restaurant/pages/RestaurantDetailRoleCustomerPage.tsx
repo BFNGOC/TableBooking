@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import GoogleMapEmbed from "@/features/restaurant/components/GoogleMapEmbed";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import { useToast } from "@/shared/hooks/useToast";
 import BookingModal from "@/features/restaurant/components/BookingModal";
@@ -73,16 +74,14 @@ const DISHES_MAPPING: Record<string, Dish[]> = {
 			price: "1.250k",
 			description:
 				"Bò Wagyu thượng hạng nướng trên đá nóng, kèm sốt tiêu đen và khoai tây nghiền truffle.",
-			image:
-				"https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400",
 		},
 		{
 			name: "Cá Hồi Áp Chảo",
 			price: "680k",
 			description:
 				"Cá hồi Na Uy áp chảo với măng tây, sốt chanh leo và hạt quinoa giòn tan.",
-			image:
-				"https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=400",
 		},
 	],
 	japanese: [
@@ -91,16 +90,14 @@ const DISHES_MAPPING: Record<string, Dish[]> = {
 			price: "950k",
 			description:
 				"Các loại hải sản tươi sống nhập khẩu trực tiếp từ chợ Toyosu, Nhật Bản, chế biến bởi đầu bếp 5 sao.",
-			image:
-				"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=400",
 		},
 		{
 			name: "Tempura Tôm Hoàng Gia",
 			price: "420k",
 			description:
 				"Tôm sú tươi chiên giòn phong cách Tempura giòn rụm với nước tương dashi thanh mát.",
-			image:
-				"https://images.unsplash.com/photo-1534482421-64566f976cfa?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1534482421-64566f976cfa?q=80&w=400",
 		},
 	],
 	bbq: [
@@ -109,16 +106,14 @@ const DISHES_MAPPING: Record<string, Dish[]> = {
 			price: "599k",
 			description:
 				"Thịt bò Wagyu vân mỡ đều, dẻ sườn bò Mỹ và ba chỉ heo nướng cùng sốt Gogi đặc trưng.",
-			image:
-				"https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400",
 		},
 		{
 			name: "Lẩu Kim Chi Hải Sản",
 			price: "280k",
 			description:
 				"Nước lẩu kim chi chua cay đậm đà với tôm, mực, nghêu và các loại nấm tươi.",
-			image:
-				"https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=400",
 		},
 	],
 	seafood: [
@@ -127,16 +122,14 @@ const DISHES_MAPPING: Record<string, Dish[]> = {
 			price: "1.450k",
 			description:
 				"Tôm hùm bông Nha Trang đút lò với sốt bơ tỏi và lớp phô mai Mozzarella béo ngậy tan chảy.",
-			image:
-				"https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=400",
 		},
 		{
 			name: "Cua Huỳnh Đế Hấp Gừng",
 			price: "2.800k",
 			description:
 				"Cua Huỳnh Đế tươi sống hấp hành gừng giữ trọn vị ngọt tự nhiên đậm đà của thịt cua.",
-			image:
-				"https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=400",
 		},
 	],
 	general: [
@@ -145,16 +138,14 @@ const DISHES_MAPPING: Record<string, Dish[]> = {
 			price: "180k",
 			description:
 				"Nấm đông cô tươi xào cải thìa thanh đạm, kết hợp nước sốt dầu hào chay đậm đà.",
-			image:
-				"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400",
 		},
 		{
 			name: "Đậu Hũ Tứ Xuyên Chay",
 			price: "150k",
 			description:
 				"Đậu hũ non mềm mịn nấu cùng sốt cay Tứ Xuyên và nấm đùi gà cắt hạt lựu.",
-			image:
-				"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400",
+			image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400",
 		},
 	],
 };
@@ -178,16 +169,29 @@ function RestaurantDetailRoleCustomerPage({
 		images = [],
 	} = restaurant;
 
-	// Categorize cuisine to select visual content
 	const cuisineKey = useMemo(() => {
 		const typesStr = cuisineTypes.join(" ").toLowerCase();
-		if (typesStr.includes("âu") || typesStr.includes("pháp") || typesStr.includes("ý") || typesStr.includes("pizza")) {
+		if (
+			typesStr.includes("âu") ||
+			typesStr.includes("pháp") ||
+			typesStr.includes("ý") ||
+			typesStr.includes("pizza")
+		) {
 			return "european";
 		}
-		if (typesStr.includes("nhật") || typesStr.includes("sushi") || typesStr.includes("á") || typesStr.includes("kaiseki")) {
+		if (
+			typesStr.includes("nhật") ||
+			typesStr.includes("sushi") ||
+			typesStr.includes("á") ||
+			typesStr.includes("kaiseki")
+		) {
 			return "japanese";
 		}
-		if (typesStr.includes("nướng") || typesStr.includes("bbq") || typesStr.includes("hàn quốc")) {
+		if (
+			typesStr.includes("nướng") ||
+			typesStr.includes("bbq") ||
+			typesStr.includes("hàn quốc")
+		) {
 			return "bbq";
 		}
 		if (typesStr.includes("hải sản") || typesStr.includes("seafood")) {
@@ -196,24 +200,21 @@ function RestaurantDetailRoleCustomerPage({
 		return "general";
 	}, [cuisineTypes]);
 
-	// Build 5 images for the Airbnb-style layout
 	const galleryImages = useMemo(() => {
 		const list: string[] = [];
 
-		// 1. Add avatar if exists
 		if (avatar?.url) {
 			list.push(avatar.url);
 		}
 
-		// 2. Add extra images
 		images.forEach((img) => {
 			if (img?.url && list.length < 5) {
 				list.push(img.url);
 			}
 		});
 
-		// 3. Fill up with fallbacks
-		const fallbacks = CUISINE_FALLBACKS[cuisineKey] || CUISINE_FALLBACKS.general;
+		const fallbacks =
+			CUISINE_FALLBACKS[cuisineKey] || CUISINE_FALLBACKS.general;
 		let fallbackIdx = 0;
 		while (list.length < 5 && fallbackIdx < fallbacks.length) {
 			if (!list.includes(fallbacks[fallbackIdx])) {
@@ -222,20 +223,19 @@ function RestaurantDetailRoleCustomerPage({
 			fallbackIdx++;
 		}
 
-		// Ensure we always have 5 strings
 		while (list.length < 5) {
-			list.push("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800");
+			list.push(
+				"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800",
+			);
 		}
 
 		return list;
 	}, [avatar, images, cuisineKey]);
 
-	// Fetch featured dishes
 	const dishes = useMemo(() => {
 		return DISHES_MAPPING[cuisineKey] || DISHES_MAPPING.general;
 	}, [cuisineKey]);
 
-	// Format price range
 	const formatPriceRange = () => {
 		if (!priceFrom && !priceTo) return "500k - 1.500k VND";
 		const fromK = Math.floor(priceFrom / 1000).toLocaleString("vi-VN");
@@ -314,14 +314,23 @@ function RestaurantDetailRoleCustomerPage({
 									{/* Tag/Details Line */}
 									<div className="flex flex-wrap items-center gap-1.5 text-xs text-[#8c7a6f] font-medium mt-2">
 										<div className="flex items-center gap-0.5 text-[#e28c5c]">
-											<Star size={14} className="fill-[#e28c5c]" />
-											<span className="font-extrabold">{rating.toFixed(1)}</span>
+											<Star
+												size={14}
+												className="fill-[#e28c5c]"
+											/>
+											<span className="font-extrabold">
+												{rating.toFixed(1)}
+											</span>
 										</div>
 										<span>•</span>
-										<span>{(rating * 24).toFixed(0)}+ đánh giá</span>
+										<span>
+											{(rating * 24).toFixed(0)}+ đánh giá
+										</span>
 										<span>•</span>
 										<span className="bg-[#f5f0ec] text-[#6e5a4f] py-0.5 px-2 rounded-md text-[11px] font-semibold">
-											{cuisineTypes.length > 0 ? cuisineTypes[0] : "Ẩm thực"}
+											{cuisineTypes.length > 0
+												? cuisineTypes[0]
+												: "Ẩm thực"}
 										</span>
 										<span>•</span>
 										<span className="font-bold text-[#6f4e37]">
@@ -374,7 +383,9 @@ function RestaurantDetailRoleCustomerPage({
 						{/* Món ăn đặc sắc */}
 						<div className="space-y-5">
 							<div className="flex items-center justify-between">
-								<h2 className="text-xl font-bold text-[#3d2a21]">Món ăn đặc sắc</h2>
+								<h2 className="text-xl font-bold text-[#3d2a21]">
+									Món ăn đặc sắc
+								</h2>
 								<span className="text-xs font-bold text-[#6f4e37] hover:underline cursor-pointer">
 									Xem thực đơn đầy đủ →
 								</span>
@@ -423,31 +434,28 @@ function RestaurantDetailRoleCustomerPage({
 
 							{/* Map Mockup */}
 							<div className="relative w-full h-[240px] rounded-2xl overflow-hidden shadow-xs border border-[#e6d8c9]/30 bg-[#f7f3ef] flex items-center justify-center group">
-								{/* Stylized background representing a map grid layout */}
-								<div
-									className="absolute inset-0 bg-cover bg-center filter grayscale opacity-90 transition-transform duration-10000 group-hover:scale-103"
-									style={{
-										backgroundImage: `url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800')`,
-									}}
+								<GoogleMapEmbed
+									address={
+										address || "TP. Hồ Chí Minh, Việt Nam"
+									}
 								/>
-								{/* Map marker overlay */}
-								<div className="relative z-10 flex flex-col items-center">
-									<div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#6f4e37] text-white shadow-md animate-bounce">
-										<MapPin size={22} />
-									</div>
-								</div>
 							</div>
 
 							{/* Address Footer details */}
 							<div className="flex items-start justify-between gap-4 mt-2">
 								<div className="flex items-start gap-1.5 text-xs text-[#6e5a4f] leading-relaxed">
-									<MapPin size={15} className="text-[#a89080] shrink-0 mt-0.5" />
-									<span>{address || "TP. Hồ Chí Minh, Việt Nam"}</span>
+									<MapPin
+										size={15}
+										className="text-[#a89080] shrink-0 mt-0.5"
+									/>
+									<span>
+										{address || "TP. Hồ Chí Minh, Việt Nam"}
+									</span>
 								</div>
 
 								<a
 									href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-										address || restaurantName
+										address || restaurantName,
 									)}`}
 									target="_blank"
 									rel="noopener noreferrer"
@@ -466,10 +474,12 @@ function RestaurantDetailRoleCustomerPage({
 							<div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fcf5ec] text-[#6f4e37] mb-1">
 								<CalendarDays size={22} />
 							</div>
-							<h3 className="text-lg font-bold text-[#3d2a21]">Đặt bàn trực tuyến</h3>
+							<h3 className="text-lg font-bold text-[#3d2a21]">
+								Đặt bàn trực tuyến
+							</h3>
 							<p className="text-xs text-[#8c7a6f] leading-relaxed">
-								Tiết kiệm thời gian chờ đợi. Đặt bàn trực tiếp miễn phí ngay bây
-								giờ để giữ chỗ tốt nhất.
+								Tiết kiệm thời gian chờ đợi. Đặt bàn trực tiếp
+								miễn phí ngay bây giờ để giữ chỗ tốt nhất.
 							</p>
 						</div>
 
