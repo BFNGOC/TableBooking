@@ -2,15 +2,26 @@ import { redirect } from 'next/navigation';
 import { IRestaurant, RestaurantVerifyStatus } from '../types/restaurant.type';
 
 export function redirectToCorrectPage(restaurant: IRestaurant) {
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+
     switch (restaurant.verifyStatus) {
         case RestaurantVerifyStatus.EMAIL_PENDING:
-            redirect(`/restaurant-onboarding/verify-email/${restaurant._id}`);
+            const emailPath = `/restaurant-onboarding/verify-email/${restaurant._id}`;
+            if (currentPath !== emailPath) {
+                return redirect(emailPath);
+            }
+            return;
 
         case RestaurantVerifyStatus.PENDING:
         case RestaurantVerifyStatus.REJECTED:
-            redirect('/restaurant-onboarding/pending');
-
         case RestaurantVerifyStatus.APPROVED:
-            redirect('/restaurant/dashboard');
+            const pendingPath = '/restaurant-onboarding/pending';
+            if (currentPath !== pendingPath) {
+                return redirect(pendingPath);
+            }
+            return;
+
+        default:
+            return;
     }
 }

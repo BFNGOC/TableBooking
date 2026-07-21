@@ -15,7 +15,7 @@ export type RestaurantOnboardingPayload = {
     taxCode: string;
 };
 
-export type UpdateRestaurantBusinessPayload = Partial<RestaurantOnboardingPayload>;
+export type UpdateRestaurantOnboardingPayload = Partial<RestaurantOnboardingPayload>;
 
 export type UpdateRestaurantProfilePayload = {
     description?: string;

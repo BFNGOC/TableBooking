@@ -13,5 +13,6 @@ export const useGetMe = () => {
         enabled: status === 'authenticated',
         retry: false,
         staleTime: 5 * 60 * 1000,
+        refetchOnWindowFocus: true,
     });
 };

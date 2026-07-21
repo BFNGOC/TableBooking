@@ -156,17 +156,13 @@ const useTable = <T, P>({
     const handleActive = (id: string) => {
         activeMutation.mutate(id, {
             onSuccess: (res) => {
-                showToast(
-                    'success',
-                    'Kích hoạt người dùng thành công',
-                    res?.message ?? 'Kích hoạt thành công'
-                );
+                showToast('success', 'Thành công', res?.message ?? 'Kích hoạt thành công');
             },
 
             onError: (error: any) => {
                 showToast(
                     'error',
-                    'Kích hoạt người dùng thất bại',
+                    'Thất bại',
                     error?.response?.data?.message ?? 'Đã có lỗi xảy ra'
                 );
             },
@@ -184,17 +180,13 @@ const useTable = <T, P>({
     const handleInactive = (id: string) => {
         inactiveMutation.mutate(id, {
             onSuccess: (res) => {
-                showToast(
-                    'success',
-                    'Vô hiệu hóa người dùng thành công',
-                    res?.message ?? 'Ngưng hoạt động thành công'
-                );
+                showToast('success', 'Thành công', res?.message ?? 'Ngưng hoạt động thành công');
             },
 
             onError: (error: any) => {
                 showToast(
                     'error',
-                    'Vô hiệu hóa người dùng thất bại',
+                    'Thất bại',
                     error?.response?.data?.message ?? 'Đã có lỗi xảy ra'
                 );
             },

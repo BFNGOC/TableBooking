@@ -8,6 +8,7 @@ import { RestaurantOnboardingDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
 import {
   Restaurant,
+  RestaurantDocument,
   RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
 import { Model } from 'mongoose';
@@ -23,6 +24,11 @@ import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
 import { buildPagination } from '@app/helpers/pagination.helper';
 import { parseSort } from '@app/helpers/search-sort.util';
 import { VerifyStatusCountAggregate } from './types/restaurant-types';
+import { TaxService } from '../tax/tax.service';
+import { UserDocument, UserRole } from '../users/schemas/user.schema';
+import { UsersService } from '../users/users.service';
+import { UserSearchService } from '../users/user-search.service';
+import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -32,6 +38,9 @@ export class RestaurantsService {
     private readonly mailerService: MailerService,
     private readonly restaurantSearchService: RestaurantSearchService,
     private readonly counterService: CounterService,
+    private readonly taxService: TaxService,
+    private readonly usersService: UsersService,
+    private readonly userSearchService: UserSearchService,
   ) {}
 
   async reindexAll() {
@@ -321,6 +330,179 @@ export class RestaurantsService {
       data: restaurant,
     };
   }
+
+  async verifyTaxCode(restaurantId: string) {
+    // 1. Tìm restaurant
+    const restaurant = await this.restaurantModel.findById(restaurantId);
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    // 2. Lấy MST nhà hàng đã đăng ký
+    const taxCode = restaurant.taxCode;
+
+    if (!taxCode) {
+      throw new BadRequestException('Nhà hàng chưa cung cấp mã số thuế');
+    }
+
+    // 3. Gọi API bên thứ 3
+    const company = await this.taxService.getCompanyByTaxCode(taxCode);
+
+    // 4. Kiểm tra MST trả về có trùng không
+    const isTaxCodeMatched = company.mst === taxCode;
+
+    // 5. Kiểm tra trạng thái doanh nghiệp
+    const isActive = company.status === 'active';
+
+    // 6. Trả kết quả
+    return {
+      isValid: isTaxCodeMatched && isActive,
+
+      isTaxCodeMatched,
+
+      isActive,
+
+      restaurant: {
+        restaurantName: restaurant.restaurantName,
+
+        taxCode: restaurant.taxCode,
+
+        address: restaurant.address,
+      },
+
+      company: {
+        mst: company.mst,
+
+        nameVi: company.name_vi,
+
+        nameEn: company.name_en,
+
+        legalForm: company.legal_form,
+
+        status: company.status,
+
+        addressFull: company.address_full,
+
+        legalRepName: company.legal_rep_name,
+
+        province: company.province?.name_vi ?? null,
+
+        district: company.district?.name_vi ?? null,
+
+        industry: company.industry?.name_vi ?? null,
+      },
+    };
+  }
+
+  async approveRestaurant(restaurantId: string) {
+    const session = await this.restaurantModel.db.startSession();
+
+    try {
+      let restaurant: RestaurantDocument;
+      let user: UserDocument;
+
+      await session.withTransaction(async () => {
+        const foundRestaurant = await this.restaurantModel
+          .findById(restaurantId)
+          .session(session)
+          .exec();
+
+        if (!foundRestaurant) {
+          throw new NotFoundException('Không tìm thấy nhà hàng');
+        }
+
+        if (foundRestaurant.verifyStatus !== RestaurantVerifyStatus.PENDING) {
+          throw new BadRequestException(
+            'Nhà hàng không ở trạng thái chờ phê duyệt',
+          );
+        }
+
+        foundRestaurant.verifyStatus = RestaurantVerifyStatus.APPROVED;
+
+        await foundRestaurant.save({
+          session,
+        });
+
+        restaurant = foundRestaurant;
+
+        user = await this.usersService.changeRole(
+          foundRestaurant.userId.toString(),
+          UserRole.RESTAURANT,
+          session,
+        );
+      });
+
+      await this.restaurantSearchService.update(restaurant!);
+
+      await this.userSearchService.update(user!);
+
+      return true;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async rejectRestaurant(
+    restaurantId: string,
+    reason: string,
+  ): Promise<{ success: boolean }> {
+    const restaurant = await this.restaurantModel.findById(restaurantId).exec();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    if (restaurant.verifyStatus !== RestaurantVerifyStatus.PENDING) {
+      throw new BadRequestException(
+        'Nhà hàng không ở trạng thái chờ phê duyệt',
+      );
+    }
+
+    restaurant.verifyStatus = RestaurantVerifyStatus.REJECTED;
+
+    restaurant.verifyNote = reason;
+
+    await restaurant.save();
+
+    await this.restaurantSearchService.update(restaurant);
+
+    return {
+      success: true,
+    };
+  }
+
+  async updateOnboarding(
+    userId: string,
+    dto: UpdateRestaurantOnboardingDto,
+  ): Promise<RestaurantDocument> {
+    const restaurant = await this.restaurantModel.findOne({ userId }).exec();
+
+    if (!restaurant) {
+      throw new NotFoundException(
+        'Không tìm thấy thông tin đăng ký nhà hàng của bạn',
+      );
+    }
+
+    if (restaurant.verifyStatus !== RestaurantVerifyStatus.REJECTED) {
+      throw new BadRequestException(
+        'Bạn chỉ có thể chỉnh sửa hồ sơ khi yêu cầu bị từ chối phê duyệt',
+      );
+    }
+
+    Object.assign(restaurant, dto);
+
+    restaurant.verifyStatus = RestaurantVerifyStatus.PENDING;
+    restaurant.onboardingRequestedAt = new Date();
+
+    await restaurant.save();
+
+    await this.restaurantSearchService.update(restaurant);
+
+    return restaurant;
+  }
+
+  //to-do
   findOne(id: number) {
     return `This action returns a #${id} restaurant`;
   }

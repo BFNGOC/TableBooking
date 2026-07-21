@@ -13,7 +13,7 @@ import { restaurantRoleAdminApi } from '../../api/restaurant-api';
 import {
     RestaurantListAdminResponse,
     RestaurantOnboardingDetail,
-} from '../../types/restaurant-response-type';
+} from '../../types/restaurant-admin-response-type';
 import TablePaginationCustom, {
     ColumnTable,
 } from '@/shared/components/table/TablePaginationCustom';

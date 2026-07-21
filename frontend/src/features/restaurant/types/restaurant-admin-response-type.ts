@@ -79,3 +79,32 @@ export interface RestaurantAdminDetailResponse {
 
     data: RestaurantOnboardingDetail | RestaurantDetail;
 }
+
+export interface TaxVerificationRestaurant {
+    restaurantName: string;
+    taxCode: string;
+    address: string;
+}
+
+export interface TaxVerificationCompany {
+    mst: string;
+    nameVi: string;
+    nameEn: string | null;
+    legalForm: string | null;
+    status: string;
+    addressFull: string;
+    legalRepName: string;
+    province: string | null;
+    district: string | null;
+    industry: string | null;
+}
+
+export interface TaxVerificationResponse {
+    isValid: boolean;
+    isTaxCodeMatched: boolean;
+    isActive: boolean;
+
+    restaurant: TaxVerificationRestaurant;
+
+    company: TaxVerificationCompany;
+}

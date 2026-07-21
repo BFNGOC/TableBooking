@@ -45,7 +45,7 @@ export const onboardingFormField: FormField[] = [
     {
         name: 'verifyNote',
         label: 'Ghi chú admin',
-        type: FormFieldType.TEXT,
+        type: FormFieldType.TEXTAREA,
     },
 ];
 

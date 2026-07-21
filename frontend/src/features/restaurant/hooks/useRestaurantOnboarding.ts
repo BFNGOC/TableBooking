@@ -18,6 +18,21 @@ export function useOnboarding() {
         },
     });
 }
+export function useUpdateOnboarding() {
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: restaurantRoleCustomerApi.updateOnboarding,
+
+        onSuccess: () => {
+            showToast('success', 'Chỉnh sửa nhà hàng thành công', 'Yêu cầu của bạn đã được gửi.');
+        },
+
+        onError: (error: any) => {
+            showToast('error', 'Chỉnh sửa nhà hàng thất bại', error?.message ?? 'Có lỗi xảy ra');
+        },
+    });
+}
 
 export function useVerifyEmailOnboarding() {
     const { showToast } = useToast();

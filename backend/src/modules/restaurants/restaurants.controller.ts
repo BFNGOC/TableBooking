@@ -18,6 +18,7 @@ import { Roles } from '@app/decorator/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
+import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -75,6 +76,37 @@ export class RestaurantsController {
     return this.restaurantsService.getAdminDetail(id);
   }
 
+  @Post('admin/:id/verify-tax-code')
+  @Roles(UserRole.ADMIN)
+  async verifyTaxCode(@Param('id') restaurantId: string) {
+    return this.restaurantsService.verifyTaxCode(restaurantId);
+  }
+
+  @Patch('admin/:id/approve')
+  @Roles(UserRole.ADMIN)
+  async approveRestaurant(@Param('id') id: string) {
+    return this.restaurantsService.approveRestaurant(id);
+  }
+
+  @Patch('admin/:id/reject')
+  @Roles(UserRole.ADMIN)
+  async rejectRestaurant(
+    @Param('id') id: string,
+    @Body() body: { reason: string },
+  ) {
+    return this.restaurantsService.rejectRestaurant(id, body.reason);
+  }
+
+  @Patch('onboarding/me')
+  @Roles(UserRole.ADMIN, UserRole.CUSTOMER)
+  async updateOnboarding(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateRestaurantOnboardingDto,
+  ) {
+    return this.restaurantsService.updateOnboarding(user._id, dto);
+  }
+
+  //to-do
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.restaurantsService.findOne(+id);

@@ -1,12 +1,16 @@
 import { clientRequest } from '@/shared/library/axios/client-api';
-import { RestaurantOnboardingPayload } from '../types/restaurant.dto';
+import {
+    RestaurantOnboardingPayload,
+    UpdateRestaurantOnboardingPayload,
+} from '../types/restaurant.dto';
 import { IRestaurant } from '../types/restaurant.type';
 import { RestaurantFilterRoleAdminParams } from '../types/restaurant-filter-params-type';
 import {
     RestaurantAdminDetailResponse,
     RestaurantListAdminResponse,
+    TaxVerificationResponse,
     VerifyStatusCount,
-} from '../types/restaurant-response-type';
+} from '../types/restaurant-admin-response-type';
 
 const API_URL_PREFIX = '/restaurants';
 
@@ -32,6 +36,15 @@ export const restaurantRoleCustomerApi = {
         const res = await clientRequest<IRestaurant>({
             url: `${API_URL_PREFIX}/onboarding`,
             method: 'POST',
+            body: payload,
+        });
+
+        return res.data;
+    },
+    updateOnboarding: async (payload: UpdateRestaurantOnboardingPayload) => {
+        const res = await clientRequest<IRestaurant>({
+            url: `${API_URL_PREFIX}/onboarding/me`,
+            method: 'patch',
             body: payload,
         });
 
@@ -81,5 +94,30 @@ export const restaurantRoleAdminApi = {
         });
 
         return res.data;
+    },
+    checkTaxCode: async (id: string) => {
+        const res = await clientRequest<TaxVerificationResponse>({
+            url: `${API_URL_PREFIX}/admin/${id}/verify-tax-code`,
+            method: 'POST',
+        });
+
+        return res;
+    },
+    approve: async (id: string) => {
+        const res = await clientRequest({
+            url: `${API_URL_PREFIX}/admin/${id}/approve`,
+            method: 'PATCH',
+        });
+
+        return res;
+    },
+    reject: async (id: string, reason: string) => {
+        const res = await clientRequest({
+            url: `${API_URL_PREFIX}/admin/${id}/reject`,
+            method: 'PATCH',
+            body: { reason },
+        });
+
+        return res;
     },
 };

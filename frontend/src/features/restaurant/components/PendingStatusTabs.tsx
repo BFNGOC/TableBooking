@@ -3,7 +3,7 @@
 import { Separator, Tabs } from '@heroui/react';
 import { RestaurantVerifyStatus } from '../types/restaurant.type';
 import CustomCard from '@/shared/components/card/CustomCard';
-import { VerifyStatusCount } from '../types/restaurant-response-type';
+import { VerifyStatusCount } from '../types/restaurant-admin-response-type';
 import React from 'react';
 import { RESTAURANT_VERIFY_STATUS_OPTIONS } from '../constants/restaurant-options';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock3, CircleX, Eye, Home, RefreshCcw } from 'lucide-react';
+import { Clock3, CircleX, Eye, Home, RefreshCcw, CheckCircle2 } from 'lucide-react';
 
 import { Button, Card, Separator } from '@heroui/react';
 
@@ -8,15 +8,19 @@ import Link from 'next/link';
 import ModalFormTabs, { FormSection } from '@/shared/components/modals/ModalFormTabs';
 import { useFormModal } from '@/shared/hooks/useFormModal';
 import { useRestaurantMe } from '../../hooks/useRestaurantMe';
-import { IRestaurant } from '../../types/restaurant.type';
+import { IRestaurant, RestaurantVerifyStatus } from '../../types/restaurant.type';
 import { useCuisineTypes } from '../../hooks/useCuisineTypes';
 import { createOnboardingFormField } from '../../constants/onboarding-form-field';
+import { signOut } from 'next-auth/react';
+import { useUpdateOnboarding } from '../../hooks/useRestaurantOnboarding';
 
 function PendingOnboardingPage() {
     const { data: restaurantMe } = useRestaurantMe();
 
     const { open, mode, selectedRecord, setSelectedRecord, openView, openEdit, close } =
         useFormModal<IRestaurant>();
+
+    const updateMutation = useUpdateOnboarding();
 
     const { data: cuisineTypes } = useCuisineTypes();
 
@@ -30,9 +34,60 @@ function PendingOnboardingPage() {
         },
     ];
 
-    const handleSubmitRestaurant = (values: Partial<IRestaurant>) => {
-        console.log('Submit restaurant values:', values);
+    const handleReLogin = async () => {
+        await signOut({ callbackUrl: '/login' });
     };
+
+    const handleSubmitRestaurant = async (values: Partial<IRestaurant>) => {
+        const res = await updateMutation.mutateAsync(values);
+        if (res) close();
+    };
+
+    if (restaurantMe?.verifyStatus === RestaurantVerifyStatus.APPROVED) {
+        return (
+            <div className="flex items-center justify-center bg-default-50 min-h-[80vh]">
+                <div className="w-full max-w-xl text-center px-4">
+                    <div className="mb-8 flex justify-center">
+                        <div className="flex h-28 w-28 items-center justify-center rounded-3xl bg-white shadow-lg border border-success-100">
+                            <CheckCircle2 className="h-14 w-14 text-success animate-bounce" />
+                        </div>
+                    </div>
+
+                    <h1 className="text-4xl font-bold text-success-700">
+                        Chúc mừng! Hồ sơ đã được duyệt
+                    </h1>
+
+                    <p className="mx-auto mt-4 max-w-md text-default-600">
+                        Tài khoản của bạn đã nâng cấp thành công lên quyền **Quản lý nhà hàng**. Vui
+                        lòng bấm nút bên dưới để đăng xuất và đăng nhập lại nhằm kích hoạt không
+                        gian làm việc mới.
+                    </p>
+
+                    <Card className="mx-auto mt-8 max-w-sm border border-success-200 bg-success-50/50">
+                        <Card.Content className="p-4">
+                            <p className="text-xs uppercase tracking-widest text-success-600 font-medium">
+                                Đối tác nhà hàng
+                            </p>
+                            <p className="text-lg font-bold text-success-800 mt-1">
+                                {restaurantMe?.restaurantName || 'TableSpot Partner'}
+                            </p>
+                        </Card.Content>
+                    </Card>
+
+                    <div className="mt-8 flex justify-center">
+                        <Button
+                            variant="danger-soft"
+                            size="lg"
+                            className="font-semibold text-white shadow-md w-full max-w-xs bg-success"
+                            onPress={handleReLogin}
+                        >
+                            Đăng nhập lại ngay
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex items-center justify-center bg-default-50">
@@ -125,7 +180,7 @@ function PendingOnboardingPage() {
                             onPress={() => openEdit(restaurantMe as IRestaurant)}
                         >
                             <RefreshCcw size={18} />
-                            <Link href="/restaurant/onboarding">Chỉnh sửa hồ sơ</Link>
+                            Chỉnh sửa hồ sơ
                         </Button>
                     )}
                 </div>
@@ -142,7 +197,7 @@ function PendingOnboardingPage() {
                 sections={restaurantSections}
                 onClose={close}
                 onSubmit={handleSubmitRestaurant}
-                // isPending={updateMutation.isPending || uploadMutation.isPending}
+                isPending={updateMutation.isPending}
             />
         </div>
     );

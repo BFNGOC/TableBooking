@@ -6,17 +6,16 @@ import { redirect } from 'next/navigation';
 
 async function Pending() {
     const restaurant = await getRestaurantMeServerApi();
+    console.log(restaurant);
 
     if (!restaurant) {
         redirect('/restaurant-onboarding');
     }
 
-    if (
-        restaurant.verifyStatus !== RestaurantVerifyStatus.PENDING &&
-        restaurant.verifyStatus !== RestaurantVerifyStatus.REJECTED
-    ) {
+    if (restaurant.verifyStatus === RestaurantVerifyStatus.EMAIL_PENDING) {
         redirectToCorrectPage(restaurant);
     }
+
     return <PendingOnboardingPage />;
 }
 

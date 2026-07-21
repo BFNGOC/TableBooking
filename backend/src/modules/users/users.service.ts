@@ -13,7 +13,7 @@ import {
   UserDocument,
   UserRole,
 } from './schemas/user.schema';
-import { Model } from 'mongoose';
+import { ClientSession, Model } from 'mongoose';
 import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
 import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
@@ -575,5 +575,35 @@ export class UsersService {
 
   async search(keyword: string) {
     return this.userSearchService.search(keyword);
+  }
+
+  async changeRole(
+    userId: string,
+    role: UserRole,
+    session: ClientSession,
+  ): Promise<UserDocument> {
+    const user = await this.userModel
+      .findByIdAndUpdate(
+        {
+          _id: userId,
+          role: UserRole.CUSTOMER,
+        },
+        {
+          $set: {
+            role,
+          },
+        },
+        {
+          new: true,
+          session,
+        },
+      )
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+
+    return user;
   }
 }

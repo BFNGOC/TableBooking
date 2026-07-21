@@ -13,7 +13,7 @@ import { restaurantRoleAdminApi } from '../../api/restaurant-api';
 import {
     RestaurantListAdminResponse,
     RestaurantOnboardingDetail,
-} from '../../types/restaurant-response-type';
+} from '../../types/restaurant-admin-response-type';
 import TablePaginationCustom, {
     ColumnTable,
 } from '@/shared/components/table/TablePaginationCustom';
@@ -22,20 +22,48 @@ import ActionGroup, { TableAction } from '@/shared/components/table/ActionGroup'
 import { formatDateTime } from '@/shared/utils/date';
 import { useVerifyStatusCount } from '../../hooks/useCount';
 import ModalFormTabs from '@/shared/components/modals/ModalFormTabs';
-import { useRestaurantAdminDetail } from '../../hooks/useRestaurantAdmin';
+import {
+    useRestaurantAdminApprove,
+    useRestaurantAdminCheckTaxCode,
+    useRestaurantAdminDetail,
+    useRestaurantAdminReject,
+} from '../../hooks/useRestaurantAdmin';
 import { formatSectionFormValues } from '@/shared/utils/format-section-form-values';
 import { restaurantSections } from '../../constants/restaurant-section';
 import PendingStatusTabs from '../../components/PendingStatusTabs';
 import { DEFAULT_PAGINATION } from '@/shared/constants/default-pagination';
+import TaxVerificationModal from '../../components/TaxVerificationModal';
+import ModalCustom from '@/shared/components/modals/ModalCustom';
+import TextAreaField from '@/shared/components/inputs/TextAreaField';
 
 function RestaurantPendingAdminPage() {
     const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+
+    const [isTaxCodeModalOpen, setIsTaxCodeModalOpen] = useState<boolean>(false);
+
+    const [isReasonRejectModalOpen, setIsReasonRejectModalOpen] = useState<boolean>(false);
+
+    const [rejectRecord, setRejectRecord] = useState<RestaurantListAdminResponse | null>(null);
+
+    const [rejectReason, setRejectReason] = useState('');
 
     const { open, openView, close, selectedRecord } = useFormModal<RestaurantListAdminResponse>();
 
     const detailQuery = useRestaurantAdminDetail(selectedRecord?._id);
 
     const { getAll } = restaurantRoleAdminApi;
+
+    const { mutate: approveRestaurant, isPending: isApproving } = useRestaurantAdminApprove();
+
+    const { mutate: rejectRestaurant, isPending: isRejecting } = useRestaurantAdminReject();
+
+    const {
+        mutate: checkTaxCode,
+        error: taxVerificationError,
+        data: taxVerificationData,
+        isPending: isCheckingTaxCode,
+        reset: resetTaxCode,
+    } = useRestaurantAdminCheckTaxCode();
 
     const { data: verifyStatusCount } = useVerifyStatusCount();
 
@@ -61,11 +89,36 @@ function RestaurantPendingAdminPage() {
         });
     };
 
-    const handleCheckTaxCode = () => {};
+    const handleCheckTaxCode = (id: string) => {
+        resetTaxCode();
 
-    const handleApprove = () => {};
+        setIsTaxCodeModalOpen(true);
 
-    const handleReject = () => {};
+        checkTaxCode(id);
+    };
+
+    const handleApprove = (record: RestaurantListAdminResponse) => {
+        approveRestaurant(record._id);
+    };
+
+    const handleReject = () => {
+        if (!rejectRecord?._id) {
+            return;
+        }
+
+        if (!rejectReason.trim()) {
+            return;
+        }
+
+        rejectRestaurant({
+            id: rejectRecord._id,
+            reason: rejectReason.trim(),
+        });
+
+        setIsReasonRejectModalOpen(false);
+        setRejectRecord(null);
+        setRejectReason('');
+    };
 
     const actions: TableAction<RestaurantListAdminResponse>[] = [
         {
@@ -78,7 +131,9 @@ function RestaurantPendingAdminPage() {
         {
             icon: <Search />,
             tooltip: 'Kiểm tra MST',
-            onPress: handleCheckTaxCode,
+            onPress: (record) => {
+                handleCheckTaxCode(record._id);
+            },
             show: (restaurant) => restaurant.verifyStatus == RestaurantVerifyStatus.PENDING,
         },
         {
@@ -87,12 +142,26 @@ function RestaurantPendingAdminPage() {
             variant: 'danger-soft',
             onPress: handleApprove,
             show: (restaurant) => restaurant.verifyStatus == RestaurantVerifyStatus.PENDING,
+            isPending: isApproving,
+            confirm: {
+                title: 'Duyệt nhà hàng',
+                description: (restaurant) => (
+                    <>
+                        Bạn có chắc chắn muốn duyệt <strong>{restaurant.restaurantName}</strong> (
+                        <strong>{restaurant.restaurantCode}</strong>) không?
+                    </>
+                ),
+            },
         },
         {
             icon: <X />,
             tooltip: 'Từ chối',
             variant: 'danger',
-            onPress: handleReject,
+            onPress: (record) => {
+                setRejectRecord(record);
+                setRejectReason('');
+                setIsReasonRejectModalOpen(true);
+            },
             show: (restaurant) => restaurant.verifyStatus == RestaurantVerifyStatus.PENDING,
         },
     ];
@@ -206,6 +275,74 @@ function RestaurantPendingAdminPage() {
                 onSubmit={() => {}}
                 isPending={detailQuery.isPending}
             />
+
+            <TaxVerificationModal
+                open={isTaxCodeModalOpen}
+                onClose={() => {
+                    setIsTaxCodeModalOpen(false);
+                    resetTaxCode();
+                }}
+                data={taxVerificationData?.data}
+                error={taxVerificationError?.message}
+                isPending={isCheckingTaxCode}
+            />
+
+            <ModalCustom
+                open={isReasonRejectModalOpen}
+                onOpenChange={(open) => {
+                    setIsReasonRejectModalOpen(open);
+
+                    if (!open) {
+                        setRejectRecord(null);
+                        setRejectReason('');
+                    }
+                }}
+                title="Từ chối nhà hàng"
+                size="md"
+                isDismissable={!isRejecting}
+                footer={
+                    <>
+                        <Button
+                            variant="tertiary"
+                            onPress={() => {
+                                setIsReasonRejectModalOpen(false);
+                                setRejectRecord(null);
+                                setRejectReason('');
+                            }}
+                            isDisabled={isRejecting}
+                        >
+                            Hủy
+                        </Button>
+
+                        <Button
+                            variant="danger"
+                            onPress={handleReject}
+                            isDisabled={!rejectReason.trim() || isRejecting}
+                            isPending={isRejecting}
+                        >
+                            Từ chối
+                        </Button>
+                    </>
+                }
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="text-sm">
+                        Bạn đang từ chối yêu cầu đăng ký của nhà hàng{' '}
+                        <strong>{rejectRecord?.restaurantName}</strong> (
+                        <strong>{rejectRecord?.restaurantCode}</strong>
+                        ).
+                    </div>
+
+                    <TextAreaField
+                        name="verifyNote"
+                        label="Lý do từ chối"
+                        placeholder="Nhập lý do từ chối nhà hàng..."
+                        value={rejectReason}
+                        onChange={(value: any) => setRejectReason(value)}
+                        isRequired
+                    />
+                </div>
+            </ModalCustom>
         </div>
     );
 }
