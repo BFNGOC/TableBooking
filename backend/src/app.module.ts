@@ -16,6 +16,8 @@ import { RestaurantsModule } from './modules/restaurants/restaurants.module';
 import { SearchModule } from './modules/search/elasticsearch.module';
 import { CounterModule } from './modules/counter/counter.module';
 import { TaxModule } from './modules/tax/tax.module';
+import { AreasModule } from './modules/areas/areas.module';
+import { TablesModule } from './modules/tables/tables.module';
 
 @Module({
   imports: [
@@ -74,6 +76,10 @@ import { TaxModule } from './modules/tax/tax.module';
     CounterModule,
 
     TaxModule,
+
+    AreasModule,
+
+    TablesModule,
   ],
 
   controllers: [AppController],
