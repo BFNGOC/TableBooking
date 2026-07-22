@@ -84,6 +84,12 @@ export class RestaurantsService {
       throw new NotFoundException('Không tìm thấy thông tin nhà hàng');
     }
 
+    /**
+     * ============================================================
+     * Validate Price
+     * ============================================================
+     */
+
     const priceFrom = dto.priceFrom ?? restaurant.priceFrom;
     const priceTo = dto.priceTo ?? restaurant.priceTo;
 
@@ -97,6 +103,12 @@ export class RestaurantsService {
       );
     }
 
+    /**
+     * ============================================================
+     * Validate Social Links
+     * ============================================================
+     */
+
     if (dto.socialLinks) {
       const socialTypes = dto.socialLinks.map((item) => item.type);
 
@@ -109,9 +121,25 @@ export class RestaurantsService {
       }
     }
 
+    /**
+     * ============================================================
+     * Update MongoDB
+     * ============================================================
+     */
+
     Object.assign(restaurant, dto);
 
-    return restaurant.save();
+    const updatedRestaurant = await restaurant.save();
+
+    /**
+     * ============================================================
+     * Update Elasticsearch
+     * ============================================================
+     */
+
+    await this.restaurantSearchService.update(updatedRestaurant);
+
+    return updatedRestaurant;
   }
 
   /***********************************
