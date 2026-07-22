@@ -2,6 +2,7 @@ import { clientRequest } from '@/shared/library/axios/client-api';
 import {
     RestaurantOnboardingPayload,
     UpdateRestaurantOnboardingPayload,
+    UpdateRestaurantProfilePayload,
 } from '../types/restaurant.dto';
 import { IRestaurant } from '../types/restaurant.type';
 import { RestaurantFilterRoleAdminParams } from '../types/restaurant-filter-params-type';
@@ -29,6 +30,18 @@ export const getRestaurantMeApi = async () => {
         method: 'GET',
     });
     return res.data;
+};
+
+export const restaurantRoleRestaurantApi = {
+    updateMe: async (payload: UpdateRestaurantProfilePayload) => {
+        const res = await clientRequest<IRestaurant>({
+            url: `${API_URL_PREFIX}/me`,
+            method: 'PATCH',
+            body: payload,
+        });
+
+        return res;
+    },
 };
 
 export const restaurantRoleCustomerApi = {

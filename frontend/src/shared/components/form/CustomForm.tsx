@@ -15,6 +15,7 @@ import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
 import UploadImageCustom from '../upload/UploadImageCustom';
 import { CheckboxCustom } from '../checkbox/CheckboxCustom';
 import { getNestedValue, setNestedValue } from '@/shared/utils/object-path';
+import NumberFieldCustom from '../inputs/NumberField';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
@@ -172,6 +173,8 @@ function CustomForm<T extends Record<string, any>>({
                                             onLoadingChange={onUploadLoadingChange}
                                         />
                                     );
+                                case 'number':
+                                    return <NumberFieldCustom {...commonProps} />;
 
                                 default:
                                     return <AppTextField {...commonProps} />;

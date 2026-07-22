@@ -75,6 +75,45 @@ export class RestaurantsService {
     return restaurant;
   }
 
+  async updateRestaurantMe(userId: string, dto: UpdateRestaurantProfileDto) {
+    const restaurant = await this.restaurantModel.findOne({
+      userId,
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy thông tin nhà hàng');
+    }
+
+    const priceFrom = dto.priceFrom ?? restaurant.priceFrom;
+    const priceTo = dto.priceTo ?? restaurant.priceTo;
+
+    if (
+      priceFrom !== undefined &&
+      priceTo !== undefined &&
+      priceFrom > priceTo
+    ) {
+      throw new BadRequestException(
+        'Mức giá tối thiểu không được lớn hơn mức giá tối đa',
+      );
+    }
+
+    if (dto.socialLinks) {
+      const socialTypes = dto.socialLinks.map((item) => item.type);
+
+      const uniqueSocialTypes = new Set(socialTypes);
+
+      if (socialTypes.length !== uniqueSocialTypes.size) {
+        throw new BadRequestException(
+          'Mỗi loại mạng xã hội chỉ được phép xuất hiện một lần',
+        );
+      }
+    }
+
+    Object.assign(restaurant, dto);
+
+    return restaurant.save();
+  }
+
   /***********************************
    *  CUSTOMER
    ***********************************/

@@ -37,7 +37,7 @@ export interface FormField {
 
     isRequired?: boolean | ((context: FieldContext) => boolean);
 
-    validate?: (value: string) => string | null;
+    validate?: (value: any, values?: Record<string, any>) => string | null;
 
     defaultValue?: string;
 
@@ -47,9 +47,9 @@ export interface FormField {
 
     defaultDate?: DateValue;
 
-    minValue?: DateValue;
+    minValue?: DateValue | number;
 
-    maxValue?: DateValue;
+    maxValue?: DateValue | number;
 
     defaultTime?: TimeValue;
 

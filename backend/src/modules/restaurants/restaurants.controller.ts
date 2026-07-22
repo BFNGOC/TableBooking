@@ -41,6 +41,14 @@ export class RestaurantsController {
     return this.restaurantsService.getCurrentUserRestaurant(user._id);
   }
 
+  @Patch('me/')
+  async updateRestaurantMe(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateRestaurantProfileDto,
+  ) {
+    return this.restaurantsService.updateRestaurantMe(user._id, dto);
+  }
+
   @Post('onboarding')
   @Roles(UserRole.CUSTOMER)
   createOnboarding(

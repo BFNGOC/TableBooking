@@ -12,8 +12,15 @@ export enum RestaurantVerifyStatus {
     REJECTED = 'REJECTED',
 }
 
+export enum SocialLinkType {
+    FACEBOOK = 'FACEBOOK',
+    INSTAGRAM = 'INSTAGRAM',
+    TIKTOK = 'TIKTOK',
+    WEBSITE = 'WEBSITE',
+}
+
 export interface RestaurantSocialLink {
-    type: string;
+    type: SocialLinkType;
     url: string;
 }
 

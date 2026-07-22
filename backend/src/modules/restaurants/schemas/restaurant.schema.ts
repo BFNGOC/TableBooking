@@ -17,14 +17,29 @@ export enum RestaurantVerifyStatus {
   REJECTED = 'REJECTED',
 }
 
-@Schema({ _id: false })
-export class Image {
-  @Prop({ required: true })
-  url!: string;
-
-  @Prop({ required: true })
-  publicId!: string;
+export enum SocialLinkType {
+  FACEBOOK = 'FACEBOOK',
+  INSTAGRAM = 'INSTAGRAM',
+  TIKTOK = 'TIKTOK',
+  WEBSITE = 'WEBSITE',
 }
+
+@Schema({ _id: false })
+export class SocialLink {
+  @Prop({
+    required: true,
+    enum: SocialLinkType,
+  })
+  type!: SocialLinkType;
+
+  @Prop({
+    required: true,
+    trim: true,
+  })
+  url!: string;
+}
+
+export const SocialLinkSchema = SchemaFactory.createForClass(SocialLink);
 
 @Schema({
   timestamps: true,
@@ -144,24 +159,10 @@ export class Restaurant {
    * Website, Facebook, Instagram...
    */
   @Prop({
-    type: [
-      {
-        type: {
-          type: String,
-          required: true,
-        },
-        url: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    type: [SocialLinkSchema],
     default: [],
   })
-  socialLinks?: {
-    type: string;
-    url: string;
-  }[];
+  socialLinks?: SocialLink[];
 
   /**
    * ============================================================
@@ -185,13 +186,13 @@ export class Restaurant {
     type: ImageType,
     default: null,
   })
-  avatar?: Image;
+  avatar?: ImageType;
 
   @Prop({
     type: [ImageType],
     default: [],
   })
-  images?: Image[];
+  images?: ImageType[];
 
   /**
    * ============================================================
