@@ -236,9 +236,37 @@ export class Restaurant {
    */
   @Prop({
     enum: RestaurantStatus,
-    default: RestaurantStatus.INACTIVE,
+    default: RestaurantStatus.ACTIVE,
   })
   status?: RestaurantStatus;
+
+  @Prop({
+    default: true,
+  })
+  isAcceptingBookings?: boolean;
+
+  @Prop({
+    default: 60,
+    min: 0,
+  })
+  minBookingNoticeMinutes?: number;
+
+  @Prop({
+    default: 15,
+    min: 1,
+  })
+  tableHoldMinutes?: number;
+
+  @Prop({
+    default: true,
+  })
+  allowSameDayBooking?: boolean;
+
+  @Prop({
+    default: 30,
+    min: 1,
+  })
+  advanceBookingDays?: number;
 
   /**
    * Chủ sở hữu nhà hàng
