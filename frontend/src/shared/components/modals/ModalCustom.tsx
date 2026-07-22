@@ -37,16 +37,16 @@ function ModalCustom({
     return (
         <Modal isOpen={open} onOpenChange={onOpenChange}>
             <Modal.Backdrop isDismissable={isDismissable}>
-                <Modal.Container size={size}>
-                    <Modal.Dialog className={dialogClassName}>
+                <Modal.Container className="!w-fit !max-w-[90vw] !min-w-[550px] mx-auto">
+                    <Modal.Dialog className={`${dialogClassName} !w-fit !max-w-none`}>
                         <Modal.CloseTrigger />
                         <Modal.Header>
                             {icon && (
-                                <Modal.Icon className="bg-default text-foreground">
+                                <Modal.Icon className="bg-default text-foreground text-lg">
                                     {icon}
                                 </Modal.Icon>
                             )}
-                            <Modal.Heading>{title}</Modal.Heading>
+                            <Modal.Heading className="text-lg">{title}</Modal.Heading>
                         </Modal.Header>
                         <Modal.Body>{children}</Modal.Body>
                         {footer && <Modal.Footer>{footer}</Modal.Footer>}

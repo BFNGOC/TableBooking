@@ -1,37 +1,27 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { RestaurantOnboardingPayload } from '../types/restaurant.dto';
-import { useToast } from '@/shared/hooks/useToast';
+import { RestaurantOnboardingPayload } from '../../types/restaurant.dto';
 import { useState } from 'react';
 import CustomForm from '@/shared/components/form/CustomForm';
 import { Button } from '@heroui/react';
-import { createOnboardingFormField } from '../constants/onboarding-form-field';
-import { useCuisineTypes } from '../hooks/useCuisineTypes';
+import { createOnboardingFormField } from '../../constants/onboarding-form-field';
+import { useCuisineTypes } from '../../hooks/useCuisineTypes';
+import { useOnboarding } from '../../hooks/useRestaurantOnboarding';
 
 function RestaurantOnboardingPage() {
     const router = useRouter();
-    const { showToast } = useToast();
-    // const { mutateAsync: register, isPending } = useRegisterMutation();
 
     const { data: cuisineTypes } = useCuisineTypes();
 
+    const { mutateAsync: onboarding, isPending } = useOnboarding();
+
     const [values, setValues] = useState<Partial<RestaurantOnboardingPayload>>({});
 
-    const handleSubmit = async (data: Partial<RestaurantOnboardingPayload>) => {
-        try {
-            // const res = await register(payload);
-            // if (res?.data?.user?._id) {
-            //     showToast(
-            //         'success',
-            //         'Đăng ký thành công',
-            //         'Vui lòng kiểm tra email để xác nhận tài khoản của bạn'
-            //     );
-            //     router.push(`/verify-email/${res.data.user._id}`);
-            // }
-        } catch (error: any) {
-            showToast('error', 'Đăng ký nhà hàng thất bại', error?.message);
-        }
+    const handleSubmit = async (payload: Partial<RestaurantOnboardingPayload>) => {
+        const res = await onboarding(payload as RestaurantOnboardingPayload);
+
+        router.push(`/restaurant-onboarding/verify-email/${res._id}`);
     };
 
     return (
@@ -54,9 +44,9 @@ function RestaurantOnboardingPage() {
                         <Button
                             type="submit"
                             className="w-full h-12 bg-[#6f4e37]"
-                            // isPending={isPending}
+                            isPending={isPending}
                         >
-                            Đăng ký
+                            Gửi yêu cùa hợp tác
                         </Button>
                     }
                 />

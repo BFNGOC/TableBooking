@@ -16,41 +16,16 @@ function Restaurant({ children }: RestaurantProps) {
             exact: true,
         },
         {
-            label: 'Quản lý nhà hàng',
+            label: 'Quản lý bàn',
             children: [
                 {
-                    label: 'Thông tin',
-                    href: '/restaurant/dashboard/profile',
+                    label: 'Danh sách bàn',
+                    href: '/restaurant/dashboard/tables',
+                    exact: true,
                 },
                 {
-                    label: 'Quản lý bàn',
-                    children: [
-                        {
-                            label: 'Danh sách bàn',
-                            href: '/restaurant/dashboard/tables',
-                        },
-                        {
-                            label: 'Loại bàn',
-                            href: '/restaurant/dashboard/tables/types',
-                        },
-                    ],
-                },
-                {
-                    label: 'Menu',
-                    children: [
-                        {
-                            label: 'Danh mục',
-                            href: '/restaurant/dashboard/menu/categories',
-                        },
-                        {
-                            label: 'Món ăn',
-                            href: '/restaurant/dashboard/menu/items',
-                        },
-                        {
-                            label: 'Combo',
-                            href: '/restaurant/dashboard/menu/combos',
-                        },
-                    ],
+                    label: 'Khu vực bàn',
+                    href: '/restaurant/dashboard/table/area',
                 },
             ],
         },
@@ -59,7 +34,7 @@ function Restaurant({ children }: RestaurantProps) {
             children: [
                 {
                     label: 'Hôm nay',
-                    href: '/restaurant/dashboard/bookings',
+                    href: '/restaurant/dashboard/bookings/today',
                 },
                 {
                     label: 'Lịch sử',
@@ -68,27 +43,27 @@ function Restaurant({ children }: RestaurantProps) {
             ],
         },
         {
-            label: 'Tài khoản',
+            label: 'Quản lý nhà hàng',
             children: [
                 {
-                    label: 'Thông tin',
-                    href: '/restaurant/dashboard/settings',
+                    label: 'Hồ sơ',
+                    href: '/restaurant/dashboard/profile',
                 },
                 {
-                    label: 'Đổi mật khẩu',
-                    href: '/restaurant/dashboard/security',
+                    label: 'Cài đặt',
+                    href: '/restaurant/dashboard/settings',
                 },
             ],
         },
     ];
 
     return (
-        <div className="flex min-h-screen bg-[#f5efeb]">
+        <div className="flex h-screen overflow-hidden bg-[#f5efeb]">
             {/* Sidebar */}
             <SidebarLayout menus={menus} />
 
             {/* Content */}
-            <main className="flex-1 p-6">{children}</main>
+            <main className="min-w-0 flex-1 overflow-y-auto p-6">{children}</main>
         </div>
     );
 }

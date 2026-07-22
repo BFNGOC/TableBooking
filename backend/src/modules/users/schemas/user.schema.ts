@@ -1,5 +1,5 @@
 import { ImageType } from '@app/modules/upload/types/image.type';
-import { AutoFieldsPlugin } from '@app/plugins/auto-fields.plugin';
+import { AutoSlugPlugin } from '@app/plugins/auto-slug.plugin';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
@@ -33,13 +33,6 @@ export class User {
   })
   name!: string;
 
-  // nameSearch
-  @Prop({
-    index: true,
-    select: false,
-  })
-  nameSearch!: string;
-
   // Email
   @Prop({
     required: true,
@@ -48,13 +41,6 @@ export class User {
     trim: true,
   })
   email!: string;
-
-  // emailSearch
-  @Prop({
-    index: true,
-    select: false,
-  })
-  emailSearch!: string;
 
   // Mật khẩu
   @Prop({
@@ -145,12 +131,18 @@ export class User {
     default: null,
   })
   dateOfBirth?: Date;
+
+  @Prop({
+    default: '',
+    index: true,
+  })
+  slug!: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.plugin(AutoFieldsPlugin, {
-  search: ['name', 'email'],
+UserSchema.plugin(AutoSlugPlugin, {
+  slug: ['name'],
 });
 
 // Index
@@ -158,4 +150,3 @@ UserSchema.index({ role: 1 });
 UserSchema.index({ accountType: 1 });
 UserSchema.index({ isActive: 1 });
 UserSchema.index({ gender: 1 });
-UserSchema.index({ birthYear: 1 });

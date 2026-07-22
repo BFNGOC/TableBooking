@@ -1,6 +1,14 @@
-import RestaurantOnboardingPage from '@/features/restaurant/pages/RestaurantOnboardingPage';
+import { getRestaurantMeServerApi } from '@/features/restaurant/api/restaurant-server-api';
+import RestaurantOnboardingPage from '@/features/restaurant/pages/onboarding/RestaurantOnboardingPage';
+import { redirectToCorrectPage } from '@/features/restaurant/utils/redirectOnboardingPage';
 
-function RestaurantOnboarding() {
+async function RestaurantOnboarding() {
+    const restaurant = await getRestaurantMeServerApi();
+
+    if (restaurant) {
+        redirectToCorrectPage(restaurant);
+    }
+
     return <RestaurantOnboardingPage />;
 }
 
