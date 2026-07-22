@@ -34,11 +34,17 @@ export function formatFormValues<T extends Record<string, any>>(
                 break;
 
             case FormFieldType.TIME_PICKER:
-                break;
-
-            case FormFieldType.NUMBER:
                 if (mode === 'toApi') {
-                    result[field.name] = Number(value);
+                    if (
+                        typeof value === 'object' &&
+                        value !== null &&
+                        'hour' in value &&
+                        'minute' in value
+                    ) {
+                        result[field.name] = `${String(value.hour).padStart(2, '0')}:${String(
+                            value.minute
+                        ).padStart(2, '0')}`;
+                    }
                 }
                 break;
 

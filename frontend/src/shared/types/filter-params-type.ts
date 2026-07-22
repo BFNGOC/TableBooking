@@ -4,4 +4,6 @@ export interface FilterParams {
     pageSize?: number;
 
     keySearch?: string;
+
+    sort?: string;
 }

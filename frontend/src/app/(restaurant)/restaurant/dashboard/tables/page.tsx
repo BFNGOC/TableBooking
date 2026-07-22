@@ -1,5 +1,5 @@
-function TablesOwnerPage() {
-    return <div>TablesOwnerPage</div>;
+function TablesRestaurant() {
+    return <div>TablesRestaurant</div>;
 }
 
-export default TablesOwnerPage;
+export default TablesRestaurant;

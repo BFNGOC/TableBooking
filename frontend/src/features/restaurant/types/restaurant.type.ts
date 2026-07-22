@@ -6,13 +6,21 @@ export enum RestaurantStatus {
 }
 
 export enum RestaurantVerifyStatus {
+	EMAIL_PENDING = "EMAIL_PENDING",
 	PENDING = "PENDING",
 	APPROVED = "APPROVED",
 	REJECTED = "REJECTED",
 }
 
+export enum SocialLinkType {
+	FACEBOOK = "FACEBOOK",
+	INSTAGRAM = "INSTAGRAM",
+	TIKTOK = "TIKTOK",
+	WEBSITE = "WEBSITE",
+}
+
 export interface RestaurantSocialLink {
-	type: string;
+	type: SocialLinkType;
 	url: string;
 }
 
@@ -45,9 +53,16 @@ export interface IRestaurant {
 	verifyStatus?: RestaurantVerifyStatus;
 	verifyNote?: string;
 	status?: RestaurantStatus;
-	slug?: string;
+
+	onboardingRequestedAt?: Date;
 
 	userId?: string;
+
+	slug?: string;
+
+	verificationCodeId?: string;
+
+	verificationCodeExpires?: Date;
 
 	createdAt?: string | Date;
 	updatedAt?: string | Date;

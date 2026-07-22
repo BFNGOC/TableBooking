@@ -95,7 +95,7 @@ export class SearchService implements OnModuleInit {
       } as any);
 
       const data = (response.hits.hits ?? []).map((item: any) => ({
-        id: item._id,
+        _id: item._id,
         ...item._source,
       })) as T[];
 
@@ -133,26 +133,62 @@ export class SearchService implements OnModuleInit {
           {
             multi_match: {
               query: options.keyword,
+
               fields: options.fields,
+
               fuzziness: 'AUTO',
             },
           },
         ],
+
         filter,
       },
     };
   }
 
   private buildFilter(filter?: Record<string, unknown>): any[] {
-    if (!filter || Object.keys(filter).length === 0) {
+    if (!filter) {
       return [];
     }
 
-    return Object.entries(filter).map(([field, value]) => ({
-      term: {
-        [field]: value,
-      },
-    }));
+    const filters: any[] = [];
+
+    Object.entries(filter).forEach(([field, value]) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+
+      // date range
+      if (field === 'fromDate' || field === 'toDate') {
+        return;
+      }
+
+      filters.push({
+        term: {
+          [field]: value,
+        },
+      });
+    });
+
+    if (filter.fromDate || filter.toDate) {
+      const range: any = {};
+
+      if (filter.fromDate) {
+        range.gte = filter.fromDate;
+      }
+
+      if (filter.toDate) {
+        range.lte = filter.toDate;
+      }
+
+      filters.push({
+        range: {
+          onboardingRequestedAt: range,
+        },
+      });
+    }
+
+    return filters;
   }
 
   private buildSort(sort?: SearchOptions['sort']): any[] | undefined {

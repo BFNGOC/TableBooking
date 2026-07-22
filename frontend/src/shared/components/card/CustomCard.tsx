@@ -2,7 +2,7 @@ import { Card } from '@heroui/react';
 
 interface ICustomCardProps {
     className?: string;
-    headerTitle?: string;
+    headerTitle?: string | React.ReactNode;
     subtitle?: string;
     children?: React.ReactNode;
     footerContent?: React.ReactNode;

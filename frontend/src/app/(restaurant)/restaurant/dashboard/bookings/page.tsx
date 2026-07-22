@@ -1,5 +1,5 @@
-function BookingsOwnerPage() {
-    return <div>BookingsOwnerPage</div>;
+function BookingsRestaurant() {
+    return <div>BookingsRestaurant</div>;
 }
 
-export default BookingsOwnerPage;
+export default BookingsRestaurant;

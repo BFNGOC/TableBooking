@@ -14,6 +14,8 @@ import { RolesGuard } from './guards/role.guard';
 import { UploadModule } from './modules/upload/upload.module';
 import { RestaurantsModule } from './modules/restaurants/restaurants.module';
 import { SearchModule } from './modules/search/elasticsearch.module';
+import { CounterModule } from './modules/counter/counter.module';
+import { TaxModule } from './modules/tax/tax.module';
 
 @Module({
   imports: [
@@ -68,6 +70,10 @@ import { SearchModule } from './modules/search/elasticsearch.module';
     }),
 
     UploadModule,
+
+    CounterModule,
+
+    TaxModule,
   ],
 
   controllers: [AppController],

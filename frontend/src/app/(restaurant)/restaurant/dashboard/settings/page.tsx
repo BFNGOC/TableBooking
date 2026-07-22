@@ -1,5 +1,5 @@
-function SettingOwnerPage() {
-    return <div>SettingOwnerPage</div>;
+function SettingRestaurant() {
+    return <div>SettingRestaurant</div>;
 }
 
-export default SettingOwnerPage;
+export default SettingRestaurant;

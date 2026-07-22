@@ -25,11 +25,11 @@ function AuthLayout({ children }: AuthLayoutProps) {
                     <h1 className="mb-4 max-w-md text-5xl font-bold leading-tight">
                         Đồng hành cùng
                         <br />
-                        TableSpot
+                        TableBooking
                     </h1>
 
                     <p className="max-w-lg text-lg leading-8 text-gray-200">
-                        Gia nhập hệ sinh thái TableSpot để tiếp cận nhiều thực khách hơn, quản lý
+                        Gia nhập hệ sinh thái TableBooking để tiếp cận nhiều thực khách hơn, quản lý
                         đặt bàn hiệu quả và nâng cao trải nghiệm vận hành nhà hàng trên một nền tảng
                         hiện đại.
                     </p>

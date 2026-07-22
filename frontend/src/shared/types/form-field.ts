@@ -2,8 +2,15 @@ import { DateValue, TimeValue } from '@heroui/react';
 import { FormFieldType } from './form-field-types';
 import { FormModalModeType } from './form-modal-mode-type';
 
-export interface FieldContext {
+export interface FieldContext<T = Record<string, any>> {
     mode: FormModalModeType;
+    dataForm: Partial<T>;
+}
+
+export interface options {
+    id: any;
+    text: string;
+    description?: string;
 }
 
 export interface FormField {
@@ -20,21 +27,17 @@ export interface FormField {
 
     col?: 1 | 2 | 3 | 4 | 5 | 6 | 12;
 
-    options?: {
-        id: any;
-        text: string;
-        description?: string;
-    }[];
+    options?: options[];
 
-    isDisabled?: any;
+    isDisabled?: boolean | ((context: FieldContext) => boolean);
 
-    hidden?: any;
+    isReadOnly?: boolean | ((context: FieldContext) => boolean);
 
-    isReadOnly?: any;
+    hidden?: boolean | ((context: FieldContext) => boolean);
 
-    isRequired?: boolean;
+    isRequired?: boolean | ((context: FieldContext) => boolean);
 
-    validate?: (value: string) => string | null;
+    validate?: (value: any, values?: Record<string, any>) => string | null;
 
     defaultValue?: string;
 
@@ -44,9 +47,9 @@ export interface FormField {
 
     defaultDate?: DateValue;
 
-    minValue?: DateValue;
+    minValue?: DateValue | number;
 
-    maxValue?: DateValue;
+    maxValue?: DateValue | number;
 
     defaultTime?: TimeValue;
 
