@@ -11,7 +11,7 @@ import {
   RestaurantDocument,
   RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CUISINE_TYPES } from '@app/shared/dto/constants/cuisine-type.constant';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,12 +29,25 @@ import { UserDocument, UserRole } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { UserSearchService } from '../users/user-search.service';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
+import { Table, TableDocument } from '../tables/schemas/table.schema';
+import {
+  TableAvailability,
+  TableAvailabilityDocument,
+} from '../table-availabilities/schemas/table-availability.schema';
+import { Booking, BookingDocument } from '../bookings/schemas/booking.schema';
+import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 
 @Injectable()
 export class RestaurantsService {
   constructor(
     @InjectModel(Restaurant.name)
     private restaurantModel: Model<Restaurant>,
+    @InjectModel(Table.name)
+    private readonly tableModel: Model<TableDocument>,
+    @InjectModel(TableAvailability.name)
+    private readonly tableAvailabilityModel: Model<TableAvailabilityDocument>,
+    @InjectModel(Booking.name)
+    private readonly bookingModel: Model<BookingDocument>,
     private readonly mailerService: MailerService,
     private readonly restaurantSearchService: RestaurantSearchService,
     private readonly counterService: CounterService,
@@ -567,6 +580,36 @@ export class RestaurantsService {
     await this.restaurantSearchService.update(restaurant);
 
     return restaurant;
+  }
+
+  /***********************************
+   *  BOOKING
+   ***********************************/
+
+  async getAvailableTables(restaurantId: string, dto: GetAvailableTablesDto) {
+    if (!Types.ObjectId.isValid(restaurantId)) {
+      throw new BadRequestException('Định dạng ID nhà hàng không hợp lệ');
+    }
+
+    //check restaurant
+    const restaurant = await this.restaurantModel.findById(restaurantId);
+
+    if (!restaurant) throw new NotFoundException('Không tìm thấy nhà hàng');
+
+    //get TableAvailability
+    const tableAvailability = await this.tableAvailabilityModel
+      .findOne({
+        restaurantId: new Types.ObjectId(restaurantId),
+      })
+      .exec();
+
+    if (!tableAvailability)
+      throw new NotFoundException('Không tìm thấy availability');
+
+    //check Exception
+    //check time request
+
+    return tableAvailability;
   }
 
   //to-do

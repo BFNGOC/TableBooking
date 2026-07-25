@@ -19,6 +19,7 @@ import { UserRole } from '../users/schemas/user.schema';
 import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
+import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -112,6 +113,19 @@ export class RestaurantsController {
     @Body() dto: UpdateRestaurantOnboardingDto,
   ) {
     return this.restaurantsService.updateOnboarding(user._id, dto);
+  }
+
+  //booking
+  @Get(':restaurantId/available-tables')
+  @Public()
+  getAvailableTables(
+    @Param('restaurantId')
+    restaurantId: string,
+
+    @Query()
+    dto: GetAvailableTablesDto,
+  ) {
+    return this.restaurantsService.getAvailableTables(restaurantId, dto);
   }
 
   //to-do

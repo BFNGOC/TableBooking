@@ -8,6 +8,9 @@ import { RestaurantSearchService } from './restaurant-admin-search.service';
 import { CounterModule } from '../counter/counter.module';
 import { TaxModule } from '../tax/tax.module';
 import { UsersModule } from '../users/users.module';
+import { TablesModule } from '../tables/tables.module';
+import { BookingsModule } from '../bookings/bookings.module';
+import { TableAvailabilitiesModule } from '../table-availabilities/table-availabilities.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { UsersModule } from '../users/users.module';
     CounterModule,
     TaxModule,
     UsersModule,
+    TablesModule,
+    TableAvailabilitiesModule,
+    BookingsModule,
   ],
   controllers: [RestaurantsController],
   providers: [RestaurantsService, RestaurantSearchService],
