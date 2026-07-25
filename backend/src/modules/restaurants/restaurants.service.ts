@@ -591,25 +591,59 @@ export class RestaurantsService {
       throw new BadRequestException('Định dạng ID nhà hàng không hợp lệ');
     }
 
-    //check restaurant
-    const restaurant = await this.restaurantModel.findById(restaurantId);
+    const { date, startTime, endTime, guestCount } = dto;
 
-    if (!restaurant) throw new NotFoundException('Không tìm thấy nhà hàng');
+    const restaurant = await this.restaurantModel
+      .findById(restaurantId)
+      .select('_id')
+      .lean();
 
-    //get TableAvailability
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
     const tableAvailability = await this.tableAvailabilityModel
       .findOne({
         restaurantId: new Types.ObjectId(restaurantId),
       })
-      .exec();
+      .lean();
 
-    if (!tableAvailability)
+    if (!tableAvailability) {
       throw new NotFoundException('Không tìm thấy availability');
+    }
 
-    //check Exception
-    //check time request
+    const requestDate = dayjs(date);
 
-    return tableAvailability;
+    // check exception
+    const exception = tableAvailability.exceptions?.find(
+      (item) =>
+        dayjs(item.date).format('YYYY-MM-DD') ===
+        requestDate.format('YYYY-MM-DD'),
+    );
+
+    let activeSlots;
+
+    if (exception) {
+      if (exception.isClosed) {
+        return [];
+      }
+
+      activeSlots = exception.slots ?? [];
+    } else {
+      const dayOfWeek = requestDate.day();
+
+      const weeklySlot = tableAvailability.weeklySlots?.find(
+        (item) => item.dayOfWeek == dayOfWeek,
+      );
+
+      if (!weeklySlot || !weeklySlot.isActive) {
+        return [];
+      }
+
+      activeSlots = weeklySlot.slots ?? [];
+    }
+
+    return activeSlots;
   }
 
   //to-do

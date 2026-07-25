@@ -3,16 +3,6 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type TableAvailabilityDocument = HydratedDocument<TableAvailability>;
 
-export enum DayOfWeek {
-  SUNDAY = 0,
-  MONDAY = 1,
-  TUESDAY = 2,
-  WEDNESDAY = 3,
-  THURSDAY = 4,
-  FRIDAY = 5,
-  SATURDAY = 6,
-}
-
 @Schema({ _id: false })
 class TimeSlot {
   @Prop({ required: true })
@@ -26,11 +16,11 @@ const TimeSlotSchema = SchemaFactory.createForClass(TimeSlot);
 @Schema({ _id: false })
 class WeeklySlot {
   @Prop({
-    type: Number,
     required: true,
-    enum: Object.values(DayOfWeek).filter((v) => typeof v === 'number'),
+    min: 0,
+    max: 6,
   })
-  dayOfWeek!: DayOfWeek;
+  dayOfWeek!: number;
 
   @Prop({ default: true })
   isActive!: boolean;
