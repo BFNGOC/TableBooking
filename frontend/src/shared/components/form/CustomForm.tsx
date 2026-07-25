@@ -9,6 +9,7 @@ import DatePikerField from "../datepicker/DatePikerField";
 import TimeFieldCustom from "../timefield/TimeFieldCustom";
 import AutocompleteCustom from "../autocomplete/AutocompleteCustom";
 import { RadioCustom } from "../radio/RadioCustom";
+import SearchField from "../search/SearchField";
 
 import { FormField } from "@/shared/types/form-field";
 import { FormModalModeType } from "@/shared/types/form-modal-mode-type";
@@ -191,6 +192,9 @@ function CustomForm<T extends Record<string, any>>({
 									return (
 										<NumberFieldCustom {...commonProps} />
 									);
+
+								case "search":
+									return <SearchField {...commonProps} />;
 
 								default:
 									return <AppTextField {...commonProps} />;
