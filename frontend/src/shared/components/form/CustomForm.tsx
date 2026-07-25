@@ -102,7 +102,7 @@ function CustomForm<T extends Record<string, any>>({
 	};
 
 	const content = (
-		<div className="grid grid-cols-12 gap-5">
+		<div className="grid grid-cols-12 gap-5 items-center">
 			{fields.map((field) => {
 				const value =
 					getNestedValue(formValues, field.name) ?? field.value ?? "";

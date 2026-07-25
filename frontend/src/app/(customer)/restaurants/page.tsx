@@ -1,7 +1,5 @@
 import { Metadata } from "next";
-import RestaurantsRoleCustomerPage from "@/features/restaurant/pages/RestaurantsRoleCustomerPage";
-import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
-import restaurantsData from "../../../../data/restaurants-mock-data.json";
+import RestaurantsRoleCustomerPage from "@/features/restaurant/pages/customer/RestaurantsRoleCustomerPage";
 
 export const metadata: Metadata = {
 	title: "Tìm kiếm nhà hàng - TableSpot",
@@ -10,9 +8,7 @@ export const metadata: Metadata = {
 };
 
 function RestaurantsPublicPage() {
-	const restaurants = restaurantsData as unknown as IRestaurant[];
-
-	return <RestaurantsRoleCustomerPage restaurants={restaurants} />;
+	return <RestaurantsRoleCustomerPage />;
 }
 
 export default RestaurantsPublicPage;

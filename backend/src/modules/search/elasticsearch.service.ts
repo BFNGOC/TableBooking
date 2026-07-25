@@ -163,6 +163,59 @@ export class SearchService implements OnModuleInit {
         return;
       }
 
+      if (field === 'priceFrom') {
+        filters.push({
+          range: {
+            priceFrom: {
+              gte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (field === 'priceTo') {
+        filters.push({
+          range: {
+            priceTo: {
+              lte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (field === 'capacity') {
+        filters.push({
+          range: {
+            capacity: {
+              gte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (field === 'rating') {
+        filters.push({
+          range: {
+            rating: {
+              gte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        filters.push({
+          terms: {
+            [field]: value,
+          },
+        });
+        return;
+      }
+
       filters.push({
         term: {
           [field]: value,

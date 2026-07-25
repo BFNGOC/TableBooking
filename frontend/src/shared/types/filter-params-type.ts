@@ -1,9 +1,9 @@
 export interface FilterParams {
-    currentPage?: number;
+	currentPage?: number;
 
-    pageSize?: number;
+	pageSize?: number;
 
-    keySearch?: string;
+	keySearch?: string;
 
-    sort?: string;
+	sort?: string;
 }

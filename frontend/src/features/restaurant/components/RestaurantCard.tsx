@@ -9,7 +9,9 @@ interface RestaurantCardProps {
 	restaurant: IRestaurant;
 }
 
-export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
+export const RestaurantCard: React.FC<RestaurantCardProps> = ({
+	restaurant,
+}) => {
 	const {
 		restaurantName,
 		rating,
@@ -47,20 +49,17 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 	};
 
 	// Generate a simulated discount badge based on id to look like the design mockup
-	const getDiscount = () => {
-		const charCode = restaurantName.charCodeAt(0) || 0;
-		if (charCode % 3 === 0) return "-15%";
-		if (charCode % 3 === 1) return "-10%";
-		return null;
-	};
+	const getDiscount = () => {};
 
 	const discount = getDiscount();
-
 	return (
 		<div className="group relative flex flex-col w-full bg-white rounded-3xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_30px_rgba(111,78,55,0.08)] border border-[#e6d8c9]/30 transition-all duration-300">
 			{/* Image Section */}
 			<div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-				<Link href={`/restaurants/${pathSlug}`} className="block h-full w-full">
+				<Link
+					href={`/restaurants/${pathSlug}`}
+					className="block h-full w-full"
+				>
 					{avatar?.url ? (
 						<img
 							src={avatar.url}
@@ -107,7 +106,10 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 			<div className="flex flex-col flex-1 p-5">
 				{/* Title and Rating Line */}
 				<div className="flex items-start justify-between gap-3">
-					<Link href={`/restaurants/${pathSlug}`} className="no-underline">
+					<Link
+						href={`/restaurants/${pathSlug}`}
+						className="no-underline"
+					>
 						<h3 className="text-lg font-bold text-[#3d2a21] leading-snug group-hover:text-[#6f4e37] transition-colors duration-200">
 							{restaurantName}
 						</h3>
@@ -115,7 +117,10 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 
 					{rating !== undefined && (
 						<div className="flex items-center gap-1 rounded-full bg-[#fcf5ec] border border-[#f5ebd9] px-2.5 py-0.5 text-xs font-extrabold text-[#6f4e37] shrink-0">
-							<Star size={11} className="fill-[#e28c5c] text-[#e28c5c]" />
+							<Star
+								size={11}
+								className="fill-[#e28c5c] text-[#e28c5c]"
+							/>
 							<span>{rating.toFixed(1)}</span>
 						</div>
 					)}
@@ -125,7 +130,9 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 				{address && (
 					<div className="mt-2 flex items-center gap-1 text-xs text-[#8c7a6f]">
 						<MapPin size={13} className="text-[#a89080] shrink-0" />
-						<span className="truncate">{formatAddress(address)}</span>
+						<span className="truncate">
+							{formatAddress(address)}
+						</span>
 					</div>
 				)}
 
@@ -149,13 +156,18 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) =>
 				{/* Price and Action Footer */}
 				<div className="mt-auto flex items-center justify-between gap-2">
 					<div className="flex flex-col">
-						<span className="text-[11px] text-[#8c7a6f]">Giá trung bình</span>
+						<span className="text-[11px] text-[#8c7a6f]">
+							Giá trung bình
+						</span>
 						<span className="text-base font-extrabold text-[#3d2a21]">
 							{formatPrice()}
 						</span>
 					</div>
 
-					<Link href={`/restaurants/${pathSlug}`} className="no-underline">
+					<Link
+						href={`/restaurants/${pathSlug}`}
+						className="no-underline"
+					>
 						<span className="inline-flex items-center justify-center rounded-full bg-[#6f4e37] hover:bg-[#543d31] active:bg-[#3d2a21] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:shadow-md transition-all duration-200">
 							Đặt bàn ngay
 						</span>

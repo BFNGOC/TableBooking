@@ -8,7 +8,7 @@ import { useGetMe } from "@/features/users/hooks/useGetMe";
 import { useToast } from "@/shared/hooks/useToast";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import RecommendedRestaurantCard from "@/features/restaurant/components/RecommendedRestaurantCard";
-import Search from "../../restaurant/components/Search";
+import Search from "../../restaurant/components/RestaurantSearch";
 
 interface CustomerHomePageProps {
 	restaurants: IRestaurant[];

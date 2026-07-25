@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import CustomerHomePage from "@/features/(customer)/pages/HomeRoleCustomerPage";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import restaurantsData from "../../../data/restaurants-mock-data.json";
+import { getRecommendedRestaurants } from "@/features/restaurant/api/restaurant-server-api";
 
 export const metadata: Metadata = {
 	title: "TableSpot - Trải nghiệm tinh hoa ẩm thực đẳng cấp",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-	const restaurants = restaurantsData as unknown as IRestaurant[];
+	const restaurants: IRestaurant[] | null = await getRecommendedRestaurants();
 
-	return <CustomerHomePage restaurants={restaurants} />;
+	return <CustomerHomePage restaurants={restaurants || []} />;
 }

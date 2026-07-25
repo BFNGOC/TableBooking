@@ -1,35 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@heroui/react";
 import { RotateCcw } from "lucide-react";
 import CustomForm from "@/shared/components/form/CustomForm";
 import filterRestaurantFormFields from "../constants/restaurant-filter-form-field";
-import { FormField } from "@/shared/types/form-field";
 import { FormFieldType } from "@/shared/types/form-field-types";
 
 interface FilterBarProps {
-	initialValues?: Partial<Record<string, any>>;
-	onSubmit?: (values: Partial<Record<string, any>>) => void;
+	values?: Partial<Record<string, any>>;
+	onValuesChange?: (values: Partial<Record<string, any>>) => void;
+	onSubmit?: () => void;
 	onReset?: () => void;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
-	initialValues = {},
+	values = {},
+	onValuesChange,
 	onSubmit,
 	onReset,
 }) => {
-	const [values, setValues] =
-		useState<Partial<Record<string, any>>>(initialValues);
-
 	const resetFilters = () => {
-		// If initialValues provided, reset to them; otherwise clear fields.
-		if (initialValues && Object.keys(initialValues).length > 0) {
-			setValues(initialValues);
-			onReset?.();
-			return;
-		}
-
 		const empty: Partial<Record<string, any>> = {};
 
 		filterRestaurantFormFields.forEach((f) => {
@@ -42,19 +32,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
 				f.type === FormFieldType.RADIO ||
 				f.type === FormFieldType.RADIO_GROUP
 			) {
-				// set undefined so RadioCustom treats it as unselected
 				empty[f.name] = undefined;
 			} else {
 				empty[f.name] = "";
 			}
 		});
 
-		setValues(empty);
+		onValuesChange?.(empty);
 		onReset?.();
-	};
-
-	const handleSubmit = (formValues: Partial<Record<string, any>>) => {
-		onSubmit?.(formValues);
 	};
 
 	const footer = (
@@ -67,7 +52,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
 			>
 				Xóa tất cả
 			</Button>
-			<Button type="submit" size="sm" variant="primary">
+			<Button
+				type="button"
+				size="sm"
+				variant="primary"
+				onPress={() => onSubmit?.()}
+			>
 				Áp dụng
 			</Button>
 		</div>
@@ -95,10 +85,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
 			<CustomForm
 				fields={filterRestaurantFormFields}
 				values={values}
-				onValuesChange={(nextValues) => setValues(nextValues)}
-				onSubmit={handleSubmit}
+				onValuesChange={(nextValues) => onValuesChange?.(nextValues)}
+				onSubmit={() => onSubmit?.()}
 				footer={footer}
 				footerClassName="mt-4"
+				renderForm={false}
 			/>
 		</div>
 	);

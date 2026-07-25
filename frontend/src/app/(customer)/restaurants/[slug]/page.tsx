@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import RestaurantDetailRoleCustomerPage from "@/features/restaurant/pages/RestaurantDetailRoleCustomerPage";
+import RestaurantDetailRoleCustomerPage from "@/features/restaurant/pages/customer/RestaurantDetailRoleCustomerPage";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import restaurantsData from "../../../../../data/restaurants-mock-data.json";
 
