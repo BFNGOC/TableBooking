@@ -15,14 +15,6 @@ export enum DepositType {
   PERCENT = 'PERCENT',
 }
 
-export enum DepositStatus {
-  NOT_REQUIRED = 'NOT_REQUIRED',
-  PENDING = 'PENDING',
-  PAID = 'PAID',
-  REFUNDED = 'REFUNDED',
-  FORFEITED = 'FORFEITED',
-}
-
 @Schema({
   timestamps: true,
 })
@@ -50,7 +42,7 @@ export class Table {
     required: true,
     min: 1,
   })
-  capacity?: number;
+  capacity!: number;
 
   @Prop({
     enum: TableStatus,
@@ -77,12 +69,6 @@ export class Table {
     default: DepositType.NONE,
   })
   depositType?: DepositType;
-
-  @Prop({
-    enum: DepositStatus,
-    default: DepositStatus.NOT_REQUIRED,
-  })
-  depositStatus?: DepositStatus;
 }
 
 export const TableSchema = SchemaFactory.createForClass(Table);

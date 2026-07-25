@@ -2,14 +2,19 @@ import {
   PricingRuleType,
   PricingValueType,
 } from '@app/modules/pricing-rule/schemas/pricing-rule.schema';
-import {
-  DepositStatus,
-  DepositType,
-} from '@app/modules/tables/schemas/table.schema';
+import { DepositType } from '@app/modules/tables/schemas/table.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
 export type BookingDocument = HydratedDocument<Booking>;
+
+export enum DepositStatus {
+  NOT_REQUIRED = 'NOT_REQUIRED',
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  REFUNDED = 'REFUNDED',
+  FORFEITED = 'FORFEITED',
+}
 
 export enum BookingStatus {
   PENDING = 'PENDING',
@@ -72,21 +77,6 @@ class PricingSnapshot {
 
   @Prop()
   calculatedAt?: Date;
-
-  @Prop()
-  depositAmount?: number;
-
-  @Prop({
-    type: String,
-    enum: DepositStatus,
-  })
-  depositStatus?: DepositStatus;
-
-  @Prop({
-    type: String,
-    enum: DepositType,
-  })
-  depositType?: DepositType;
 }
 
 const PricingSnapshotSchema = SchemaFactory.createForClass(PricingSnapshot);
@@ -114,6 +104,9 @@ export class Booking {
   })
   guestCount!: number;
 
+  @Prop()
+  restaurantNote?: string;
+
   @Prop({
     type: String,
     enum: BookingStatus,
@@ -122,7 +115,7 @@ export class Booking {
   status?: BookingStatus;
 
   @Prop()
-  note?: string;
+  rejectionReason?: string;
 
   @Prop()
   contactName?: string;
@@ -181,7 +174,30 @@ export class Booking {
   holdExpiresAt?: Date;
 
   @Prop({
-    type: PricingSnapshotSchema, // ĐÃ SỬA: Sử dụng Schema vừa tạo thay vì Class
+    default: 0,
+    min: 0,
+  })
+  depositAmount!: number;
+
+  @Prop({
+    type: String,
+    enum: DepositStatus,
+    default: DepositStatus.NOT_REQUIRED,
+  })
+  depositStatus?: DepositStatus;
+
+  @Prop({
+    type: String,
+    enum: DepositType,
+    default: DepositType.NONE,
+  })
+  depositType?: DepositType;
+
+  @Prop()
+  depositDeadline?: Date;
+
+  @Prop({
+    type: PricingSnapshotSchema,
   })
   pricingSnapshot?: PricingSnapshot;
 }

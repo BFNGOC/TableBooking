@@ -176,6 +176,19 @@ export class Restaurant {
   @Prop()
   closingTime?: string;
 
+  @Prop({
+    required: true,
+    default: 120,
+    min: 30,
+  })
+  defaultReservationDurationMinutes!: number;
+
+  @Prop({
+    default: 15,
+    min: 1,
+  })
+  depositPaymentTimeoutMinutes?: number;
+
   /**
    * ============================================================
    * Media

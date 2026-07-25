@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import { RestaurantsController } from './restaurants.controller';
 import { Restaurant, RestaurantSchema } from './schemas/restaurant.schema';
@@ -23,7 +23,7 @@ import { TableAvailabilitiesModule } from '../table-availabilities/table-availab
     UsersModule,
     TablesModule,
     TableAvailabilitiesModule,
-    BookingsModule,
+    forwardRef(() => BookingsModule),
   ],
   controllers: [RestaurantsController],
   providers: [RestaurantsService, RestaurantSearchService],
