@@ -184,7 +184,7 @@ export class Restaurant {
   defaultReservationDurationMinutes!: number;
 
   @Prop({
-    default: 15,
+    default: 30,
     min: 1,
   })
   depositPaymentTimeoutMinutes?: number;
@@ -269,11 +269,6 @@ export class Restaurant {
     min: 1,
   })
   tableHoldMinutes?: number;
-
-  @Prop({
-    default: true,
-  })
-  allowSameDayBooking?: boolean;
 
   @Prop({
     default: 30,

@@ -57,7 +57,7 @@ export class Table {
     default: 0,
     min: 0,
   })
-  basePrice?: number;
+  basePrice!: number;
 
   @Prop({
     default: 0,

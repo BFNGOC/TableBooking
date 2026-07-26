@@ -15,9 +15,9 @@ export class GetAvailableTablesDto {
   @IsString()
   @IsNotEmpty()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
-    message: 'time phải có định dạng HH:mm',
+    message: 'startTime phải có định dạng HH:mm',
   })
-  time!: string;
+  startTime!: string;
 
   @Type(() => Number)
   @IsInt()

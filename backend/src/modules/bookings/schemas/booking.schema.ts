@@ -81,6 +81,34 @@ class PricingSnapshot {
 
 const PricingSnapshotSchema = SchemaFactory.createForClass(PricingSnapshot);
 
+@Schema({ _id: false })
+class TableDepositSnapshot {
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Table',
+    required: true,
+  })
+  tableId!: Types.ObjectId;
+
+  @Prop({
+    type: String,
+    enum: DepositType,
+    required: true,
+  })
+  depositType!: DepositType;
+
+  @Prop()
+  depositRate?: number;
+
+  @Prop({
+    required: true,
+    min: 0,
+  })
+  depositAmount!: number;
+}
+
+const TableDepositSnapshotSchema =
+  SchemaFactory.createForClass(TableDepositSnapshot);
 @Schema({
   timestamps: true,
 })
@@ -187,14 +215,10 @@ export class Booking {
   depositStatus?: DepositStatus;
 
   @Prop({
-    type: String,
-    enum: DepositType,
-    default: DepositType.NONE,
+    type: [TableDepositSnapshotSchema],
+    default: [],
   })
-  depositType?: DepositType;
-
-  @Prop()
-  depositDeadline?: Date;
+  tableDeposits!: TableDepositSnapshot[];
 
   @Prop({
     type: PricingSnapshotSchema,

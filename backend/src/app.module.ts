@@ -21,6 +21,7 @@ import { TablesModule } from './modules/tables/tables.module';
 import { TableAvailabilitiesModule } from './modules/table-availabilities/table-availabilities.module';
 import { AreasModule } from './modules/areas/areas.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
+import { RedisModule } from './shared/redis/redis.module';
 @Module({
   imports: [
     UsersModule,
@@ -88,6 +89,8 @@ import { BookingsModule } from './modules/bookings/bookings.module';
     PricingRuleModule,
 
     BookingsModule,
+
+    RedisModule,
   ],
 
   controllers: [AppController],

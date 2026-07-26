@@ -8,7 +8,6 @@ import {
   TableSchema,
   TableStatus,
   DepositType,
-  DepositStatus,
 } from '../../modules/tables/schemas/table.schema';
 
 import {
@@ -24,6 +23,7 @@ import {
   PricingApplyType,
   PricingAdjustmentType,
 } from '../../modules/pricing-rule/schemas/pricing-rule.schema';
+import { DepositStatus } from '@app/modules/bookings/schemas/booking.schema';
 
 const RESTAURANT_ID = new Types.ObjectId('6a5786066c0eddeb1982a28a');
 

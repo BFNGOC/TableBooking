@@ -6,12 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
+import { Public } from '@app/decorator/customize';
+import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 
 @Controller('bookings')
 export class BookingsController {
@@ -24,6 +27,18 @@ export class BookingsController {
     @Body() dto: CreateBookingDto,
   ) {
     return this.bookingsService.createBooking(restaurantId, user._id, dto);
+  }
+
+  @Get(':restaurantId/available-tables')
+  @Public()
+  getAvailableTables(
+    @Param('restaurantId')
+    restaurantId: string,
+
+    @Query()
+    dto: GetAvailableTablesDto,
+  ) {
+    return this.bookingsService.getAvailableTables(restaurantId, dto);
   }
 
   @Get()

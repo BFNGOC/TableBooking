@@ -29,34 +29,12 @@ import { UserDocument, UserRole } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { UserSearchService } from '../users/user-search.service';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
-import {
-  Table,
-  TableDocument,
-  TableStatus,
-} from '../tables/schemas/table.schema';
-import {
-  TableAvailability,
-  TableAvailabilityDocument,
-} from '../table-availabilities/schemas/table-availability.schema';
-import { Booking, BookingDocument } from '../bookings/schemas/booking.schema';
-import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
-import { Area } from '../areas/schemas/area.schema';
-
-type PopulatedArea = Area & {
-  _id: Types.ObjectId;
-};
 
 @Injectable()
 export class RestaurantsService {
   constructor(
     @InjectModel(Restaurant.name)
     private restaurantModel: Model<Restaurant>,
-    @InjectModel(Table.name)
-    private readonly tableModel: Model<TableDocument>,
-    @InjectModel(TableAvailability.name)
-    private readonly tableAvailabilityModel: Model<TableAvailabilityDocument>,
-    @InjectModel(Booking.name)
-    private readonly bookingModel: Model<BookingDocument>,
     private readonly mailerService: MailerService,
     private readonly restaurantSearchService: RestaurantSearchService,
     private readonly counterService: CounterService,
@@ -89,10 +67,7 @@ export class RestaurantsService {
       throw new BadRequestException('Định dạng ID nhà hàng không hợp lệ');
     }
 
-    const restaurant = await this.restaurantModel
-      .findById(restaurantId)
-      .select('_id')
-      .lean();
+    const restaurant = await this.restaurantModel.findById(restaurantId).lean();
 
     if (!restaurant) {
       throw new NotFoundException('Không tìm thấy nhà hàng');
@@ -606,153 +581,6 @@ export class RestaurantsService {
     await this.restaurantSearchService.update(restaurant);
 
     return restaurant;
-  }
-
-  /***********************************
-   *  BOOKING
-   ***********************************/
-
-  async getAvailableTables(restaurantId: string, dto: GetAvailableTablesDto) {
-    await this.getRestaurantById(restaurantId);
-
-    const availabilities = await this.tableAvailabilityModel
-      .find({
-        restaurantId: new Types.ObjectId(restaurantId),
-      })
-      .lean();
-
-    if (availabilities.length === 0) {
-      throw new NotFoundException(
-        'Nhà hàng chưa được cấu hình lịch trống (availability)',
-      );
-    }
-
-    const bookingDate = new Date(dto.date);
-
-    if (isNaN(bookingDate.getTime())) {
-      throw new BadRequestException('Định dạng ngày đặt bàn không hợp lệ');
-    }
-
-    const dayOfWeek = bookingDate.getDay();
-    const requestedTime = dto.time;
-
-    const matchedTableIds: Types.ObjectId[] = [];
-
-    for (const availability of availabilities) {
-      let isTimeValid = false;
-
-      const exception = availability.exceptions?.find((ex) => {
-        const exDate = new Date(ex.date);
-
-        return exDate.toISOString().slice(0, 10) === dto.date.slice(0, 10);
-      });
-
-      if (exception) {
-        // Đóng cửa
-        if (exception.isClosed) {
-          continue;
-        }
-
-        isTimeValid =
-          exception.slots?.some(
-            (slot) =>
-              requestedTime >= slot.startTime && requestedTime < slot.endTime,
-          ) ?? false;
-      } else {
-        const weeklySlot = availability.weeklySlots?.find(
-          (slot) => slot.dayOfWeek === dayOfWeek,
-        );
-
-        if (!weeklySlot || !weeklySlot.isActive) {
-          continue;
-        }
-
-        isTimeValid =
-          weeklySlot.slots?.some(
-            (slot) =>
-              requestedTime >= slot.startTime && requestedTime < slot.endTime,
-          ) ?? false;
-      }
-
-      if (isTimeValid && availability.tableIds?.length) {
-        matchedTableIds.push(...availability.tableIds);
-      }
-    }
-
-    const uniqueTableIds = [
-      ...new Set(matchedTableIds.map((id) => id.toString())),
-    ].map((id) => new Types.ObjectId(id));
-
-    if (uniqueTableIds.length === 0) {
-      return {
-        restaurantId,
-        date: dto.date,
-        time: requestedTime,
-        dayOfWeek,
-        tables: [],
-      };
-    }
-
-    const tables = await this.tableModel
-      .find({
-        _id: {
-          $in: uniqueTableIds,
-        },
-
-        restaurantId: new Types.ObjectId(restaurantId),
-
-        capacity: {
-          $gte: dto.guestCount,
-        },
-
-        status: TableStatus.AVAILABLE,
-      })
-      .populate<{
-        areaId: PopulatedArea;
-      }>('areaId')
-      .lean();
-
-    const groupedAreas = new Map<
-      string,
-      {
-        area: Area;
-        tables: typeof tables;
-      }
-    >();
-
-    for (const table of tables) {
-      const area = table.areaId;
-
-      if (!area) {
-        continue;
-      }
-
-      const areaId = area._id.toString();
-
-      let group = groupedAreas.get(areaId);
-
-      if (!group) {
-        group = {
-          area,
-          tables: [],
-        };
-
-        groupedAreas.set(areaId, group);
-      }
-
-      group.tables.push(table);
-    }
-
-    //to-do check hold deposit
-
-    return {
-      restaurantId,
-      date: dto.date,
-      time: requestedTime,
-      dayOfWeek,
-      guestCount: dto.guestCount,
-      areas: Array.from(groupedAreas.values()),
-    };
   }
 
   //to-do
