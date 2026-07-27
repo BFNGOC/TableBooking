@@ -31,6 +31,7 @@ import { PricingRuleService } from '../pricing-rule/pricing-rule.service';
 import { RedisService } from '@app/shared/redis/redis.service';
 import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 import { Area } from '../areas/schemas/area.schema';
+import { getBookingHoldKey } from '@app/helpers/redis/booking-hold-key.util';
 
 type PopulatedArea = Area & {
   _id: Types.ObjectId;
@@ -143,18 +144,6 @@ export class BookingsService {
     }
   }
 
-  private getBookingHoldKey(
-    restaurantId: string,
-    tableId: string,
-    bookingDate: Date,
-    startTime: string,
-    endTime: string,
-  ) {
-    const date = bookingDate.toISOString().split('T')[0];
-
-    return `booking:hold:${restaurantId}:${tableId}:${date}:${startTime}-${endTime}`;
-  }
-
   private async releaseBookingTableLocks(keys: string[]) {
     if (keys.length === 0) {
       return;
@@ -176,7 +165,7 @@ export class BookingsService {
 
     try {
       for (const tableId of tableIds) {
-        const key = this.getBookingHoldKey(
+        const key = getBookingHoldKey(
           restaurantId,
           tableId,
           bookingDate,

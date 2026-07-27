@@ -22,6 +22,7 @@ import { TableAvailabilitiesModule } from './modules/table-availabilities/table-
 import { AreasModule } from './modules/areas/areas.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { RedisModule } from './shared/redis/redis.module';
+import { PaymentModule } from './modules/payment/payment.module';
 @Module({
   imports: [
     UsersModule,
@@ -91,6 +92,8 @@ import { RedisModule } from './shared/redis/redis.module';
     BookingsModule,
 
     RedisModule,
+
+    PaymentModule,
   ],
 
   controllers: [AppController],
