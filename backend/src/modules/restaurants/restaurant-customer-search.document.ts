@@ -1,3 +1,4 @@
+import { ImageType } from '../upload/types/image.type';
 import {
   RestaurantDocument,
   RestaurantStatus,
@@ -11,7 +12,7 @@ export interface RestaurantCustomerSearchDocument {
 
   address?: string;
 
-  avatar?: string;
+  avatar?: ImageType;
 
   cuisineTypes?: string[];
 
@@ -25,9 +26,9 @@ export interface RestaurantCustomerSearchDocument {
 
   status?: RestaurantStatus;
 
-  verifyStatus?: RestaurantVerifyStatus;
-
   isAcceptingBookings?: boolean;
+
+  slug?: string;
 }
 
 export function toRestaurantCustomerSearchDocument(
@@ -52,8 +53,8 @@ export function toRestaurantCustomerSearchDocument(
 
     status: restaurant.status,
 
-    verifyStatus: restaurant.verifyStatus,
-
     isAcceptingBookings: restaurant.isAcceptingBookings,
+
+    slug: restaurant.slug,
   };
 }

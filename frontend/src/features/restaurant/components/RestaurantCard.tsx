@@ -26,10 +26,8 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
 
 	const [isFavorite, setIsFavorite] = useState(false);
 
-	// Determine unique page identifier slug
-	const pathSlug = slug || _id;
+	const pathSlug = slug;
 
-	// Format address (extract "District, City")
 	const formatAddress = (addr?: string) => {
 		if (!addr) return "";
 		const parts = addr.split(",");
@@ -39,17 +37,14 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
 		return addr;
 	};
 
-	// Format average price or priceFrom into e.g. "1.200k+"
 	const formatPrice = () => {
 		const basePrice = priceFrom || 0;
 		if (basePrice === 0) return "500k+";
 		const kValue = Math.floor(basePrice / 1000);
-		// Format with dot separator for thousands
 		return `${kValue.toLocaleString("vi-VN")}k+`;
 	};
 
-	// Generate a simulated discount badge based on id to look like the design mockup
-	const getDiscount = () => {};
+	const getDiscount: () => number = () => 0;
 
 	const discount = getDiscount();
 	return (

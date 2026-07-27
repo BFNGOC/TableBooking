@@ -1,0 +1,82 @@
+import { FormField } from "@/shared/types/form-field";
+import { formatFormValues } from "@/shared/utils/format-form-values";
+import { RestaurantFilterRoleCustomerParams } from "../types/restaurant-filter-params-type";
+import {
+	PRICE_RANGE_OPTIONS,
+	GUEST_COUNT_OPTIONS,
+} from "../constants/restaurant-options";
+
+export function getPriceRange(priceRangeId: string): {
+	minPrice?: number;
+	maxPrice?: number;
+} {
+	const option = PRICE_RANGE_OPTIONS.find((o) => o.id === priceRangeId);
+	if (!option) return {};
+
+	const result: { minPrice?: number; maxPrice?: number } = {};
+	if (option.minPrice !== undefined) result.minPrice = option.minPrice;
+	if (option.maxPrice !== undefined) result.maxPrice = option.maxPrice;
+	return result;
+}
+
+export function getCapacity(guestsId: string): number | undefined {
+	const option = GUEST_COUNT_OPTIONS.find((o) => o.id === guestsId);
+	return option?.capacity;
+}
+
+export function expandRestaurantFilterParams(
+	formValues: Record<string, any>,
+): Record<string, any> {
+	const result = { ...formValues };
+
+	if (result.priceRange) {
+		const { minPrice, maxPrice } = getPriceRange(String(result.priceRange));
+		if (minPrice !== undefined) result.minPrice = minPrice;
+		if (maxPrice !== undefined) result.maxPrice = maxPrice;
+	}
+	delete result.priceRange;
+
+	if (result.guests) {
+		const capacity = getCapacity(String(result.guests));
+		if (capacity !== undefined) result.capacity = capacity;
+	}
+	delete result.guests;
+
+	return result;
+}
+
+export function buildRestaurantCustomerParams(
+	formValues: Record<string, any>,
+	fields: FormField[],
+): Partial<RestaurantFilterRoleCustomerParams> {
+	const formatted = formatFormValues(formValues, fields, "toApi");
+
+	const expanded = expandRestaurantFilterParams(
+		formatted as Record<string, any>,
+	);
+
+	const params: Partial<RestaurantFilterRoleCustomerParams> = {};
+
+	if (expanded.keySearch && String(expanded.keySearch).trim() !== "") {
+		params.keySearch = String(expanded.keySearch).trim();
+	}
+	if (expanded.cuisineType && String(expanded.cuisineType).trim() !== "") {
+		params.cuisineType = String(expanded.cuisineType).trim();
+	}
+	if (expanded.minRating != null && expanded.minRating !== "") {
+		const parsed = parseFloat(String(expanded.minRating));
+		if (!isNaN(parsed)) params.minRating = parsed;
+	}
+	if (expanded.minPrice !== undefined) params.minPrice = expanded.minPrice;
+	if (expanded.maxPrice !== undefined) params.maxPrice = expanded.maxPrice;
+	if (expanded.capacity !== undefined) params.capacity = expanded.capacity;
+	if (
+		expanded.sort &&
+		String(expanded.sort).trim() !== "" &&
+		expanded.sort !== "default"
+	) {
+		params.sort = String(expanded.sort).trim();
+	}
+
+	return params;
+}

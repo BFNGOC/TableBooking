@@ -9,7 +9,6 @@ import {
 import {
   RestaurantDocument,
   RestaurantStatus,
-  RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
 
 import { SearchService } from '../search/elasticsearch.service';
@@ -52,8 +51,6 @@ export class RestaurantCustomerSearchService {
     filter?: {
       status?: RestaurantStatus;
 
-      verifyStatus?: RestaurantVerifyStatus;
-
       isAcceptingBookings?: boolean;
 
       cuisineTypes?: string[];
@@ -71,12 +68,6 @@ export class RestaurantCustomerSearchService {
   }) {
     const { keyword, currentPage, pageSize, filter, sort } = options;
 
-    const normalizedFilter = {
-      ...filter,
-      status: filter?.status ?? RestaurantStatus.ACTIVE,
-      verifyStatus: filter?.verifyStatus ?? RestaurantVerifyStatus.APPROVED,
-    };
-
     return this.searchService.search<RestaurantCustomerSearchDocument>(
       RESTAURANT_CUSTOMER_SEARCH_INDEX,
       {
@@ -84,7 +75,7 @@ export class RestaurantCustomerSearchService {
 
         fields: ['restaurantName', 'address', 'cuisineTypes'],
 
-        filter: normalizedFilter,
+        filter,
 
         sort,
 

@@ -4,7 +4,7 @@ import { SORT_OPTIONS } from "./restaurant-options";
 
 export const selectRestaurantFormFields: FormField[] = [
 	{
-		name: "sortBy",
+		name: "sort",
 		type: FormFieldType.SELECT,
 		options: [{ id: "default", text: "Phù hợp nhất" }, ...SORT_OPTIONS],
 		col: 4,

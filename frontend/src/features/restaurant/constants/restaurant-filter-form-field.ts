@@ -18,23 +18,16 @@ export const filterRestaurantFormFields: FormField[] = [
 	},
 	{
 		label: "Loại món ăn",
-		name: "cuisine",
+		name: "cuisineType",
 		type: FormFieldType.RADIO,
 		options: CUISINE_OPTIONS,
 		col: 12,
 	},
 	{
 		label: "Đánh giá",
-		name: "rating",
+		name: "minRating",
 		type: FormFieldType.RADIO,
 		options: RATING_OPTIONS,
-		col: 12,
-	},
-	{
-		label: "Tiện ích",
-		name: "amenities",
-		type: FormFieldType.CHECKBOX_GROUP,
-		options: AMENITIES_OPTIONS,
 		col: 12,
 	},
 ];

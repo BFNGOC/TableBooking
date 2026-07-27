@@ -1,98 +1,91 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import FilterBar from "@/features/restaurant/components/FilterBar";
 import Search from "@/features/restaurant/components/RestaurantSearch";
 import RestaurantCard from "@/features/restaurant/components/RestaurantCard";
 import RestaurantSort from "@/features/restaurant/components/RestaurantSort";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
 import useTable from "@/shared/hooks/useTable";
 import { restaurantPublicApi } from "@/features/restaurant/api/restaurant-api";
 import { restaurantQueryKeys } from "@/features/restaurant/constants/query_key";
 import { RestaurantFilterRoleCustomerParams } from "@/features/restaurant/types/restaurant-filter-params-type";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
+import { buildRestaurantCustomerParams } from "@/features/restaurant/utils/restaurant-filter.utils";
+import filterRestaurantFormFields from "@/features/restaurant/constants/restaurant-filter-form-field";
+import searchRestaurantFormFields from "@/features/restaurant/constants/restaurant-search-form-field";
+import selectRestaurantFormFields from "@/features/restaurant/constants/restaurant-sort-form-field";
 import {
-	PRICE_RANGE_OPTIONS,
-	GUEST_COUNT_OPTIONS,
-} from "@/features/restaurant/constants/restaurant-options";
+	getDefaultDate,
+	getDefaultTime,
+} from "@/shared/utils/current-date-time";
 
-function buildQueryParams(
-	formValues: Record<string, any>,
-): Partial<RestaurantFilterRoleCustomerParams> {
-	const params: Partial<RestaurantFilterRoleCustomerParams> = {};
+const ALL_FORM_FIELDS = [
+	...searchRestaurantFormFields,
+	...filterRestaurantFormFields,
+	...selectRestaurantFormFields,
+];
 
-	if (formValues.q && String(formValues.q).trim() !== "") {
-		params.keySearch = String(formValues.q).trim();
-	}
-
-	if (formValues.guests) {
-		const guestOption = GUEST_COUNT_OPTIONS.find(
-			(o) => o.id === formValues.guests,
-		);
-		if (guestOption) {
-			params.capacity = guestOption.capacity;
-		}
-	}
-
-	if (formValues.priceRange) {
-		const priceOption = PRICE_RANGE_OPTIONS.find(
-			(o) => o.id === formValues.priceRange,
-		);
-		if (priceOption) {
-			if (priceOption.minPrice !== undefined)
-				params.minPrice = priceOption.minPrice;
-			if (priceOption.maxPrice !== undefined)
-				params.maxPrice = priceOption.maxPrice;
-		}
-	}
-
-	if (formValues.cuisine && String(formValues.cuisine).trim() !== "") {
-		params.cuisineType = String(formValues.cuisine).trim();
-	}
-
-	if (formValues.rating && String(formValues.rating).trim() !== "") {
-		const parsed = parseFloat(String(formValues.rating));
-		if (!isNaN(parsed)) params.minRating = parsed;
-	}
-
-	if (
-		formValues.sortBy &&
-		String(formValues.sortBy).trim() !== "" &&
-		formValues.sortBy !== "default"
-	) {
-		params.sort = String(formValues.sortBy).trim();
-	}
-
-	return params;
+function initialFormValuesFromUrl(
+	searchParams: URLSearchParams,
+): Record<string, any> {
+	return {
+		keySearch: searchParams.get("keySearch") ?? "",
+		guests: searchParams.get("guests") ?? "2",
+		date: searchParams.get("date") ?? getDefaultDate(),
+		time: searchParams.get("time") ?? getDefaultTime(),
+		priceRange: searchParams.get("priceRange") ?? "",
+		cuisineType: searchParams.get("cuisineType") ?? undefined,
+		minRating: searchParams.get("minRating") ?? undefined,
+		sort: searchParams.get("sort") ?? "default",
+	};
 }
 
-const INITIAL_FORM_VALUES: Record<string, any> = {
-	// Search fields
-	q: "",
-	date: "",
-	time: "",
-	guests: "2",
-	// Filter fields
-	priceRange: "",
-	cuisine: undefined,
-	rating: undefined,
-	// Sort
-	sortBy: "default",
-};
+function buildSearchUrl(formValues: Record<string, any>): string {
+	const sp = new URLSearchParams();
+
+	const str = (v: any) => (v != null ? String(v).trim() : "");
+
+	if (str(formValues.keySearch))
+		sp.set("keySearch", str(formValues.keySearch));
+	if (str(formValues.guests)) sp.set("guests", str(formValues.guests));
+	if (str(formValues.date)) sp.set("date", str(formValues.date));
+	if (str(formValues.time)) sp.set("time", str(formValues.time));
+	if (str(formValues.priceRange))
+		sp.set("priceRange", str(formValues.priceRange));
+	if (str(formValues.cuisineType))
+		sp.set("cuisineType", str(formValues.cuisineType));
+	if (str(formValues.minRating))
+		sp.set("minRating", str(formValues.minRating));
+	if (str(formValues.sort) && formValues.sort !== "default")
+		sp.set("sort", str(formValues.sort));
+
+	const qs = sp.toString();
+	return qs ? `/restaurants/search?${qs}` : "/restaurants/search";
+}
 
 function RestaurantsRoleCustomerPage() {
-	const [formValues, setFormValues] =
-		useState<Record<string, any>>(INITIAL_FORM_VALUES);
+	const searchParams = useSearchParams();
+	const router = useRouter();
 
 	const [showMobileFilter, setShowMobileFilter] = useState<boolean>(false);
-
 	const listContainerRef = useRef<HTMLDivElement>(null);
+
+	const urlFormValues = initialFormValuesFromUrl(searchParams);
+	const urlApiParams = buildRestaurantCustomerParams(
+		urlFormValues,
+		ALL_FORM_FIELDS,
+	);
 
 	const {
 		data: restaurants,
 		pagination,
 		fetching,
 		loading,
+		filterValues,
+		handleFilterChange,
 		handleParamsChange,
 		handleChangePage,
 		handleFilterReset,
@@ -101,13 +94,23 @@ function RestaurantsRoleCustomerPage() {
 		fetchApi: restaurantPublicApi.getRestaurants,
 		initialFilters: {
 			pageSize: 6,
+			...urlApiParams,
 		},
 	});
 
+	const formValues = {
+		...urlFormValues,
+		...(filterValues as Record<string, any>),
+	};
+
 	const submitForm = (values: Record<string, any>) => {
-		const queryParams = buildQueryParams(values);
+		const apiParams = buildRestaurantCustomerParams(
+			values,
+			ALL_FORM_FIELDS,
+		);
+		router.replace(buildSearchUrl(values), { scroll: false });
 		handleParamsChange({
-			...queryParams,
+			...apiParams,
 			pageSize: 6,
 		} as Partial<RestaurantFilterRoleCustomerParams>);
 	};
@@ -122,13 +125,15 @@ function RestaurantsRoleCustomerPage() {
 	};
 
 	const handleSortChange = (value: string) => {
-		const newValues = { ...formValues, sortBy: value };
-		setFormValues(newValues);
+		const newValues = { ...formValues, sort: value };
+		handleFilterChange(newValues as any);
 		submitForm(newValues);
 	};
 
 	const handleReset = () => {
-		setFormValues(INITIAL_FORM_VALUES);
+		const resetValues = initialFormValuesFromUrl(new URLSearchParams());
+		handleFilterChange(resetValues as any);
+		router.replace("/restaurants/search", { scroll: false });
 		handleFilterReset();
 	};
 
@@ -136,10 +141,10 @@ function RestaurantsRoleCustomerPage() {
 		const resetValues = {
 			...formValues,
 			priceRange: "",
-			cuisine: undefined,
-			rating: undefined,
+			cuisineType: undefined,
+			minRating: undefined,
 		};
-		setFormValues(resetValues);
+		handleFilterChange(resetValues as any);
 		submitForm(resetValues);
 	};
 
@@ -162,7 +167,7 @@ function RestaurantsRoleCustomerPage() {
 						className="w-full bg-white rounded-2xl py-3 px-5 shadow-sm border border-[#e6d8c9]/50"
 						values={formValues}
 						onValuesChange={(v) =>
-							setFormValues((prev) => ({ ...prev, ...v }))
+							handleFilterChange({ ...formValues, ...v } as any)
 						}
 						onSubmit={handleSearchSubmit}
 					/>
@@ -180,7 +185,7 @@ function RestaurantsRoleCustomerPage() {
 					<FilterBar
 						values={formValues}
 						onValuesChange={(v) =>
-							setFormValues((prev) => ({ ...prev, ...v }))
+							handleFilterChange({ ...formValues, ...v } as any)
 						}
 						onSubmit={handleFilterSubmit}
 						onReset={handleFilterPartialReset}
@@ -190,7 +195,7 @@ function RestaurantsRoleCustomerPage() {
 				{/* Results Container */}
 				<div className="col-span-12 md:col-span-9 space-y-6">
 					{/* Header summary of results */}
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#e6d8c9]/30">
+					<div className="flex flex-col justify-between sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#e6d8c9]/30">
 						<div>
 							<h1 className="text-2xl md:text-3xl font-extrabold text-[#3d2a21]">
 								{isLoading
@@ -217,9 +222,9 @@ function RestaurantsRoleCustomerPage() {
 							</button>
 
 							<RestaurantSort
-								value={formValues.sortBy ?? "default"}
+								value={formValues.sort ?? "default"}
 								onChange={handleSortChange}
-								className="w-full sm:w-auto"
+								className="w-full sm:w-auto sm:ml-auto"
 							/>
 						</div>
 					</div>
@@ -246,10 +251,10 @@ function RestaurantsRoleCustomerPage() {
 									<FilterBar
 										values={formValues}
 										onValuesChange={(v) =>
-											setFormValues((prev) => ({
-												...prev,
+											handleFilterChange({
+												...formValues,
 												...v,
-											}))
+											} as any)
 										}
 										onSubmit={handleFilterSubmit}
 										onReset={() => {

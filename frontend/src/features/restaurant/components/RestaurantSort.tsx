@@ -16,15 +16,15 @@ const RestaurantSort: React.FC<RestaurantSortProps> = ({
 	className,
 }) => {
 	const [values, setValues] = useState<Partial<Record<string, any>>>({
-		sortBy: value,
+		sort: value,
 	});
 
 	useEffect(() => {
-		setValues((prev) => (prev.sortBy === value ? prev : { sortBy: value }));
+		setValues((prev) => (prev.sort === value ? prev : { sort: value }));
 	}, [value]);
 
 	const handleValuesChange = (nextValues: Partial<Record<string, any>>) => {
-		const nextValue = nextValues.sortBy ?? value;
+		const nextValue = nextValues.sort ?? value;
 		setValues(nextValues);
 		onChange?.(String(nextValue));
 	};

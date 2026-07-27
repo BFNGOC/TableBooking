@@ -4,7 +4,7 @@ import { GUEST_COUNT_OPTIONS } from "./restaurant-options";
 
 export const searchRestaurantFormFields: FormField[] = [
 	{
-		name: "q",
+		name: "keySearch",
 		type: FormFieldType.SEARCH,
 		placeholder: "Địa điểm, nhà hàng...",
 		col: 4,

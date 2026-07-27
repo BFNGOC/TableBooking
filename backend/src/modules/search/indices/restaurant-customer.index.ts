@@ -78,6 +78,14 @@ export async function createRestaurantCustomerIndex(
         capacity: {
           type: 'integer',
         },
+
+        status: {
+          type: 'keyword',
+        },
+
+        isAcceptingBookings: {
+          type: 'boolean',
+        },
       },
     },
   });

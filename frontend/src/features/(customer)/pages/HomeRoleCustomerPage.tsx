@@ -2,13 +2,19 @@
 
 import React from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Heart, Users, Handshake, Eye, ArrowRight } from "lucide-react";
-import { useGetMe } from "@/features/users/hooks/useGetMe";
-import { useToast } from "@/shared/hooks/useToast";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import RecommendedRestaurantCard from "@/features/restaurant/components/RecommendedRestaurantCard";
 import Search from "../../restaurant/components/RestaurantSearch";
+import useTable from "@/shared/hooks/useTable";
+import { restaurantPublicApi } from "@/features/restaurant/api/restaurant-api";
+import { restaurantQueryKeys } from "@/features/restaurant/constants/query_key";
+import { RestaurantFilterRoleCustomerParams } from "@/features/restaurant/types/restaurant-filter-params-type";
+import {
+	getDefaultDate,
+	getDefaultTime,
+} from "@/shared/utils/current-date-time";
 
 interface CustomerHomePageProps {
 	restaurants: IRestaurant[];
@@ -54,15 +60,39 @@ const diningStyles = [
 ];
 
 function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
-	const { showToast } = useToast();
-	const { data: session } = useSession();
-	const { data: userData } = useGetMe();
+	const router = useRouter();
 
-	// Filter active restaurants to show under "Featured in the week"
-	// Usually we show the first 4 active restaurants
-	const featuredRestaurants = restaurants
-		.filter((r) => r.status === "ACTIVE" || r.status === undefined)
-		.slice(0, 4);
+	const { filterValues, handleFilterChange } = useTable<
+		IRestaurant,
+		RestaurantFilterRoleCustomerParams
+	>({
+		queryKey: restaurantQueryKeys.GET_RESTAURANT_CUSTOMER_LIST,
+		fetchApi: restaurantPublicApi.getRestaurants,
+		initialFilters: {
+			guests: "2",
+			date: getDefaultDate(),
+			time: getDefaultTime(),
+		},
+	});
+
+	const buildSearchUrl = (values: Record<string, any>): string => {
+		const sp = new URLSearchParams();
+		const str = (v: any) => (v != null ? String(v).trim() : "");
+
+		if (str(values.keySearch)) sp.set("keySearch", str(values.keySearch));
+		if (str(values.guests)) sp.set("guests", str(values.guests));
+		if (str(values.date)) sp.set("date", str(values.date));
+		if (str(values.time)) sp.set("time", str(values.time));
+
+		const qs = sp.toString();
+		return qs ? `/restaurants/search?${qs}` : "/restaurants/search";
+	};
+
+	const handleSearchSubmit = () => {
+		router.push(buildSearchUrl(filterValues as Record<string, any>));
+	};
+
+	console.log(filterValues);
 
 	return (
 		<div className="space-y-16">
@@ -88,7 +118,17 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 
 					{/* Search Bar Component */}
 					<div className="w-full max-w-4xl px-2">
-						<Search className="w-full max-w-5xl mx-auto bg-[#bbb3ae] rounded-4xl py-4 px-6 shadow-xl" />
+						<Search
+							className="w-full max-w-5xl mx-auto bg-[#bbb3ae] rounded-4xl py-4 px-6 shadow-xl"
+							values={filterValues as Record<string, any>}
+							onValuesChange={(v) =>
+								handleFilterChange({
+									...(filterValues as Record<string, any>),
+									...v,
+								} as any)
+							}
+							onSubmit={handleSearchSubmit}
+						/>
 					</div>
 				</div>
 			</section>
@@ -119,9 +159,9 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 					</div>
 
 					{/* Grid layout */}
-					{featuredRestaurants.length > 0 ? (
+					{restaurants.length > 0 ? (
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-							{featuredRestaurants.map((restaurant) => (
+							{restaurants.map((restaurant) => (
 								<RecommendedRestaurantCard
 									key={restaurant._id}
 									restaurant={restaurant}
@@ -193,7 +233,7 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 								<br />
 								tối ưu doanh thu cùng
 								<br />
-								TableSpot
+								TableBooking
 							</h2>
 
 							<p className="text-sm text-[#e6dbd3] leading-relaxed max-w-lg font-light">
