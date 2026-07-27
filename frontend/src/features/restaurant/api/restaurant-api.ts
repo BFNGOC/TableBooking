@@ -32,7 +32,10 @@ export const restaurantPublicApi = {
 		const res = await clientRequest<IRestaurant[]>({
 			url: `${API_URL_PREFIX}`,
 			method: "GET",
-			queryParams,
+			queryParams: {
+				...queryParams,
+				cuisineTypes: queryParams.cuisineTypes?.join(","),
+			},
 		});
 		return res.data;
 	},

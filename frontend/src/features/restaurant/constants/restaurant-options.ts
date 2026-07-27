@@ -29,30 +29,30 @@ export const PRICE_RANGE_OPTIONS: {
 }[] = [
 	{
 		id: "under-500",
-		text: "Dưới 500k",
+		text: "Dưới 500.000đ",
 		maxPrice: 500000,
 	},
 	{
 		id: "500-800",
-		text: "500k - 800k",
+		text: "500.000đ - 800.000đ",
 		minPrice: 500000,
 		maxPrice: 800000,
 	},
 	{
 		id: "800-1200",
-		text: "800k - 1200k",
+		text: "800.000đ - 1.200.000đ",
 		minPrice: 800000,
 		maxPrice: 1200000,
 	},
 	{
 		id: "1200-2000",
-		text: "1200k - 2000k",
+		text: "1.200.000đ - 2.000.000đ",
 		minPrice: 1200000,
 		maxPrice: 2000000,
 	},
 	{
 		id: "above-2000",
-		text: "Trên 2000k",
+		text: "Trên 2.000.000",
 		minPrice: 2000000,
 	},
 ];
@@ -129,7 +129,7 @@ export const CUISINE_OPTIONS: {
 	{ id: "european", text: "Món Âu" },
 	{ id: "fine-dining", text: "Fine Dining" },
 	{ id: "modern-vietnamese", text: "Món Việt hiện đại" },
-	{ id: "seafood", text: "Hải sản" },
+	{ id: "Hải sản", text: "Hải sản" },
 ];
 
 export const RATING_OPTIONS: {

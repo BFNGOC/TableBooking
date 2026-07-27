@@ -14,7 +14,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
 		restaurant;
 
 	const cuisine =
-		cuisineTypes && cuisineTypes.length > 0 ? cuisineTypes[0] : "";
+		cuisineTypes && cuisineTypes.length > 0 ? cuisineTypes.join(", ") : "";
 	// Format address: e.g. "Quận 1, TP. Hồ Chí Minh" from "12 Nguyễn Huệ, Quận 1, TP.HCM"
 	const formatAddress = (addr: string) => {
 		if (!addr) return "";

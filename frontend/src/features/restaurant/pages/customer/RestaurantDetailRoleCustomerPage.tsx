@@ -6,6 +6,7 @@ import GoogleMapEmbed from "@/features/restaurant/components/GoogleMapEmbed";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import { useToast } from "@/shared/hooks/useToast";
 import BookingModal from "@/features/restaurant/components/BookingModal";
+import { formatPriceRange } from "@/features/restaurant/utils/price.utils";
 import {
 	Star,
 	Share2,
@@ -19,136 +20,6 @@ import {
 interface RestaurantDetailRoleCustomerPageProps {
 	restaurant: IRestaurant;
 }
-
-// Fallback images based on cuisine type
-const CUISINE_FALLBACKS: Record<string, string[]> = {
-	european: [
-		"https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800",
-		"https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?q=80&w=800",
-		"https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=800",
-		"https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=800",
-		"https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=800",
-	],
-	japanese: [
-		"https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?q=80&w=800",
-		"https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=800",
-		"https://images.unsplash.com/photo-1611143669185-af224c5e3252?q=80&w=800",
-		"https://images.unsplash.com/photo-1582450871972-ab5ca641643d?q=80&w=800",
-		"https://images.unsplash.com/photo-1534482421-64566f976cfa?q=80&w=800",
-	],
-	bbq: [
-		"https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800",
-		"https://images.unsplash.com/photo-1598515214211-89d3e73ae83b?q=80&w=800",
-		"https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800",
-		"https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?q=80&w=800",
-		"https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=800",
-	],
-	seafood: [
-		"https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?q=80&w=800",
-		"https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?q=80&w=800",
-		"https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=800",
-		"https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=800",
-		"https://images.unsplash.com/photo-1579631542720-3a87824ff8c9?q=80&w=800",
-	],
-	general: [
-		"https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800",
-		"https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=800",
-		"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800",
-		"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800",
-		"https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800",
-	],
-};
-
-// Fallback dishes based on cuisine type
-interface Dish {
-	name: string;
-	price: string;
-	description: string;
-	image: string;
-}
-
-const DISHES_MAPPING: Record<string, Dish[]> = {
-	european: [
-		{
-			name: "Bò Wagyu Nướng Đá",
-			price: "1.250k",
-			description:
-				"Bò Wagyu thượng hạng nướng trên đá nóng, kèm sốt tiêu đen và khoai tây nghiền truffle.",
-			image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400",
-		},
-		{
-			name: "Cá Hồi Áp Chảo",
-			price: "680k",
-			description:
-				"Cá hồi Na Uy áp chảo với măng tây, sốt chanh leo và hạt quinoa giòn tan.",
-			image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=400",
-		},
-	],
-	japanese: [
-		{
-			name: "Sushi & Sashimi Premium Set",
-			price: "950k",
-			description:
-				"Các loại hải sản tươi sống nhập khẩu trực tiếp từ chợ Toyosu, Nhật Bản, chế biến bởi đầu bếp 5 sao.",
-			image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=400",
-		},
-		{
-			name: "Tempura Tôm Hoàng Gia",
-			price: "420k",
-			description:
-				"Tôm sú tươi chiên giòn phong cách Tempura giòn rụm với nước tương dashi thanh mát.",
-			image: "https://images.unsplash.com/photo-1534482421-64566f976cfa?q=80&w=400",
-		},
-	],
-	bbq: [
-		{
-			name: "Combo Thịt Nướng Gogi Đặc Biệt",
-			price: "599k",
-			description:
-				"Thịt bò Wagyu vân mỡ đều, dẻ sườn bò Mỹ và ba chỉ heo nướng cùng sốt Gogi đặc trưng.",
-			image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=400",
-		},
-		{
-			name: "Lẩu Kim Chi Hải Sản",
-			price: "280k",
-			description:
-				"Nước lẩu kim chi chua cay đậm đà với tôm, mực, nghêu và các loại nấm tươi.",
-			image: "https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=400",
-		},
-	],
-	seafood: [
-		{
-			name: "Tôm Hùm Đút Lò Phô Mai",
-			price: "1.450k",
-			description:
-				"Tôm hùm bông Nha Trang đút lò với sốt bơ tỏi và lớp phô mai Mozzarella béo ngậy tan chảy.",
-			image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=400",
-		},
-		{
-			name: "Cua Huỳnh Đế Hấp Gừng",
-			price: "2.800k",
-			description:
-				"Cua Huỳnh Đế tươi sống hấp hành gừng giữ trọn vị ngọt tự nhiên đậm đà của thịt cua.",
-			image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=400",
-		},
-	],
-	general: [
-		{
-			name: "Nấm Đông Cô Xốt Dầu Hào Chay",
-			price: "180k",
-			description:
-				"Nấm đông cô tươi xào cải thìa thanh đạm, kết hợp nước sốt dầu hào chay đậm đà.",
-			image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400",
-		},
-		{
-			name: "Đậu Hũ Tứ Xuyên Chay",
-			price: "150k",
-			description:
-				"Đậu hũ non mềm mịn nấu cùng sốt cay Tứ Xuyên và nấm đùi gà cắt hạt lựu.",
-			image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400",
-		},
-	],
-};
 
 function RestaurantDetailRoleCustomerPage({
 	restaurant,
@@ -169,37 +40,6 @@ function RestaurantDetailRoleCustomerPage({
 		images = [],
 	} = restaurant;
 
-	const cuisineKey = useMemo(() => {
-		const typesStr = cuisineTypes.join(" ").toLowerCase();
-		if (
-			typesStr.includes("âu") ||
-			typesStr.includes("pháp") ||
-			typesStr.includes("ý") ||
-			typesStr.includes("pizza")
-		) {
-			return "european";
-		}
-		if (
-			typesStr.includes("nhật") ||
-			typesStr.includes("sushi") ||
-			typesStr.includes("á") ||
-			typesStr.includes("kaiseki")
-		) {
-			return "japanese";
-		}
-		if (
-			typesStr.includes("nướng") ||
-			typesStr.includes("bbq") ||
-			typesStr.includes("hàn quốc")
-		) {
-			return "bbq";
-		}
-		if (typesStr.includes("hải sản") || typesStr.includes("seafood")) {
-			return "seafood";
-		}
-		return "general";
-	}, [cuisineTypes]);
-
 	const galleryImages = useMemo(() => {
 		const list: string[] = [];
 
@@ -213,16 +53,7 @@ function RestaurantDetailRoleCustomerPage({
 			}
 		});
 
-		const fallbacks =
-			CUISINE_FALLBACKS[cuisineKey] || CUISINE_FALLBACKS.general;
-		let fallbackIdx = 0;
-		while (list.length < 5 && fallbackIdx < fallbacks.length) {
-			if (!list.includes(fallbacks[fallbackIdx])) {
-				list.push(fallbacks[fallbackIdx]);
-			}
-			fallbackIdx++;
-		}
-
+		// Fill remaining slots with a default placeholder
 		while (list.length < 5) {
 			list.push(
 				"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800",
@@ -230,18 +61,7 @@ function RestaurantDetailRoleCustomerPage({
 		}
 
 		return list;
-	}, [avatar, images, cuisineKey]);
-
-	const dishes = useMemo(() => {
-		return DISHES_MAPPING[cuisineKey] || DISHES_MAPPING.general;
-	}, [cuisineKey]);
-
-	const formatPriceRange = () => {
-		if (!priceFrom && !priceTo) return "500k - 1.500k VND";
-		const fromK = Math.floor(priceFrom / 1000).toLocaleString("vi-VN");
-		const toK = Math.floor(priceTo / 1000).toLocaleString("vi-VN");
-		return `${fromK}k - ${toK}k VND`;
-	};
+	}, [avatar, images]);
 
 	const handleShare = () => {
 		if (navigator.share) {
@@ -290,7 +110,7 @@ function RestaurantDetailRoleCustomerPage({
 									{isLast && (
 										<div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center flex-col gap-1 cursor-pointer">
 											<span className="text-white text-base font-extrabold">
-												+12 ảnh
+												+{images.length - 3} ảnh
 											</span>
 										</div>
 									)}
@@ -329,12 +149,15 @@ function RestaurantDetailRoleCustomerPage({
 										<span>•</span>
 										<span className="bg-[#f5f0ec] text-[#6e5a4f] py-0.5 px-2 rounded-md text-[11px] font-semibold">
 											{cuisineTypes.length > 0
-												? cuisineTypes[0]
+												? cuisineTypes.join(", ")
 												: "Ẩm thực"}
 										</span>
 										<span>•</span>
 										<span className="font-bold text-[#6f4e37]">
-											{formatPriceRange()}
+											{formatPriceRange(
+												priceFrom,
+												priceTo,
+											)}
 										</span>
 									</div>
 								</div>
@@ -375,51 +198,6 @@ function RestaurantDetailRoleCustomerPage({
 								{description ||
 									`Tọa lạc tại vị trí thuận lợi, ${restaurantName} mang đến một hành trình ẩm thực tinh tế, kết hợp hài hòa giữa các nguyên liệu truyền thống và phong cách chế biến hiện đại. Không gian được thiết kế sang trọng, ấm cúng cùng đội ngũ phục vụ chuyên nghiệp, cam kết đem lại trải nghiệm ẩm thực đẳng cấp nhất cho mỗi bữa tiệc của bạn.`}
 							</p>
-						</div>
-
-						{/* Divider */}
-						<div className="border-t border-[#e6d8c9]/40" />
-
-						{/* Món ăn đặc sắc */}
-						<div className="space-y-5">
-							<div className="flex items-center justify-between">
-								<h2 className="text-xl font-bold text-[#3d2a21]">
-									Món ăn đặc sắc
-								</h2>
-								<span className="text-xs font-bold text-[#6f4e37] hover:underline cursor-pointer">
-									Xem thực đơn đầy đủ →
-								</span>
-							</div>
-
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								{dishes.map((dish, index) => (
-									<div
-										key={index}
-										className="flex bg-white rounded-2xl border border-[#e6d8c9]/30 p-3 shadow-[0_2px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_16px_rgba(111,78,55,0.04)] transition-all gap-4"
-									>
-										<div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-50">
-											<img
-												src={dish.image}
-												alt={dish.name}
-												className="h-full w-full object-cover"
-											/>
-										</div>
-										<div className="flex-1 space-y-1">
-											<div className="flex justify-between items-start gap-1">
-												<h4 className="text-sm font-bold text-[#3d2a21]">
-													{dish.name}
-												</h4>
-												<span className="text-xs font-bold text-[#e28c5c] shrink-0">
-													{dish.price}
-												</span>
-											</div>
-											<p className="text-[11px] text-[#8c7a6f] leading-relaxed line-clamp-2">
-												{dish.description}
-											</p>
-										</div>
-									</div>
-								))}
-							</div>
 						</div>
 
 						{/* Divider */}

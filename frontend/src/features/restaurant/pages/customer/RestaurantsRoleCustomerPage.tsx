@@ -6,9 +6,10 @@ import FilterBar from "@/features/restaurant/components/FilterBar";
 import Search from "@/features/restaurant/components/RestaurantSearch";
 import RestaurantCard from "@/features/restaurant/components/RestaurantCard";
 import RestaurantSort from "@/features/restaurant/components/RestaurantSort";
-import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import useTable from "@/shared/hooks/useTable";
+import CustomPagination from "@/shared/components/pagination/pagination";
 import { restaurantPublicApi } from "@/features/restaurant/api/restaurant-api";
 import { restaurantQueryKeys } from "@/features/restaurant/constants/query_key";
 import { RestaurantFilterRoleCustomerParams } from "@/features/restaurant/types/restaurant-filter-params-type";
@@ -18,53 +19,15 @@ import filterRestaurantFormFields from "@/features/restaurant/constants/restaura
 import searchRestaurantFormFields from "@/features/restaurant/constants/restaurant-search-form-field";
 import selectRestaurantFormFields from "@/features/restaurant/constants/restaurant-sort-form-field";
 import {
-	getDefaultDate,
-	getDefaultTime,
-} from "@/shared/utils/current-date-time";
+	initialFormValuesFromUrl,
+	buildSearchUrl,
+} from "@/features/restaurant/utils/restaurant-form.utils";
 
 const ALL_FORM_FIELDS = [
 	...searchRestaurantFormFields,
 	...filterRestaurantFormFields,
 	...selectRestaurantFormFields,
 ];
-
-function initialFormValuesFromUrl(
-	searchParams: URLSearchParams,
-): Record<string, any> {
-	return {
-		keySearch: searchParams.get("keySearch") ?? "",
-		guests: searchParams.get("guests") ?? "2",
-		date: searchParams.get("date") ?? getDefaultDate(),
-		time: searchParams.get("time") ?? getDefaultTime(),
-		priceRange: searchParams.get("priceRange") ?? "",
-		cuisineType: searchParams.get("cuisineType") ?? undefined,
-		minRating: searchParams.get("minRating") ?? undefined,
-		sort: searchParams.get("sort") ?? "default",
-	};
-}
-
-function buildSearchUrl(formValues: Record<string, any>): string {
-	const sp = new URLSearchParams();
-
-	const str = (v: any) => (v != null ? String(v).trim() : "");
-
-	if (str(formValues.keySearch))
-		sp.set("keySearch", str(formValues.keySearch));
-	if (str(formValues.guests)) sp.set("guests", str(formValues.guests));
-	if (str(formValues.date)) sp.set("date", str(formValues.date));
-	if (str(formValues.time)) sp.set("time", str(formValues.time));
-	if (str(formValues.priceRange))
-		sp.set("priceRange", str(formValues.priceRange));
-	if (str(formValues.cuisineType))
-		sp.set("cuisineType", str(formValues.cuisineType));
-	if (str(formValues.minRating))
-		sp.set("minRating", str(formValues.minRating));
-	if (str(formValues.sort) && formValues.sort !== "default")
-		sp.set("sort", str(formValues.sort));
-
-	const qs = sp.toString();
-	return qs ? `/restaurants/search?${qs}` : "/restaurants/search";
-}
 
 function RestaurantsRoleCustomerPage() {
 	const searchParams = useSearchParams();
@@ -141,7 +104,7 @@ function RestaurantsRoleCustomerPage() {
 		const resetValues = {
 			...formValues,
 			priceRange: "",
-			cuisineType: undefined,
+			cuisineTypes: undefined,
 			minRating: undefined,
 		};
 		handleFilterChange(resetValues as any);
@@ -157,6 +120,8 @@ function RestaurantsRoleCustomerPage() {
 	const totalPages = pagination?.totalPages ?? 1;
 	const currentPage = pagination?.currentPage ?? 1;
 	const totalItems = pagination?.totalItems ?? 0;
+
+	console.log("restaurants", restaurants);
 
 	return (
 		<div className="w-full min-h-screen bg-[#fff8f5]">
@@ -194,19 +159,7 @@ function RestaurantsRoleCustomerPage() {
 
 				{/* Results Container */}
 				<div className="col-span-12 md:col-span-9 space-y-6">
-					{/* Header summary of results */}
 					<div className="flex flex-col justify-between sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#e6d8c9]/30">
-						<div>
-							<h1 className="text-2xl md:text-3xl font-extrabold text-[#3d2a21]">
-								{isLoading
-									? "Đang tìm kiếm..."
-									: `Tìm thấy ${totalItems} nhà hàng`}
-							</h1>
-							<p className="text-xs text-[#8c7a6f] mt-1 font-medium">
-								tại TP. Hồ Chí Minh khớp với tìm kiếm của bạn
-							</p>
-						</div>
-
 						{/* Sorting & Filter controls */}
 						<div className="flex items-center gap-3 self-end sm:self-auto flex-wrap">
 							{/* Mobile Filter Toggle (hidden on desktop) */}
@@ -311,52 +264,12 @@ function RestaurantsRoleCustomerPage() {
 
 					{/* Pagination Controls */}
 					{!isLoading && totalPages > 1 && (
-						<div className="flex items-center justify-center gap-2 pt-8">
-							{/* Prev Button */}
-							<button
-								type="button"
-								disabled={currentPage === 1}
-								onClick={() =>
-									handlePageChange(currentPage - 1)
-								}
-								className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-[#e6d8c9]/80 text-[#6f4e37] hover:bg-[#fcf5ec] disabled:opacity-40 disabled:hover:bg-white shadow-xs transition-all cursor-pointer"
-							>
-								<ChevronLeft size={16} />
-							</button>
-
-							{/* Page Numbers */}
-							{Array.from(
-								{ length: totalPages },
-								(_, i) => i + 1,
-							).map((page) => {
-								const isActive = currentPage === page;
-								return (
-									<button
-										key={page}
-										type="button"
-										onClick={() => handlePageChange(page)}
-										className={`h-10 w-10 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-											isActive
-												? "bg-[#6f4e37] text-white shadow-md shadow-[#6f4e37]/20 scale-105"
-												: "bg-white border border-[#e6d8c9]/80 text-[#6f4e37] hover:bg-[#fcf5ec]"
-										}`}
-									>
-										{page}
-									</button>
-								);
-							})}
-
-							{/* Next Button */}
-							<button
-								type="button"
-								disabled={currentPage === totalPages}
-								onClick={() =>
-									handlePageChange(currentPage + 1)
-								}
-								className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-[#e6d8c9]/80 text-[#6f4e37] hover:bg-[#fcf5ec] disabled:opacity-40 disabled:hover:bg-white shadow-xs transition-all cursor-pointer"
-							>
-								<ChevronRight size={16} />
-							</button>
+						<div className="flex justify-center pt-8">
+							<CustomPagination
+								currentPage={currentPage}
+								totalPages={totalPages}
+								onPageChange={handlePageChange}
+							/>
 						</div>
 					)}
 				</div>

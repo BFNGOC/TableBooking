@@ -60,8 +60,17 @@ export function buildRestaurantCustomerParams(
 	if (expanded.keySearch && String(expanded.keySearch).trim() !== "") {
 		params.keySearch = String(expanded.keySearch).trim();
 	}
-	if (expanded.cuisineType && String(expanded.cuisineType).trim() !== "") {
-		params.cuisineType = String(expanded.cuisineType).trim();
+	if (expanded.cuisineTypes) {
+		if (
+			Array.isArray(expanded.cuisineTypes) &&
+			expanded.cuisineTypes.length > 0
+		) {
+			params.cuisineTypes = expanded.cuisineTypes
+				.map((c: any) => String(c).trim())
+				.filter(Boolean);
+		} else if (String(expanded.cuisineTypes).trim() !== "") {
+			params.cuisineTypes = [String(expanded.cuisineTypes).trim()];
+		}
 	}
 	if (expanded.minRating != null && expanded.minRating !== "") {
 		const parsed = parseFloat(String(expanded.minRating));

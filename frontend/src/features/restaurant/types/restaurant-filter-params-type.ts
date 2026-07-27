@@ -16,7 +16,7 @@ export interface RestaurantFilterRoleAdminParams extends FilterParams {
 }
 
 export interface RestaurantFilterRoleCustomerParams extends FilterParams {
-	cuisineType?: string;
+	cuisineTypes?: string[];
 
 	minPrice?: number;
 

@@ -18,8 +18,8 @@ export const filterRestaurantFormFields: FormField[] = [
 	},
 	{
 		label: "Loại món ăn",
-		name: "cuisineType",
-		type: FormFieldType.RADIO,
+		name: "cuisineTypes",
+		type: FormFieldType.CHECKBOX,
 		options: CUISINE_OPTIONS,
 		col: 12,
 	},

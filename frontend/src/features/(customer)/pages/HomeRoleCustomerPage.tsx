@@ -12,6 +12,10 @@ import { restaurantPublicApi } from "@/features/restaurant/api/restaurant-api";
 import { restaurantQueryKeys } from "@/features/restaurant/constants/query_key";
 import { RestaurantFilterRoleCustomerParams } from "@/features/restaurant/types/restaurant-filter-params-type";
 import {
+	initialFormValuesFromUrl,
+	buildSearchUrl,
+} from "@/features/restaurant/utils/restaurant-form.utils";
+import {
 	getDefaultDate,
 	getDefaultTime,
 } from "@/shared/utils/current-date-time";
@@ -68,31 +72,11 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 	>({
 		queryKey: restaurantQueryKeys.GET_RESTAURANT_CUSTOMER_LIST,
 		fetchApi: restaurantPublicApi.getRestaurants,
-		initialFilters: {
-			guests: "2",
-			date: getDefaultDate(),
-			time: getDefaultTime(),
-		},
 	});
-
-	const buildSearchUrl = (values: Record<string, any>): string => {
-		const sp = new URLSearchParams();
-		const str = (v: any) => (v != null ? String(v).trim() : "");
-
-		if (str(values.keySearch)) sp.set("keySearch", str(values.keySearch));
-		if (str(values.guests)) sp.set("guests", str(values.guests));
-		if (str(values.date)) sp.set("date", str(values.date));
-		if (str(values.time)) sp.set("time", str(values.time));
-
-		const qs = sp.toString();
-		return qs ? `/restaurants/search?${qs}` : "/restaurants/search";
-	};
 
 	const handleSearchSubmit = () => {
 		router.push(buildSearchUrl(filterValues as Record<string, any>));
 	};
-
-	console.log(filterValues);
 
 	return (
 		<div className="space-y-16">

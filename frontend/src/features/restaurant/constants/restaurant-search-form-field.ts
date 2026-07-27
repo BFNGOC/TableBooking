@@ -24,7 +24,6 @@ export const searchRestaurantFormFields: FormField[] = [
 		type: FormFieldType.SELECT,
 		options: GUEST_COUNT_OPTIONS,
 		selectionMode: "single",
-		defaultValue: "2",
 		col: 2,
 	},
 ];

@@ -3,10 +3,11 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsArray,
   Max,
   Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { PaginationQueryDto } from '@app/shared/dto/pagination-query.dto';
 
 export class FindPublicRestaurantDto extends PaginationQueryDto {
@@ -15,8 +16,17 @@ export class FindPublicRestaurantDto extends PaginationQueryDto {
   keySearch?: string;
 
   @IsOptional()
-  @IsString()
-  cuisineType?: string;
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    if (Array.isArray(value)) return value.map((v) => String(v));
+    return String(value)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  })
+  @IsArray()
+  @IsString({ each: true })
+  cuisineTypes?: string[];
 
   @IsOptional()
   @Type(() => Number)

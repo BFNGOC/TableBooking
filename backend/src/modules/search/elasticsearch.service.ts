@@ -81,6 +81,16 @@ export class SearchService implements OnModuleInit {
     }
   }
 
+  async deleteAllDocuments(index: string): Promise<void> {
+    await this.elasticsearchService.deleteByQuery({
+      index,
+      refresh: true,
+      query: {
+        match_all: {},
+      },
+    });
+  }
+
   async search<T extends object>(
     index: string,
     options: SearchOptions,
@@ -166,7 +176,7 @@ export class SearchService implements OnModuleInit {
       if (field === 'priceFrom') {
         filters.push({
           range: {
-            priceFrom: {
+            priceTo: {
               gte: value,
             },
           },
@@ -177,7 +187,7 @@ export class SearchService implements OnModuleInit {
       if (field === 'priceTo') {
         filters.push({
           range: {
-            priceTo: {
+            priceFrom: {
               lte: value,
             },
           },

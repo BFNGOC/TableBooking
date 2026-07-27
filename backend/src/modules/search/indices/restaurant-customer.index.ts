@@ -58,9 +58,7 @@ export async function createRestaurantCustomerIndex(
         },
 
         cuisineTypes: {
-          type: 'text',
-          analyzer: 'restaurant_index_analyzer',
-          search_analyzer: 'restaurant_search_analyzer',
+          type: 'keyword',
         },
 
         rating: {

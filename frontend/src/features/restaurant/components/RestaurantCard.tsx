@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { MapPin, Heart, Star } from "lucide-react";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
+import { formatPriceRange } from "@/features/restaurant/utils/price.utils";
 
 interface RestaurantCardProps {
 	restaurant: IRestaurant;
@@ -35,13 +36,6 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
 			return `${parts[parts.length - 2].trim()}, ${parts[parts.length - 1].trim()}`;
 		}
 		return addr;
-	};
-
-	const formatPrice = () => {
-		const basePrice = priceFrom || 0;
-		if (basePrice === 0) return "500k+";
-		const kValue = Math.floor(basePrice / 1000);
-		return `${kValue.toLocaleString("vi-VN")}k+`;
 	};
 
 	const getDiscount: () => number = () => 0;
@@ -152,10 +146,10 @@ export const RestaurantCard: React.FC<RestaurantCardProps> = ({
 				<div className="mt-auto flex items-center justify-between gap-2">
 					<div className="flex flex-col">
 						<span className="text-[11px] text-[#8c7a6f]">
-							Giá trung bình
+							Khoảng giá
 						</span>
 						<span className="text-base font-extrabold text-[#3d2a21]">
-							{formatPrice()}
+							{formatPriceRange(priceFrom, priceTo)}
 						</span>
 					</div>
 

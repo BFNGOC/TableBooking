@@ -32,6 +32,9 @@ import { UserSearchService } from '../users/user-search.service';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
 import { FindPublicRestaurantDto } from './dto/find-public-restaurant.dto';
 import { RestaurantCustomerSearchService } from './restaurant-customer-search.service';
+import { RESTAURANT_ADMIN_SEARCH_INDEX } from './restaurant-admin-search.document';
+import { RESTAURANT_CUSTOMER_SEARCH_INDEX } from './restaurant-customer-search.document';
+import { ElasticsearchService } from '@nestjs/elasticsearch';
 
 @Injectable()
 export class RestaurantsService {
@@ -45,10 +48,24 @@ export class RestaurantsService {
     private readonly usersService: UsersService,
     private readonly userSearchService: UserSearchService,
     private readonly restaurantCustomerSearchService: RestaurantCustomerSearchService,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   async reindexAll() {
     const restaurants = await this.restaurantModel.find();
+
+    await Promise.all([
+      this.elasticsearchService.deleteByQuery({
+        index: RESTAURANT_ADMIN_SEARCH_INDEX,
+        query: { match_all: {} },
+        refresh: true,
+      }),
+      this.elasticsearchService.deleteByQuery({
+        index: RESTAURANT_CUSTOMER_SEARCH_INDEX,
+        query: { match_all: {} },
+        refresh: true,
+      }),
+    ]);
 
     for (const restaurant of restaurants) {
       await this.restaurantSearchService.index(restaurant);
@@ -78,6 +95,7 @@ export class RestaurantsService {
         isAcceptingBookings: true,
         verifyStatus: RestaurantVerifyStatus.APPROVED,
       })
+      .select('restaurantName rating address cuisineTypes avatar slug')
       .sort({ rating: -1, createdAt: -1 })
       .limit(4)
       .lean();
@@ -90,13 +108,13 @@ export class RestaurantsService {
       currentPage: query.currentPage,
       pageSize: query.pageSize,
     });
-
+    console.log('query', query);
     const searchResult = await this.restaurantCustomerSearchService.search({
       keyword: query.keySearch,
       currentPage,
       pageSize,
       filter: {
-        cuisineTypes: query.cuisineType ? [query.cuisineType] : undefined,
+        cuisineTypes: query.cuisineTypes,
         priceFrom: query.minPrice,
         priceTo: query.maxPrice,
         capacity: query.capacity,
@@ -123,6 +141,9 @@ export class RestaurantsService {
         status: RestaurantStatus.ACTIVE,
         verifyStatus: RestaurantVerifyStatus.APPROVED,
       })
+      .select(
+        'avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+      )
       .lean();
 
     if (!restaurant) {

@@ -35,10 +35,10 @@ export const getRecommendedRestaurants = async () => {
 	}
 };
 
-export const getDetailRestaurant = async () => {
+export const getDetailRestaurant = async (slug: string) => {
 	try {
 		const res = await serverRequest<IRestaurant>({
-			url: `${API_URL_PREFIX}/:slug`,
+			url: `${API_URL_PREFIX}/${slug}`,
 			method: "GET",
 		});
 		return res.data;
