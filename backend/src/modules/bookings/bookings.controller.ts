@@ -30,7 +30,6 @@ export class BookingsController {
   }
 
   @Get(':restaurantId/available-tables')
-  @Public()
   getAvailableTables(
     @Param('restaurantId')
     restaurantId: string,

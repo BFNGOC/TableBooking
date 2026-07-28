@@ -185,7 +185,7 @@ function CustomForm<T extends Record<string, any>>({
             })}
             {mode !== 'view' && footer && (
                 <div
-                    className={`col-span-12 flex my-2 gap-3 ${footerClassName ?? 'justify-center'}`}
+                    className={`flex my-2 gap-3 ${footerClassName ?? 'justify-center col-span-12'}`}
                 >
                     {footer}
                 </div>

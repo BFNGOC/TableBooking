@@ -9,6 +9,7 @@ import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
 import {
   Restaurant,
   RestaurantDocument,
+  RestaurantStatus,
   RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
 import { Model, Types } from 'mongoose';
@@ -68,6 +69,24 @@ export class RestaurantsService {
     }
 
     const restaurant = await this.restaurantModel.findById(restaurantId).lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    return restaurant;
+  }
+
+  async getRestaurantBySlug(slug: string) {
+    const restaurant = await this.restaurantModel
+      .findOne({
+        slug,
+        verifyStatus: RestaurantVerifyStatus.APPROVED,
+      })
+      .select(
+        'avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+      )
+      .lean();
 
     if (!restaurant) {
       throw new NotFoundException('Không tìm thấy nhà hàng');

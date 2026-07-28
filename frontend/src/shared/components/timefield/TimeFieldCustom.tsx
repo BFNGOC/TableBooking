@@ -32,7 +32,6 @@ export default function TimeFieldCustom({
 
     return (
         <TimeField
-            className="w-[256px]"
             name={name}
             isRequired={isRequired}
             isDisabled={isDisabled}

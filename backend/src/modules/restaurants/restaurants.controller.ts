@@ -37,6 +37,12 @@ export class RestaurantsController {
     return this.restaurantsService.getCuisineTypes();
   }
 
+  @Get('/:slug')
+  @Public()
+  getPublicRestaurantBySlug(@Param('slug') slug: string) {
+    return this.restaurantsService.getRestaurantBySlug(slug);
+  }
+
   @Get('/me')
   getCurrentUserRestaurant(@CurrentUser() user: AuthUser) {
     return this.restaurantsService.getCurrentUserRestaurant(user._id);
