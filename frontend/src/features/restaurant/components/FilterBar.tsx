@@ -7,6 +7,7 @@ import filterRestaurantFormFields from "../constants/restaurant-filter-form-fiel
 import { FormFieldType } from "@/shared/types/form-field-types";
 
 interface FilterBarProps {
+	cuisineOptions: { id: string; text: string }[];
 	values?: Partial<Record<string, any>>;
 	onValuesChange?: (values: Partial<Record<string, any>>) => void;
 	onSubmit?: () => void;
@@ -14,15 +15,17 @@ interface FilterBarProps {
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
+	cuisineOptions,
 	values = {},
 	onValuesChange,
 	onSubmit,
 	onReset,
 }) => {
+	const fieldsToUse = filterRestaurantFormFields(cuisineOptions);
 	const resetFilters = () => {
 		const empty: Partial<Record<string, any>> = {};
 
-		filterRestaurantFormFields.forEach((f) => {
+		fieldsToUse.forEach((f) => {
 			if (
 				f.type === FormFieldType.CHECKBOX_GROUP ||
 				f.type === FormFieldType.CHECKBOX
@@ -83,7 +86,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 			</div>
 
 			<CustomForm
-				fields={filterRestaurantFormFields}
+				fields={fieldsToUse}
 				values={values}
 				onValuesChange={(nextValues) => onValuesChange?.(nextValues)}
 				onSubmit={() => onSubmit?.()}

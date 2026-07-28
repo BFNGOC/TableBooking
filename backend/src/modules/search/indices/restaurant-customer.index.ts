@@ -61,6 +61,10 @@ export async function createRestaurantCustomerIndex(
           type: 'keyword',
         },
 
+        verifyStatus: {
+          type: 'keyword',
+        },
+
         rating: {
           type: 'float',
         },

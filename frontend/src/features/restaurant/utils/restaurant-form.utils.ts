@@ -1,16 +1,8 @@
-import {
-	getDefaultDate,
-	getDefaultTime,
-} from "@/shared/utils/current-date-time";
-
 export function initialFormValuesFromUrl(
 	searchParams: URLSearchParams,
 ): Record<string, any> {
 	return {
 		keySearch: searchParams.get("keySearch") ?? "",
-		guests: searchParams.get("guests") ?? "",
-		date: searchParams.get("date") ?? getDefaultDate(),
-		time: searchParams.get("time") ?? getDefaultTime(),
 		priceRange: searchParams.get("priceRange") ?? "",
 		cuisineTypes: searchParams.get("cuisineTypes")
 			? String(searchParams.get("cuisineTypes"))
@@ -29,9 +21,6 @@ export function buildSearchUrl(formValues: Record<string, any>): string {
 
 	if (str(formValues.keySearch))
 		sp.set("keySearch", str(formValues.keySearch));
-	if (str(formValues.guests)) sp.set("guests", str(formValues.guests));
-	if (str(formValues.date)) sp.set("date", str(formValues.date));
-	if (str(formValues.time)) sp.set("time", str(formValues.time));
 	if (str(formValues.priceRange))
 		sp.set("priceRange", str(formValues.priceRange));
 	if (

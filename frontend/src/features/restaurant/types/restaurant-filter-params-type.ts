@@ -22,7 +22,5 @@ export interface RestaurantFilterRoleCustomerParams extends FilterParams {
 
 	maxPrice?: number;
 
-	capacity?: number;
-
 	minRating?: number;
 }

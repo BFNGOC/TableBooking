@@ -43,12 +43,6 @@ export class FindPublicRestaurantDto extends PaginationQueryDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @Min(1)
-  capacity?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
   @Min(0)
   @Max(5)
   minRating?: number;

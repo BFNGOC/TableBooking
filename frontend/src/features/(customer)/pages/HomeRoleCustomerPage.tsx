@@ -11,14 +11,7 @@ import useTable from "@/shared/hooks/useTable";
 import { restaurantPublicApi } from "@/features/restaurant/api/restaurant-api";
 import { restaurantQueryKeys } from "@/features/restaurant/constants/query_key";
 import { RestaurantFilterRoleCustomerParams } from "@/features/restaurant/types/restaurant-filter-params-type";
-import {
-	initialFormValuesFromUrl,
-	buildSearchUrl,
-} from "@/features/restaurant/utils/restaurant-form.utils";
-import {
-	getDefaultDate,
-	getDefaultTime,
-} from "@/shared/utils/current-date-time";
+import { buildSearchUrl } from "@/features/restaurant/utils/restaurant-form.utils";
 
 interface CustomerHomePageProps {
 	restaurants: IRestaurant[];
@@ -101,9 +94,9 @@ function CustomerHomePage({ restaurants = [] }: CustomerHomePageProps) {
 					</h1>
 
 					{/* Search Bar Component */}
-					<div className="w-full max-w-4xl px-2">
+					<div className="w-full max-w-2xl px-2">
 						<Search
-							className="w-full max-w-5xl mx-auto bg-[#bbb3ae] rounded-4xl py-4 px-6 shadow-xl"
+							className="w-full max-w-2xl mx-auto bg-[#bbb3ae] rounded-4xl py-4 px-6 shadow-xl"
 							values={filterValues as Record<string, any>}
 							onValuesChange={(v) =>
 								handleFilterChange({

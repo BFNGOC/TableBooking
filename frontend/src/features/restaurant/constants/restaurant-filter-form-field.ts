@@ -7,7 +7,9 @@ import {
 	AMENITIES_OPTIONS,
 } from "./restaurant-options";
 
-export const filterRestaurantFormFields: FormField[] = [
+export const filterRestaurantFormFields = (
+	cuisineOptions: { id: string; text: string }[],
+): FormField[] => [
 	{
 		label: "Khoảng giá",
 		name: "priceRange",
@@ -20,7 +22,7 @@ export const filterRestaurantFormFields: FormField[] = [
 		label: "Loại món ăn",
 		name: "cuisineTypes",
 		type: FormFieldType.CHECKBOX,
-		options: CUISINE_OPTIONS,
+		options: cuisineOptions,
 		col: 12,
 	},
 	{

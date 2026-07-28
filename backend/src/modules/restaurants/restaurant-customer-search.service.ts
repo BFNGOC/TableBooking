@@ -9,6 +9,7 @@ import {
 import {
   RestaurantDocument,
   RestaurantStatus,
+  RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
 
 import { SearchService } from '../search/elasticsearch.service';
@@ -51,6 +52,8 @@ export class RestaurantCustomerSearchService {
     filter?: {
       status?: RestaurantStatus;
 
+      verifyStatus?: RestaurantVerifyStatus;
+
       isAcceptingBookings?: boolean;
 
       cuisineTypes?: string[];
@@ -75,8 +78,10 @@ export class RestaurantCustomerSearchService {
 
         fields: ['restaurantName', 'address', 'cuisineTypes'],
 
-        filter,
-
+        filter: {
+          ...filter,
+          verifyStatus: RestaurantVerifyStatus.APPROVED,
+        },
         sort,
 
         from: (currentPage - 1) * pageSize,

@@ -117,7 +117,6 @@ export class RestaurantsService {
         cuisineTypes: query.cuisineTypes,
         priceFrom: query.minPrice,
         priceTo: query.maxPrice,
-        capacity: query.capacity,
         rating: query.minRating,
       },
       sort: parseSort(query.sort),
@@ -138,7 +137,6 @@ export class RestaurantsService {
     const restaurant = await this.restaurantModel
       .findOne({
         slug,
-        status: RestaurantStatus.ACTIVE,
         verifyStatus: RestaurantVerifyStatus.APPROVED,
       })
       .select(

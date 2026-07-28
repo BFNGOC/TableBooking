@@ -50,7 +50,7 @@ const Search: React.FC<SearchProps> = ({
 						Tìm kiếm
 					</Button>
 				}
-				footerCol={2}
+				footerCol={3}
 				renderForm={false}
 			/>
 		</div>

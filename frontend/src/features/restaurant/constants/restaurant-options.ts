@@ -108,6 +108,7 @@ export const SORT_OPTIONS: {
 	id: string;
 	text: string;
 }[] = [
+	{ id: "default", text: "Phù hợp nhất" },
 	{
 		id: "rating_desc",
 		text: "Đánh giá cao nhất",

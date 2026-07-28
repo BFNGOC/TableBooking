@@ -1,10 +1,7 @@
 import { FormField } from "@/shared/types/form-field";
 import { formatFormValues } from "@/shared/utils/format-form-values";
 import { RestaurantFilterRoleCustomerParams } from "../types/restaurant-filter-params-type";
-import {
-	PRICE_RANGE_OPTIONS,
-	GUEST_COUNT_OPTIONS,
-} from "../constants/restaurant-options";
+import { PRICE_RANGE_OPTIONS } from "../constants/restaurant-options";
 
 export function getPriceRange(priceRangeId: string): {
 	minPrice?: number;
@@ -19,11 +16,6 @@ export function getPriceRange(priceRangeId: string): {
 	return result;
 }
 
-export function getCapacity(guestsId: string): number | undefined {
-	const option = GUEST_COUNT_OPTIONS.find((o) => o.id === guestsId);
-	return option?.capacity;
-}
-
 export function expandRestaurantFilterParams(
 	formValues: Record<string, any>,
 ): Record<string, any> {
@@ -36,10 +28,6 @@ export function expandRestaurantFilterParams(
 	}
 	delete result.priceRange;
 
-	if (result.guests) {
-		const capacity = getCapacity(String(result.guests));
-		if (capacity !== undefined) result.capacity = capacity;
-	}
 	delete result.guests;
 
 	return result;
@@ -78,7 +66,6 @@ export function buildRestaurantCustomerParams(
 	}
 	if (expanded.minPrice !== undefined) params.minPrice = expanded.minPrice;
 	if (expanded.maxPrice !== undefined) params.maxPrice = expanded.maxPrice;
-	if (expanded.capacity !== undefined) params.capacity = expanded.capacity;
 	if (
 		expanded.sort &&
 		String(expanded.sort).trim() !== "" &&

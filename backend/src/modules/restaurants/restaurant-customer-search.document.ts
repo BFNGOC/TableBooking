@@ -26,6 +26,8 @@ export interface RestaurantCustomerSearchDocument {
 
   status?: RestaurantStatus;
 
+  verifyStatus?: RestaurantVerifyStatus;
+
   isAcceptingBookings?: boolean;
 
   slug?: string;
@@ -52,6 +54,8 @@ export function toRestaurantCustomerSearchDocument(
     capacity: restaurant.capacity,
 
     status: restaurant.status,
+
+    verifyStatus: restaurant.verifyStatus,
 
     isAcceptingBookings: restaurant.isAcceptingBookings,
 

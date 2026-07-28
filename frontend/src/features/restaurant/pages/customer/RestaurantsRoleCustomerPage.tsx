@@ -22,16 +22,22 @@ import {
 	initialFormValuesFromUrl,
 	buildSearchUrl,
 } from "@/features/restaurant/utils/restaurant-form.utils";
+import { useCuisineTypes } from "../../hooks/useCuisineTypes";
 
-const ALL_FORM_FIELDS = [
-	...searchRestaurantFormFields,
-	...filterRestaurantFormFields,
-	...selectRestaurantFormFields,
-];
+// NOTE: `filterRestaurantFormFields` is a factory that needs cuisine options.
+// Build `ALL_FORM_FIELDS` inside the component using `useCuisineTypes` data.
 
 function RestaurantsRoleCustomerPage() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
+
+	const { data: cuisineTypes } = useCuisineTypes();
+
+	const ALL_FORM_FIELDS = [
+		...searchRestaurantFormFields,
+		...filterRestaurantFormFields(cuisineTypes ?? []),
+		...selectRestaurantFormFields,
+	];
 
 	const [showMobileFilter, setShowMobileFilter] = useState<boolean>(false);
 	const listContainerRef = useRef<HTMLDivElement>(null);
@@ -127,7 +133,7 @@ function RestaurantsRoleCustomerPage() {
 		<div className="w-full min-h-screen bg-[#fff8f5]">
 			{/* Search Banner */}
 			<div className="p-8 md:p-12 bg-[#faf1ed] border-b border-[#e6d8c9]/20">
-				<div className="max-w-6xl mx-auto space-y-4">
+				<div className="max-w-4xl mx-auto space-y-4">
 					<Search
 						className="w-full bg-white rounded-2xl py-3 px-5 shadow-sm border border-[#e6d8c9]/50"
 						values={formValues}
@@ -148,6 +154,7 @@ function RestaurantsRoleCustomerPage() {
 				{/* Desktop Filter Sidebar (hidden on small screens) */}
 				<div className="hidden md:block md:col-span-3 bg-white rounded-3xl border border-[#e6d8c9]/40 overflow-hidden shadow-sm sticky top-6">
 					<FilterBar
+						cuisineOptions={cuisineTypes}
 						values={formValues}
 						onValuesChange={(v) =>
 							handleFilterChange({ ...formValues, ...v } as any)
@@ -202,6 +209,7 @@ function RestaurantsRoleCustomerPage() {
 								</div>
 								<div className="flex-1">
 									<FilterBar
+										cuisineOptions={cuisineTypes}
 										values={formValues}
 										onValuesChange={(v) =>
 											handleFilterChange({

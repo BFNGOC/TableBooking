@@ -7,24 +7,7 @@ export const searchRestaurantFormFields: FormField[] = [
 		name: "keySearch",
 		type: FormFieldType.SEARCH,
 		placeholder: "Địa điểm, nhà hàng...",
-		col: 4,
-	},
-	{
-		name: "date",
-		type: FormFieldType.DATE,
-		col: 2,
-	},
-	{
-		name: "time",
-		type: FormFieldType.TIME,
-		col: 2,
-	},
-	{
-		name: "guests",
-		type: FormFieldType.SELECT,
-		options: GUEST_COUNT_OPTIONS,
-		selectionMode: "single",
-		col: 2,
+		col: 9,
 	},
 ];
 

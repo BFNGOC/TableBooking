@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import CustomForm from "@/shared/components/form/CustomForm";
 import selectRestaurantFormFields from "../constants/restaurant-sort-form-field";
 
@@ -15,17 +14,10 @@ const RestaurantSort: React.FC<RestaurantSortProps> = ({
 	onChange,
 	className,
 }) => {
-	const [values, setValues] = useState<Partial<Record<string, any>>>({
-		sort: value,
-	});
-
-	useEffect(() => {
-		setValues((prev) => (prev.sort === value ? prev : { sort: value }));
-	}, [value]);
+	const values: Partial<Record<string, any>> = { sort: value };
 
 	const handleValuesChange = (nextValues: Partial<Record<string, any>>) => {
 		const nextValue = nextValues.sort ?? value;
-		setValues(nextValues);
 		onChange?.(String(nextValue));
 	};
 
