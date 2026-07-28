@@ -60,47 +60,38 @@ export const PRICE_RANGE_OPTIONS: {
 export const GUEST_COUNT_OPTIONS: {
 	id: string;
 	text: string;
-	capacity: number;
 }[] = [
 	{
 		id: "1",
 		text: "1 người",
-		capacity: 1,
 	},
 	{
 		id: "2",
 		text: "2 người",
-		capacity: 2,
 	},
 	{
 		id: "3",
 		text: "3 người",
-		capacity: 3,
 	},
 	{
 		id: "4",
 		text: "4 người",
-		capacity: 4,
 	},
 	{
 		id: "5",
 		text: "5 người",
-		capacity: 5,
 	},
 	{
 		id: "6",
 		text: "6 người",
-		capacity: 6,
 	},
 	{
 		id: "7-10",
 		text: "7 - 10 người",
-		capacity: 7, // tối thiểu 7 người
 	},
 	{
 		id: "10+",
 		text: "10+ người",
-		capacity: 10,
 	},
 ];
 

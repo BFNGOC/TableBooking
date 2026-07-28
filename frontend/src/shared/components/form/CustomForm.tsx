@@ -7,6 +7,7 @@ import TextAreaField from "../inputs/TextAreaField";
 import SelectField from "../select/SelectField";
 import DatePikerField from "../datepicker/DatePikerField";
 import TimeFieldCustom from "../timefield/TimeFieldCustom";
+import TimeSlotsField from "../timefield/TimeSlotsField";
 import AutocompleteCustom from "../autocomplete/AutocompleteCustom";
 import { RadioCustom } from "../radio/RadioCustom";
 import SearchField from "../search/SearchField";
@@ -168,6 +169,9 @@ function CustomForm<T extends Record<string, any>>({
 
 								case "timePicker":
 									return <TimeFieldCustom {...commonProps} />;
+
+								case "timeSlots":
+									return <TimeSlotsField {...commonProps} />;
 
 								case "autocomplete":
 									return (

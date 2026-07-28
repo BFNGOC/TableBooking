@@ -5,7 +5,7 @@ import Link from "next/link";
 import GoogleMapEmbed from "@/features/restaurant/components/GoogleMapEmbed";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import { useToast } from "@/shared/hooks/useToast";
-import BookingModal from "@/features/restaurant/components/BookingModal";
+import BookingCard from "@/features/restaurant/components/BookingCard";
 import { formatPriceRange } from "@/features/restaurant/utils/price.utils";
 import {
 	Star,
@@ -240,42 +240,14 @@ function RestaurantDetailRoleCustomerPage({
 					</div>
 
 					{/* Right Section (Booking Single Button Replacement Card) */}
-					<div className="lg:col-span-4 bg-white rounded-3xl border border-[#e6d8c9]/40 p-6 shadow-sm sticky top-6 space-y-5 text-center">
-						<div className="space-y-2">
-							<div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fcf5ec] text-[#6f4e37] mb-1">
-								<CalendarDays size={22} />
-							</div>
-							<h3 className="text-lg font-bold text-[#3d2a21]">
-								Đặt bàn trực tuyến
-							</h3>
-							<p className="text-xs text-[#8c7a6f] leading-relaxed">
-								Tiết kiệm thời gian chờ đợi. Đặt bàn trực tiếp
-								miễn phí ngay bây giờ để giữ chỗ tốt nhất.
-							</p>
-						</div>
-
-						{/* Booking Button CTA */}
-						<button
-							type="button"
-							onClick={() => setIsBookingOpen(true)}
-							className="w-full py-4 bg-[#6f4e37] hover:bg-[#543d31] active:bg-[#3d2a21] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 uppercase tracking-wider active:scale-98"
-						>
-							Đặt bàn ngay
-						</button>
-
-						<div className="border-t border-[#e6d8c9]/20 pt-4 flex items-center justify-center gap-1.5 text-[10px] text-gray-400">
-							<span>Xác nhận nhanh chóng qua TableSpot</span>
-						</div>
+					<div className="lg:col-span-4">
+						<BookingCard
+							restaurant={restaurant}
+							onBook={() => setIsBookingOpen(false)}
+						/>
 					</div>
 				</div>
 			</div>
-
-			{/* Booking Modal Popup */}
-			<BookingModal
-				isOpen={isBookingOpen}
-				onOpenChange={setIsBookingOpen}
-				restaurantName={restaurantName}
-			/>
 		</div>
 	);
 }

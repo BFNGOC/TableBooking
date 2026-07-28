@@ -20,6 +20,7 @@ export const FormFieldType = {
 	TIME_RANGE: "timeRange",
 	DATE_PICKER: "datePicker",
 	TIME_PICKER: "timePicker",
+	TIME_SLOTS: "timeSlots",
 	DATE_TIME_PICKER: "dateTimePicker",
 	DATE_RANGE_PICKER: "dateRangePicker",
 
