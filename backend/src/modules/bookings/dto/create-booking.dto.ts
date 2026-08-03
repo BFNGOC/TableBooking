@@ -1,5 +1,7 @@
+import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsInt,
   IsMongoId,
@@ -43,5 +45,8 @@ export class CreateBookingDto {
   @IsNotEmpty()
   contactPhone!: string;
 
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
   payDepositNow?: boolean;
 }

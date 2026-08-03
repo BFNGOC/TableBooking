@@ -1,3 +1,5 @@
+import CheckoutResultPage from '@/features/payment/pages/CheckoutResultPage';
+
 type Props = {
     params: Promise<{
         id: string;
@@ -6,7 +8,8 @@ type Props = {
 
 async function CheckoutResult({ params }: Props) {
     const { id } = await params;
-    return <div>CheckoutResult: {id}</div>;
+
+    return <CheckoutResultPage id={id} />;
 }
 
 export default CheckoutResult;

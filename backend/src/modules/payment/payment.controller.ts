@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { PaymentService } from './payment.service';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
@@ -15,6 +24,11 @@ export class PaymentController {
     private readonly paymentService: PaymentService,
     private readonly configService: ConfigService,
   ) {}
+
+  @Get(':id')
+  async getPaymentById(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.paymentService.getPaymentById(id, user._id);
+  }
 
   @Post()
   async createPayment(

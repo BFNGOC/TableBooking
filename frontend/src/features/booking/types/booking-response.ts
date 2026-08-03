@@ -25,6 +25,8 @@ export interface ITableDetail {
     updatedAt: string;
 }
 
+import { IPriceAdjustment, ITableDepositSnapshot } from './booking.type';
+
 export interface IGroupedArea {
     area: IAreaDetail;
     tables: ITableDetail[];
@@ -38,4 +40,22 @@ export interface GetAvailableTablesResponse {
     dayOfWeek: number;
     guestCount: number;
     areas: IGroupedArea[];
+}
+
+export interface ITablePricingSnapshot {
+    tableId: string;
+    basePrice: number;
+    finalPrice: number;
+    adjustments: IPriceAdjustment[];
+}
+
+export interface PreviewBookingPricingResponse {
+    basePrice: number;
+    finalPrice: number;
+    adjustments: IPriceAdjustment[];
+    depositAmount: number;
+    depositStatus: 'NOT_REQUIRED' | 'REQUIRED' | string;
+    tablePricings: ITablePricingSnapshot[];
+    tableDeposits: ITableDepositSnapshot[];
+    calculatedAt: string;
 }

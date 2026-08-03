@@ -134,6 +134,9 @@ export class Booking {
   guestCount!: number;
 
   @Prop()
+  customerNote?: string;
+
+  @Prop()
   restaurantNote?: string;
 
   @Prop({

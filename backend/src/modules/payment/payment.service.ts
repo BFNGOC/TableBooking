@@ -65,6 +65,54 @@ export class PaymentService {
     }
   }
 
+  async getPaymentById(paymentId: string, userId: string) {
+    if (!Types.ObjectId.isValid(paymentId)) {
+      throw new BadRequestException('Định dạng ID payment không hợp lệ');
+    }
+
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const payment = await this.paymentModel
+      .findOne({
+        _id: new Types.ObjectId(paymentId),
+        userId: new Types.ObjectId(userId),
+      })
+      .populate({
+        path: 'bookingId',
+        populate: [
+          {
+            path: 'userId',
+            select: 'name email phone avatar role',
+          },
+          {
+            path: 'restaurantId',
+            select: 'restaurantName address phone avatar rating slug',
+          },
+          {
+            path: 'tableIds',
+            select: 'tableNumber capacity status areaId',
+          },
+        ],
+      })
+      .populate({
+        path: 'userId',
+        select: 'name email phone avatar role',
+      })
+      .populate({
+        path: 'restaurantId',
+        select: 'restaurantName address phone avatar rating slug',
+      })
+      .lean();
+
+    if (!payment) {
+      throw new NotFoundException('Không tìm thấy payment');
+    }
+
+    return payment;
+  }
+
   async createPayment(userId: string, dto: CreatePaymentDto, ipAddress) {
     // =====================================================
     // 1. VALIDATE USER ID

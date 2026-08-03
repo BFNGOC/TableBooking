@@ -606,7 +606,10 @@ export class BookingsService {
       // 19. RETURN BOOKING
       // ===================================================
 
-      return booking;
+      return {
+        booking,
+        payDepositNow: dto.payDepositNow,
+      };
     } catch (error) {
       // ===================================================
       // 20. ROLLBACK REDIS LOCK
@@ -994,12 +997,43 @@ export class BookingsService {
     };
   }
 
-  findAll() {
-    return `This action returns all bookings`;
+  async findOne(id: string, userId: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Định dạng ID đặt bàn không hợp lệ');
+    }
+
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const booking = await this.bookingModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+        userId: new Types.ObjectId(userId),
+      })
+      .populate({
+        path: 'userId',
+        select: 'name email phone avatar role',
+      })
+      .populate({
+        path: 'restaurantId',
+        select: 'restaurantName address phone avatar rating',
+      })
+      .populate({
+        path: 'tableIds',
+        select: 'tableNumber capacity status areaId',
+      })
+      .lean();
+
+    if (!booking) {
+      throw new NotFoundException('Không tìm thấy đặt bàn');
+    }
+
+    return booking;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} booking`;
+  findAll() {
+    return `This action returns all bookings`;
   }
 
   update(id: number, updateBookingDto: UpdateBookingDto) {

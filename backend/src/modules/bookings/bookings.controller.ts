@@ -40,14 +40,14 @@ export class BookingsController {
     return this.bookingsService.getAvailableTables(restaurantId, dto);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.bookingsService.findOne(id, user._id);
+  }
+
   @Get()
   findAll() {
     return this.bookingsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bookingsService.findOne(+id);
   }
 
   @Patch(':id')
