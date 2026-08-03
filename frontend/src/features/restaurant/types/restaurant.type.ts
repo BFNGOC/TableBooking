@@ -12,8 +12,15 @@ export enum RestaurantVerifyStatus {
     REJECTED = 'REJECTED',
 }
 
+export enum SocialLinkType {
+    FACEBOOK = 'FACEBOOK',
+    INSTAGRAM = 'INSTAGRAM',
+    TIKTOK = 'TIKTOK',
+    WEBSITE = 'WEBSITE',
+}
+
 export interface RestaurantSocialLink {
-    type: string;
+    type: SocialLinkType;
     url: string;
 }
 
@@ -48,6 +55,14 @@ export interface IRestaurant {
     status?: RestaurantStatus;
 
     onboardingRequestedAt?: Date;
+
+    isAcceptingBookings?: boolean;
+
+    minBookingNoticeMinutes?: number;
+
+    tableHoldMinutes?: number;
+
+    advanceBookingDays?: number;
 
     userId?: string;
 

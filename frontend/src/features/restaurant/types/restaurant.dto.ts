@@ -1,9 +1,4 @@
-import { ImageType } from '@/features/upload/types/image';
-import {
-    RestaurantStatus,
-    RestaurantVerifyStatus,
-    type RestaurantSocialLink,
-} from './restaurant.type';
+import { IRestaurant, RestaurantStatus, RestaurantVerifyStatus } from './restaurant.type';
 
 export type RestaurantOnboardingPayload = {
     restaurantName: string;
@@ -17,17 +12,26 @@ export type RestaurantOnboardingPayload = {
 
 export type UpdateRestaurantOnboardingPayload = Partial<RestaurantOnboardingPayload>;
 
-export type UpdateRestaurantProfilePayload = {
-    description?: string;
-    openingTime?: string;
-    closingTime?: string;
-    priceFrom?: number;
-    priceTo?: number;
-    capacity?: number;
-    avatar?: ImageType;
-    images?: ImageType[];
-    socialLinks?: RestaurantSocialLink[];
-};
+export type UpdateRestaurantProfilePayload = Partial<
+    Pick<
+        IRestaurant,
+        | 'restaurantName'
+        | 'description'
+        | 'cuisineTypes'
+        | 'phone'
+        | 'email'
+        | 'address'
+        | 'representativeName'
+        | 'priceFrom'
+        | 'priceTo'
+        | 'capacity'
+        | 'openingTime'
+        | 'closingTime'
+        | 'avatar'
+        | 'images'
+        | 'socialLinks'
+    >
+>;
 
 export type UpdateRestaurantStatusPayload = {
     status: RestaurantStatus;

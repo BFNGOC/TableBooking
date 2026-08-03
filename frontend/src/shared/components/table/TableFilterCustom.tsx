@@ -34,7 +34,7 @@ function TableFilterCustom<T extends Record<string, any>>({
     return (
         <CustomCard>
             <div className="flex justify-end mb-4">
-                <Button type="button" size="sm" variant="danger-soft" onPress={onReset}>
+                <Button type="button" size="sm" variant="danger-soft" onPress={n}>
                     <RotateCcw size={18} />
                 </Button>
             </div>

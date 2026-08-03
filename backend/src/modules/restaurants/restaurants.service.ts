@@ -9,9 +9,10 @@ import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
 import {
   Restaurant,
   RestaurantDocument,
+  RestaurantStatus,
   RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CUISINE_TYPES } from '@app/shared/dto/constants/cuisine-type.constant';
 import { v4 as uuidv4 } from 'uuid';
@@ -62,6 +63,38 @@ export class RestaurantsService {
     }));
   }
 
+  async getRestaurantById(restaurantId: string) {
+    if (!Types.ObjectId.isValid(restaurantId)) {
+      throw new BadRequestException('Định dạng ID nhà hàng không hợp lệ');
+    }
+
+    const restaurant = await this.restaurantModel.findById(restaurantId).lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    return restaurant;
+  }
+
+  async getRestaurantBySlug(slug: string) {
+    const restaurant = await this.restaurantModel
+      .findOne({
+        slug,
+        verifyStatus: RestaurantVerifyStatus.APPROVED,
+      })
+      .select(
+        'avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+      )
+      .lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    return restaurant;
+  }
+
   /***********************************
    *  ME
    ***********************************/
@@ -73,6 +106,73 @@ export class RestaurantsService {
     }
 
     return restaurant;
+  }
+
+  async updateRestaurantMe(userId: string, dto: UpdateRestaurantProfileDto) {
+    const restaurant = await this.restaurantModel.findOne({
+      userId,
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy thông tin nhà hàng');
+    }
+
+    /**
+     * ============================================================
+     * Validate Price
+     * ============================================================
+     */
+
+    const priceFrom = dto.priceFrom ?? restaurant.priceFrom;
+    const priceTo = dto.priceTo ?? restaurant.priceTo;
+
+    if (
+      priceFrom !== undefined &&
+      priceTo !== undefined &&
+      priceFrom > priceTo
+    ) {
+      throw new BadRequestException(
+        'Mức giá tối thiểu không được lớn hơn mức giá tối đa',
+      );
+    }
+
+    /**
+     * ============================================================
+     * Validate Social Links
+     * ============================================================
+     */
+
+    if (dto.socialLinks) {
+      const socialTypes = dto.socialLinks.map((item) => item.type);
+
+      const uniqueSocialTypes = new Set(socialTypes);
+
+      if (socialTypes.length !== uniqueSocialTypes.size) {
+        throw new BadRequestException(
+          'Mỗi loại mạng xã hội chỉ được phép xuất hiện một lần',
+        );
+      }
+    }
+
+    /**
+     * ============================================================
+     * Update MongoDB
+     * ============================================================
+     */
+
+    Object.assign(restaurant, dto);
+
+    const updatedRestaurant = await restaurant.save();
+
+    /**
+     * ============================================================
+     * Update Elasticsearch
+     * ============================================================
+     */
+
+    await this.restaurantSearchService.update(updatedRestaurant);
+
+    return updatedRestaurant;
   }
 
   /***********************************

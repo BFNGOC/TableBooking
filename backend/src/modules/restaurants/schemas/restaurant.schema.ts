@@ -17,14 +17,29 @@ export enum RestaurantVerifyStatus {
   REJECTED = 'REJECTED',
 }
 
-@Schema({ _id: false })
-export class Image {
-  @Prop({ required: true })
-  url!: string;
-
-  @Prop({ required: true })
-  publicId!: string;
+export enum SocialLinkType {
+  FACEBOOK = 'FACEBOOK',
+  INSTAGRAM = 'INSTAGRAM',
+  TIKTOK = 'TIKTOK',
+  WEBSITE = 'WEBSITE',
 }
+
+@Schema({ _id: false })
+export class SocialLink {
+  @Prop({
+    required: true,
+    enum: SocialLinkType,
+  })
+  type!: SocialLinkType;
+
+  @Prop({
+    required: true,
+    trim: true,
+  })
+  url!: string;
+}
+
+export const SocialLinkSchema = SchemaFactory.createForClass(SocialLink);
 
 @Schema({
   timestamps: true,
@@ -144,24 +159,10 @@ export class Restaurant {
    * Website, Facebook, Instagram...
    */
   @Prop({
-    type: [
-      {
-        type: {
-          type: String,
-          required: true,
-        },
-        url: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    type: [SocialLinkSchema],
     default: [],
   })
-  socialLinks?: {
-    type: string;
-    url: string;
-  }[];
+  socialLinks?: SocialLink[];
 
   /**
    * ============================================================
@@ -175,6 +176,19 @@ export class Restaurant {
   @Prop()
   closingTime?: string;
 
+  @Prop({
+    required: true,
+    default: 120,
+    min: 30,
+  })
+  defaultReservationDurationMinutes!: number;
+
+  @Prop({
+    default: 30,
+    min: 1,
+  })
+  depositPaymentTimeoutMinutes?: number;
+
   /**
    * ============================================================
    * Media
@@ -185,13 +199,13 @@ export class Restaurant {
     type: ImageType,
     default: null,
   })
-  avatar?: Image;
+  avatar?: ImageType;
 
   @Prop({
     type: [ImageType],
     default: [],
   })
-  images?: Image[];
+  images?: ImageType[];
 
   /**
    * ============================================================
@@ -235,9 +249,32 @@ export class Restaurant {
    */
   @Prop({
     enum: RestaurantStatus,
-    default: RestaurantStatus.INACTIVE,
+    default: RestaurantStatus.ACTIVE,
   })
   status?: RestaurantStatus;
+
+  @Prop({
+    default: true,
+  })
+  isAcceptingBookings?: boolean;
+
+  @Prop({
+    default: 60,
+    min: 0,
+  })
+  minBookingNoticeMinutes?: number;
+
+  @Prop({
+    default: 15,
+    min: 1,
+  })
+  tableHoldMinutes?: number;
+
+  @Prop({
+    default: 30,
+    min: 1,
+  })
+  advanceBookingDays?: number;
 
   /**
    * Chủ sở hữu nhà hàng
