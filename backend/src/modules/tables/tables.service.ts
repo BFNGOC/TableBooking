@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTableDto } from './dto/create-table.dto';
 import { UpdateTableDto } from './dto/update-table.dto';
+import { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 
 @Injectable()
 export class TablesService {
-  create(createTableDto: CreateTableDto) {
+  create(createTableDto: CreateTableDto, user: AuthUser) {
     return 'This action adds a new table';
   }
 

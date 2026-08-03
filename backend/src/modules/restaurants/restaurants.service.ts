@@ -63,6 +63,18 @@ export class RestaurantsService {
     }));
   }
 
+  async getRestaurantByUserId(userId: string): Promise<RestaurantDocument> {
+    const restaurant = await this.restaurantModel.findOne({
+      userId: new Types.ObjectId(userId),
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found.');
+    }
+
+    return restaurant;
+  }
+
   async getRestaurantById(restaurantId: string) {
     if (!Types.ObjectId.isValid(restaurantId)) {
       throw new BadRequestException('Định dạng ID nhà hàng không hợp lệ');

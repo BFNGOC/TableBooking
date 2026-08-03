@@ -33,6 +33,12 @@ export class Table {
   })
   areaId?: Types.ObjectId;
 
+  @Prop()
+  x?: number;
+
+  @Prop()
+  y?: number;
+
   @Prop({
     required: true,
   })

@@ -10,14 +10,22 @@ import {
 import { TablesService } from './tables.service';
 import { CreateTableDto } from './dto/create-table.dto';
 import { UpdateTableDto } from './dto/update-table.dto';
+import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
+import { CurrentUser } from '@app/decorator/current-user.decorator';
+import { UserRole } from '../users/schemas/user.schema';
+import { Roles } from '@app/decorator/roles.decorator';
 
 @Controller('tables')
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
 
   @Post()
-  create(@Body() createTableDto: CreateTableDto) {
-    return this.tablesService.create(createTableDto);
+  @Roles(UserRole.RESTAURANT)
+  create(
+    @Body() createTableDto: CreateTableDto,
+    @CurrentUser() user: AuthUser,
+  ): string {
+    return this.tablesService.create(createTableDto, user);
   }
 
   @Get()
