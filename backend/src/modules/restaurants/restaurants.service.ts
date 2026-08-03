@@ -108,7 +108,6 @@ export class RestaurantsService {
       currentPage: query.currentPage,
       pageSize: query.pageSize,
     });
-    console.log('query', query);
     const searchResult = await this.restaurantCustomerSearchService.search({
       keyword: query.keySearch,
       currentPage,
