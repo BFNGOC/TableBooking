@@ -81,6 +81,16 @@ export class SearchService implements OnModuleInit {
     }
   }
 
+  async deleteAllDocuments(index: string): Promise<void> {
+    await this.elasticsearchService.deleteByQuery({
+      index,
+      refresh: true,
+      query: {
+        match_all: {},
+      },
+    });
+  }
+
   async search<T extends object>(
     index: string,
     options: SearchOptions,
@@ -160,6 +170,59 @@ export class SearchService implements OnModuleInit {
 
       // date range
       if (field === 'fromDate' || field === 'toDate') {
+        return;
+      }
+
+      if (field === 'priceFrom') {
+        filters.push({
+          range: {
+            priceTo: {
+              gte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (field === 'priceTo') {
+        filters.push({
+          range: {
+            priceFrom: {
+              lte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (field === 'capacity') {
+        filters.push({
+          range: {
+            capacity: {
+              gte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (field === 'rating') {
+        filters.push({
+          range: {
+            rating: {
+              gte: value,
+            },
+          },
+        });
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        filters.push({
+          terms: {
+            [field]: value,
+          },
+        });
         return;
       }
 

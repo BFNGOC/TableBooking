@@ -18,6 +18,7 @@ import { Roles } from '@app/decorator/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
+import { FindPublicRestaurantDto } from './dto/find-public-restaurant.dto';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
 
 @Controller('restaurants')
@@ -34,6 +35,24 @@ export class RestaurantsController {
   @Public()
   getCuisineTypes() {
     return this.restaurantsService.getCuisineTypes();
+  }
+
+  @Get('/recommended')
+  @Public()
+  getPublicRecommendRestaurants() {
+    return this.restaurantsService.getRecommendRestaurants();
+  }
+
+  @Get('/')
+  @Public()
+  getPublicRestaurants(@Query() query: FindPublicRestaurantDto) {
+    return this.restaurantsService.getRestaurants(query);
+  }
+
+  @Get('/:slug')
+  @Public()
+  getPublicRestaurantBySlug(@Param('slug') slug: string) {
+    return this.restaurantsService.getRestaurantBySlug(slug);
   }
 
   @Get('/me')
@@ -112,12 +131,6 @@ export class RestaurantsController {
     @Body() dto: UpdateRestaurantOnboardingDto,
   ) {
     return this.restaurantsService.updateOnboarding(user._id, dto);
-  }
-
-  //to-do
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.restaurantsService.findOne(+id);
   }
 
   @Patch(':id')

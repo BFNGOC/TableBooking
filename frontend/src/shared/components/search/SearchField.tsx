@@ -1,9 +1,13 @@
 "use client";
 
 import { FormField } from "@/shared/types/form-field";
-import { TextField, TextArea, Label, FieldError } from "@heroui/react";
+import {
+	SearchField as HeroSearchField,
+	Label,
+	FieldError,
+} from "@heroui/react";
 
-export default function TextAreaField({
+export default function SearchFieldCustom({
 	label,
 	name,
 	placeholder,
@@ -15,17 +19,20 @@ export default function TextAreaField({
 	onChange,
 	validate,
 	className,
+	minValue,
 }: FormField) {
 	return (
-		<TextField
+		<HeroSearchField
 			name={name}
 			isRequired={isRequired}
 			isDisabled={isDisabled}
 			isReadOnly={isReadOnly}
+			minValue={minValue}
 			defaultValue={defaultValue}
 			value={value ?? defaultValue}
 			onChange={onChange}
 			validate={validate}
+			className={className}
 		>
 			{label ? (
 				<Label className="mb-2 text-sm font-medium text-gray-700">
@@ -33,9 +40,17 @@ export default function TextAreaField({
 				</Label>
 			) : null}
 
-			<TextArea placeholder={placeholder} className={`${className}`} />
+			<HeroSearchField.Group>
+				<HeroSearchField.SearchIcon />
+				<HeroSearchField.Input
+					placeholder={placeholder}
+					className="w-[120px]"
+				/>
+				<HeroSearchField.ClearButton />
+			</HeroSearchField.Group>
+			<FieldError />
 
 			<FieldError />
-		</TextField>
+		</HeroSearchField>
 	);
 }

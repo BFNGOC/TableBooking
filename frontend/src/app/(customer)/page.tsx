@@ -1,15 +1,17 @@
-import CustomerHomePage from '@/features/(customer)/home/CustomerHomePage';
-import { IUser } from '@/features/users/types/user-type';
-import { serverRequest } from '@/shared/library/axios/server-api';
+import { Metadata } from "next";
+import CustomerHomePage from "@/features/(customer)/pages/HomeRoleCustomerPage";
+import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
+import restaurantsData from "../../../data/restaurants-mock-data.json";
+import { getRecommendedRestaurants } from "@/features/restaurant/api/restaurant-server-api";
+
+export const metadata: Metadata = {
+	title: "TableSpot - Trải nghiệm tinh hoa ẩm thực đẳng cấp",
+	description:
+		"Khám phá và đặt bàn tại các nhà hàng ẩm thực hàng đầu Việt Nam. Kết nối trải nghiệm ẩm thực tinh tế, sang trọng, ấm cúng và view đẹp.",
+};
 
 export default async function Home() {
-    // const res = await serverRequest<IUser>({ url: `/users/me`, method: 'GET' });
+	const restaurants: IRestaurant[] | null = await getRecommendedRestaurants();
 
-    // console.log(res);
-
-    return (
-        <div>
-            <CustomerHomePage />
-        </div>
-    );
+	return <CustomerHomePage restaurants={restaurants || []} />;
 }

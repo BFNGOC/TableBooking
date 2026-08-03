@@ -9,6 +9,7 @@ import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
 import {
   Restaurant,
   RestaurantDocument,
+  RestaurantStatus,
   RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
 import { Model } from 'mongoose';
@@ -29,6 +30,11 @@ import { UserDocument, UserRole } from '../users/schemas/user.schema';
 import { UsersService } from '../users/users.service';
 import { UserSearchService } from '../users/user-search.service';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
+import { FindPublicRestaurantDto } from './dto/find-public-restaurant.dto';
+import { RestaurantCustomerSearchService } from './restaurant-customer-search.service';
+import { RESTAURANT_ADMIN_SEARCH_INDEX } from './restaurant-admin-search.document';
+import { RESTAURANT_CUSTOMER_SEARCH_INDEX } from './restaurant-customer-search.document';
+import { ElasticsearchService } from '@nestjs/elasticsearch';
 
 @Injectable()
 export class RestaurantsService {
@@ -41,13 +47,29 @@ export class RestaurantsService {
     private readonly taxService: TaxService,
     private readonly usersService: UsersService,
     private readonly userSearchService: UserSearchService,
+    private readonly restaurantCustomerSearchService: RestaurantCustomerSearchService,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   async reindexAll() {
     const restaurants = await this.restaurantModel.find();
 
+    await Promise.all([
+      this.elasticsearchService.deleteByQuery({
+        index: RESTAURANT_ADMIN_SEARCH_INDEX,
+        query: { match_all: {} },
+        refresh: true,
+      }),
+      this.elasticsearchService.deleteByQuery({
+        index: RESTAURANT_CUSTOMER_SEARCH_INDEX,
+        query: { match_all: {} },
+        refresh: true,
+      }),
+    ]);
+
     for (const restaurant of restaurants) {
       await this.restaurantSearchService.index(restaurant);
+      await this.restaurantCustomerSearchService.index(restaurant);
     }
 
     return {
@@ -60,6 +82,72 @@ export class RestaurantsService {
       id: item,
       text: item,
     }));
+  }
+
+  /***********************************
+   *  PUBLIC
+   ***********************************/
+
+  async getRecommendRestaurants() {
+    const restaurants = await this.restaurantModel
+      .find({
+        status: RestaurantStatus.ACTIVE,
+        isAcceptingBookings: true,
+        verifyStatus: RestaurantVerifyStatus.APPROVED,
+      })
+      .select('restaurantName rating address cuisineTypes avatar slug')
+      .sort({ rating: -1, createdAt: -1 })
+      .limit(4)
+      .lean();
+
+    return restaurants;
+  }
+
+  async getRestaurants(query: FindPublicRestaurantDto) {
+    const { currentPage, pageSize } = buildPagination({
+      currentPage: query.currentPage,
+      pageSize: query.pageSize,
+    });
+    const searchResult = await this.restaurantCustomerSearchService.search({
+      keyword: query.keySearch,
+      currentPage,
+      pageSize,
+      filter: {
+        cuisineTypes: query.cuisineTypes,
+        priceFrom: query.minPrice,
+        priceTo: query.maxPrice,
+        rating: query.minRating,
+      },
+      sort: parseSort(query.sort),
+    });
+
+    return {
+      data: searchResult.data,
+      meta: {
+        currentPage,
+        pageSize,
+        totalItems: searchResult.totalItems,
+        totalPages: Math.ceil(searchResult.totalItems / pageSize),
+      },
+    };
+  }
+
+  async getRestaurantBySlug(slug: string) {
+    const restaurant = await this.restaurantModel
+      .findOne({
+        slug,
+        verifyStatus: RestaurantVerifyStatus.APPROVED,
+      })
+      .select(
+        'avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+      )
+      .lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    return restaurant;
   }
 
   /***********************************
@@ -138,6 +226,7 @@ export class RestaurantsService {
      */
 
     await this.restaurantSearchService.update(updatedRestaurant);
+    await this.restaurantCustomerSearchService.update(updatedRestaurant);
 
     return updatedRestaurant;
   }
@@ -567,11 +656,6 @@ export class RestaurantsService {
     await this.restaurantSearchService.update(restaurant);
 
     return restaurant;
-  }
-
-  //to-do
-  findOne(id: number) {
-    return `This action returns a #${id} restaurant`;
   }
 
   async update(id: number, updateRestaurantDto: UpdateRestaurantProfileDto) {

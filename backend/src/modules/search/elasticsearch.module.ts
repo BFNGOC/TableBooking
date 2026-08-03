@@ -9,6 +9,6 @@ import { SearchService } from './elasticsearch.service';
     }),
   ],
   providers: [SearchService],
-  exports: [SearchService],
+  exports: [SearchService, ElasticsearchModule],
 })
 export class SearchModule {}
