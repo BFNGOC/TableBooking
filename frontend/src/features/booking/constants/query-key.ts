@@ -7,4 +7,7 @@ export const bookingQueryKeys = {
         query,
     ],
     GET_BOOKING_DETAIL: (bookingId: string) => ['booking', bookingId],
+    GET_BOOKING_LIST_ME: ['booking', 'list', 'me'],
+    GET_BOOKING_UPCOMING_ME: ['booking', 'upcoming', 'me'],
+    GET_BOOKING_RECENT_ME: ['booking', 'recent', 'me'],
 };

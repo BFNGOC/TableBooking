@@ -8,6 +8,7 @@ import {
     GetAvailableTablesResponse,
     PreviewBookingPricingResponse,
 } from '../types/booking-response';
+import { IBooking } from '../types/booking.type';
 
 const API_URL_PREFIX = '/bookings';
 
@@ -51,12 +52,30 @@ export const bookingRoleCustomerApi = {
         return res;
     },
 
-    getBookingListById: async () => {
-        const res = await clientRequest<any>({
-            url: 'list',
+    getBookingListMe: async () => {
+        const res = await clientRequest<IBooking[]>({
+            url: `${API_URL_PREFIX}/me`,
             method: 'GET',
         });
 
-        return res;
+        return res.data;
+    },
+
+    getBookingRecentMe: async () => {
+        const res = await clientRequest<IBooking[]>({
+            url: `${API_URL_PREFIX}/recent`,
+            method: 'GET',
+        });
+
+        return res.data;
+    },
+
+    getBookingUpcomingMe: async () => {
+        const res = await clientRequest<IBooking[]>({
+            url: `${API_URL_PREFIX}/upcoming`,
+            method: 'GET',
+        });
+
+        return res.data;
     },
 };

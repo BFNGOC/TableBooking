@@ -52,3 +52,22 @@ export const translatePaymentType = (type: string | undefined) => {
             return type ?? '—';
     }
 };
+
+export function getBookingStatusText(status?: string) {
+    switch (status) {
+        case 'PENDING':
+            return 'Đang chờ thanh toán';
+        case 'CONFIRMED':
+            return 'Đã xác nhận';
+        case 'COMPLETED':
+            return 'Hoàn thành';
+        case 'CANCELLED':
+            return 'Đã hủy';
+        case 'NO_SHOW':
+            return 'Không đến';
+        case 'CHECKED_IN':
+            return 'Đã check-in';
+        default:
+            return status ?? '';
+    }
+}

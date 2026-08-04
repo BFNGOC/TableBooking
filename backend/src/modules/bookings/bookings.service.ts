@@ -32,6 +32,7 @@ import { RedisService } from '@app/shared/redis/redis.service';
 import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 import { Area } from '../areas/schemas/area.schema';
 import { getBookingHoldKey } from '@app/helpers/redis/booking-hold-key.util';
+import dayjs from 'dayjs';
 
 type PopulatedArea = Area & {
   _id: Types.ObjectId;
@@ -1046,6 +1047,68 @@ export class BookingsService {
     if (!bookings) {
       throw new NotFoundException('Không tìm thấy đặt bàn');
     }
+
+    return bookings;
+  }
+
+  async findUpcomingBookings(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const today = dayjs().format('YYYY-MM-DD');
+
+    const bookings = await this.bookingModel
+      .find({
+        userId: new Types.ObjectId(userId),
+
+        bookingDate: {
+          $gte: today,
+        },
+
+        status: {
+          $in: [BookingStatus.PENDING, BookingStatus.CONFIRMED],
+        },
+      })
+      .sort({
+        bookingDate: 1,
+        startTime: 1,
+      })
+      .populate({
+        path: 'restaurantId',
+        select: 'name images address slug',
+      })
+      .lean();
+
+    return bookings;
+  }
+
+  async findRecentBookings(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const bookings = await this.bookingModel
+      .find({
+        userId: new Types.ObjectId(userId),
+        status: {
+          $in: [
+            BookingStatus.COMPLETED,
+            BookingStatus.CANCELLED,
+            BookingStatus.NO_SHOW,
+          ],
+        },
+      })
+      .sort({
+        bookingDate: -1,
+        startTime: -1,
+      })
+      .limit(3)
+      .populate({
+        path: 'restaurantId',
+        select: 'name images address slug',
+      })
+      .lean();
 
     return bookings;
   }

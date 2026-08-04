@@ -40,9 +40,19 @@ export class BookingsController {
     return this.bookingsService.getAvailableTables(restaurantId, dto);
   }
 
-  @Get('/list')
+  @Get('/me')
   findListById(@CurrentUser() user: AuthUser) {
     return this.bookingsService.findListById(user._id);
+  }
+
+  @Get('upcoming')
+  findUpcomingBooking(@CurrentUser() user: AuthUser) {
+    return this.bookingsService.findUpcomingBookings(user._id);
+  }
+
+  @Get('recent')
+  findRecentBookings(@CurrentUser() user: AuthUser) {
+    return this.bookingsService.findRecentBookings(user._id);
   }
 
   @Get(':id')

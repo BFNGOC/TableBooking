@@ -52,7 +52,7 @@ function CheckoutResultPage({ id }: CheckoutResultProps) {
     const { data, isPending, isError, error } = useGetPaymentMe(id);
     const payment = data?.data;
 
-    const slug = payment.restaurantId.slug ?? '';
+    const slug = payment?.restaurantId?.slug ?? '';
     const queryBookingId = searchParams.get('bookingId') ?? '';
     const bookingId = getBookingId(payment, queryBookingId);
 
