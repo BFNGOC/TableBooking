@@ -33,6 +33,8 @@ import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 import { Area } from '../areas/schemas/area.schema';
 import { getBookingHoldKey } from '@app/helpers/redis/booking-hold-key.util';
 import dayjs from 'dayjs';
+import { RestaurantBookingSearchService } from './booking-restaurant-search.service';
+import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 
 type PopulatedArea = Area & {
   _id: Types.ObjectId;
@@ -53,7 +55,21 @@ export class BookingsService {
     private readonly pricingRuleService: PricingRuleService,
 
     private readonly redisService: RedisService,
+
+    private readonly restaurantSearchService: RestaurantBookingSearchService,
   ) {}
+
+  async reindexAll() {
+    const bookings = await this.bookingModel.find();
+
+    for (const booking of bookings) {
+      await this.restaurantSearchService.index(booking);
+    }
+
+    return {
+      total: bookings.length,
+    };
+  }
 
   private async validateTableAvailability(
     restaurantId: Types.ObjectId,
@@ -1051,7 +1067,7 @@ export class BookingsService {
     return bookings;
   }
 
-  async findUpcomingBookings(userId: string) {
+  async findUpcomingBookingsMe(userId: string) {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
     }
@@ -1083,7 +1099,7 @@ export class BookingsService {
     return bookings;
   }
 
-  async findRecentBookings(userId: string) {
+  async findRecentBookingsMe(userId: string) {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
     }
@@ -1111,6 +1127,97 @@ export class BookingsService {
       .lean();
 
     return bookings;
+  }
+
+  async findAllRestaurantBookings(
+    userId: string,
+    dto: FindRestaurantBookingDto,
+  ) {
+    const restaurant =
+      await this.restaurantsService.getRestaurantByUserId(userId);
+
+    const searchResult = await this.restaurantSearchService.search({
+      restaurantId: restaurant._id.toString(),
+
+      keyword: dto.keySearch,
+
+      currentPage: dto.currentPage,
+
+      pageSize: dto.pageSize,
+
+      filter: {
+        status: dto.status,
+
+        paymentStatus: dto.paymentStatus,
+
+        depositStatus: dto.depositStatus,
+
+        fromDate: dto.fromDate,
+
+        toDate: dto.toDate,
+      },
+    });
+
+    return {
+      data: searchResult.data,
+
+      meta: {
+        currentPage: dto.currentPage,
+        pageSize: dto.pageSize,
+
+        totalItems: searchResult.totalItems,
+
+        totalPages: Math.ceil(searchResult.totalItems / dto.pageSize),
+      },
+    };
+  }
+
+  async findUpcomingRestaurantBookings(
+    userId: string,
+    dto: FindRestaurantBookingDto,
+  ) {
+    const restaurant =
+      await this.restaurantsService.getRestaurantByUserId(userId);
+
+    const searchResult = await this.restaurantSearchService.search({
+      restaurantId: restaurant._id.toString(),
+
+      keyword: dto.keySearch,
+
+      currentPage: dto.currentPage,
+
+      pageSize: dto.pageSize,
+
+      filter: {
+        status: dto.status,
+
+        paymentStatus: dto.paymentStatus,
+
+        depositStatus: dto.depositStatus,
+
+        fromDate: dayjs().format('YYYY-MM-DD'),
+      },
+
+      sort: [
+        {
+          field: 'bookingDate',
+          order: 'asc',
+        },
+      ],
+    });
+
+    return {
+      data: searchResult.data,
+
+      meta: {
+        currentPage: dto.currentPage,
+        pageSize: dto.pageSize,
+
+        totalItems: searchResult.totalItems,
+
+        totalPages: Math.ceil(searchResult.totalItems / dto.pageSize),
+      },
+    };
   }
 
   findAll() {

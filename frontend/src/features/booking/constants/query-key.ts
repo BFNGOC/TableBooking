@@ -10,4 +10,6 @@ export const bookingQueryKeys = {
     GET_BOOKING_LIST_ME: ['booking', 'list', 'me'],
     GET_BOOKING_UPCOMING_ME: ['booking', 'upcoming', 'me'],
     GET_BOOKING_RECENT_ME: ['booking', 'recent', 'me'],
+    GET_BOOKING_LIST_RESTAURANT: ['booking', 'list', 'restaurant'],
+    GET_BOOKING_UPCOMING_RESTAURANT: ['booking', 'upcoming', 'restaurant'],
 };

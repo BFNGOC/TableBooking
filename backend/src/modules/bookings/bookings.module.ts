@@ -7,6 +7,8 @@ import { TablesModule } from '../tables/tables.module';
 import { RestaurantsModule } from '../restaurants/restaurants.module';
 import { TableAvailabilitiesModule } from '../table-availabilities/table-availabilities.module';
 import { PricingRuleModule } from '../pricing-rule/pricing-rule.module';
+import { RestaurantBookingSearchService } from './booking-restaurant-search.service';
+import { SearchModule } from '../search/elasticsearch.module';
 
 @Module({
   imports: [
@@ -15,9 +17,10 @@ import { PricingRuleModule } from '../pricing-rule/pricing-rule.module';
     TableAvailabilitiesModule,
     forwardRef(() => RestaurantsModule),
     PricingRuleModule,
+    SearchModule,
   ],
   controllers: [BookingsController],
-  providers: [BookingsService],
-  exports: [BookingsService, MongooseModule],
+  providers: [BookingsService, RestaurantBookingSearchService],
+  exports: [BookingsService, MongooseModule, RestaurantBookingSearchService],
 })
 export class BookingsModule {}

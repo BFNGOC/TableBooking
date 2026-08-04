@@ -15,10 +15,17 @@ import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 import { Public } from '@app/decorator/customize';
 import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
+import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 
 @Controller('bookings')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
+
+  @Get('restaurant/reindex')
+  @Public()
+  async reindex() {
+    return this.bookingsService.reindexAll();
+  }
 
   @Post(':restaurantId')
   createBooking(
@@ -46,13 +53,29 @@ export class BookingsController {
   }
 
   @Get('upcoming')
-  findUpcomingBooking(@CurrentUser() user: AuthUser) {
-    return this.bookingsService.findUpcomingBookings(user._id);
+  findUpcomingBookingMe(@CurrentUser() user: AuthUser) {
+    return this.bookingsService.findUpcomingBookingsMe(user._id);
   }
 
   @Get('recent')
-  findRecentBookings(@CurrentUser() user: AuthUser) {
-    return this.bookingsService.findRecentBookings(user._id);
+  findRecentBookingsMeMe(@CurrentUser() user: AuthUser) {
+    return this.bookingsService.findRecentBookingsMe(user._id);
+  }
+
+  @Get('/restaurant/all')
+  async findAllRestaurantBookings(
+    @CurrentUser() user: AuthUser,
+    @Query() query: FindRestaurantBookingDto,
+  ) {
+    return this.bookingsService.findAllRestaurantBookings(user._id, query);
+  }
+
+  @Get('/restaurant/upcoming')
+  async findUpcomingRestaurantBookings(
+    @CurrentUser() user: AuthUser,
+    @Query() query: FindRestaurantBookingDto,
+  ) {
+    return this.bookingsService.findUpcomingRestaurantBookings(user._id, query);
   }
 
   @Get(':id')

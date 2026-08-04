@@ -79,3 +79,23 @@ export const bookingRoleCustomerApi = {
         return res.data;
     },
 };
+
+export const bookingRoleRestaurantApi = {
+    getUpcoming: async () => {
+        const res = await clientRequest<IBooking[]>({
+            url: `${API_URL_PREFIX}/restaurant/upcoming`,
+            method: 'GET',
+        });
+
+        return res.data;
+    },
+
+    getAll: async () => {
+        const res = await clientRequest<IBooking[]>({
+            url: `${API_URL_PREFIX}/restaurant/all`,
+            method: 'GET',
+        });
+
+        return res.data;
+    },
+};

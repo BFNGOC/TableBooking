@@ -33,12 +33,12 @@ function Restaurant({ children }: RestaurantProps) {
             label: 'Đơn đặt bàn',
             children: [
                 {
-                    label: 'Hôm nay',
-                    href: '/restaurant/dashboard/bookings/today',
+                    label: 'Sắp tới',
+                    href: '/restaurant/dashboard/bookings/upcoming',
                 },
                 {
-                    label: 'Lịch sử',
-                    href: '/restaurant/dashboard/bookings/history',
+                    label: 'Tất cả',
+                    href: '/restaurant/dashboard/bookings',
                 },
             ],
         },
