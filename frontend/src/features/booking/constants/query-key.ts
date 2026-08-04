@@ -6,5 +6,5 @@ export const bookingQueryKeys = {
         restaurantId,
         query,
     ],
-    GET_BOOKING_ME: (bookingId: string) => ['booking', bookingId],
+    GET_BOOKING_DETAIL: (bookingId: string) => ['booking', bookingId],
 };

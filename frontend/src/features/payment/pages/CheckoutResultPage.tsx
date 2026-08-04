@@ -3,39 +3,17 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, Spinner } from '@heroui/react';
 import CustomCard from '@/shared/components/card/CustomCard';
+import InfoSectionCard from '@/features/booking/components/InfoSectionCard';
+import InfoValueCard from '@/features/booking/components/InfoValueCard';
 import { useGetPaymentMe } from '@/features/payment/hook/usePaymentMe';
+import {
+    translatePaymentStatus,
+    translatePaymentType,
+} from '@/features/booking/utils/booking-status';
 
 interface CheckoutResultProps {
     id: string;
 }
-
-const translatePaymentStatus = (status: string | undefined) => {
-    switch (status) {
-        case 'PENDING':
-            return 'Đang chờ';
-        case 'PAID':
-            return 'Đã thanh toán';
-        case 'FAILED':
-            return 'Thanh toán thất bại';
-        case 'CANCELLED':
-            return 'Đã hủy';
-        case 'EXPIRED':
-            return 'Đã hết hạn';
-        default:
-            return status ?? '—';
-    }
-};
-
-const translatePaymentType = (type: string | undefined) => {
-    switch (type) {
-        case 'DEPOSIT':
-            return 'Đặt cọc';
-        case 'FULL':
-            return 'Thanh toán đầy đủ';
-        default:
-            return type ?? '—';
-    }
-};
 
 const renderValue = (value: unknown) => {
     if (value === null || value === undefined) {
@@ -133,30 +111,13 @@ function CheckoutResultPage({ id }: CheckoutResultProps) {
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Booking ID</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                            {bookingId || 'Không có thông tin'}
-                        </p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Trạng thái</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{paymentStatus}</p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Hình thức</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{paymentMethod}</p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">
-                            Loại thanh toán
-                        </p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{paymentType}</p>
-                    </div>
+                    <InfoValueCard label="Booking ID" value={bookingId || 'Không có thông tin'} />
+                    <InfoValueCard label="Trạng thái" value={paymentStatus} />
+                    <InfoValueCard label="Hình thức" value={paymentMethod} />
+                    <InfoValueCard label="Loại thanh toán" value={paymentType} />
                 </div>
 
-                <div className="mt-6 rounded-3xl border border-gray-200 bg-white p-6">
-                    <h2 className="text-lg font-semibold text-[#1f2937]">Thông tin chi tiết</h2>
+                <InfoSectionCard title="Thông tin chi tiết" className="mt-6">
                     <div className="mt-4 space-y-3 text-sm text-gray-600">
                         <div className="flex justify-between">
                             <span>ID thanh toán</span>
@@ -164,7 +125,7 @@ function CheckoutResultPage({ id }: CheckoutResultProps) {
                         </div>
                         <div className="flex justify-between">
                             <span>Booking</span>
-                            <span>{renderValue(payment?.bookingId._id)}</span>
+                            <span>{renderValue(payment?.bookingId?._id)}</span>
                         </div>
 
                         <div className="flex justify-between">
@@ -172,7 +133,7 @@ function CheckoutResultPage({ id }: CheckoutResultProps) {
                             <span>{renderValue(payment?.amount)}</span>
                         </div>
                     </div>
-                </div>
+                </InfoSectionCard>
 
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <Button

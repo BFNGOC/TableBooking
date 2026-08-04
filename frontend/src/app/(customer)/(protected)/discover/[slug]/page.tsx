@@ -1,4 +1,4 @@
-import DiscoverTablePage from '@/features/booking/page/DiscoverTablePage';
+import DiscoverTablePage from '@/features/booking/page/customer/DiscoverTablePage';
 
 type Props = {
     params: Promise<{

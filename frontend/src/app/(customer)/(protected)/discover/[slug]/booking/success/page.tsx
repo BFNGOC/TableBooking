@@ -1,4 +1,4 @@
-import BookingSuccessPage from '@/features/booking/page/BookingSuccessPage';
+import BookingSuccessPage from '@/features/booking/page/customer/BookingSuccessPage';
 
 function BookingSuccess() {
     return <BookingSuccessPage />;

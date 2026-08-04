@@ -5,9 +5,11 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button, Spinner } from '@heroui/react';
 import CustomCard from '@/shared/components/card/CustomCard';
 import CustomForm from '@/shared/components/form/CustomForm';
+import InfoSectionCard from '@/features/booking/components/InfoSectionCard';
+import InfoValueCard from '@/features/booking/components/InfoValueCard';
 import { FormField } from '@/shared/types/form-field';
 import { FormFieldType } from '@/shared/types/form-field-types';
-import { useGetBooking } from '@/features/booking/hook/useBookingMe';
+import { useGetBookingDetail } from '@/features/booking/hook/useBookingMe';
 import { useCreatePayment } from '../hook/useCreatePayment';
 import { PaymentMethod, PaymentType } from '../types/payment.type';
 
@@ -20,7 +22,7 @@ function BookingCheckoutPage() {
     const slug = Array.isArray(rawSlug) ? rawSlug[0] : String(rawSlug);
     const bookingId = searchParams.get('bookingId') ?? '';
 
-    const { data, isPending, isError, error } = useGetBooking(bookingId);
+    const { data, isPending, isError, error } = useGetBookingDetail(bookingId);
 
     const booking = useMemo(() => {
         const payload = data?.data;
@@ -93,22 +95,7 @@ function BookingCheckoutPage() {
     };
 
     const handleBack = () => {
-        const params = new URLSearchParams();
-
-        if (booking?.tableIds?.length > 0) {
-            params.set('tables', booking.tableIds.join(','));
-        }
-        if (booking?.bookingDate) {
-            params.set('bookingDate', String(booking.bookingDate).slice(0, 10));
-        }
-        if (booking?.startTime) {
-            params.set('startTime', booking.startTime);
-        }
-        if (booking?.guestCount) {
-            params.set('guestCount', String(booking.guestCount));
-        }
-
-        router.push(`/discover/${slug}?${params.toString()}`);
+        router.push(`/`);
     };
 
     if (!bookingId) {
@@ -165,7 +152,7 @@ function BookingCheckoutPage() {
     }
 
     return (
-        <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-8 md:grid-cols-3">
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-3">
             <div className="col-span-2 space-y-6">
                 <CustomCard>
                     <div className="space-y-4">
@@ -178,38 +165,13 @@ function BookingCheckoutPage() {
                     </div>
 
                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                            <p className="text-xs uppercase tracking-wide text-gray-500">
-                                Ngày đặt
-                            </p>
-                            <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                                {bookingDate}
-                            </p>
-                        </div>
-                        <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                            <p className="text-xs uppercase tracking-wide text-gray-500">Giờ</p>
-                            <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                                {bookingTime}
-                            </p>
-                        </div>
-                        <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                            <p className="text-xs uppercase tracking-wide text-gray-500">
-                                Số khách
-                            </p>
-                            <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                                {guestCount}
-                            </p>
-                        </div>
-                        <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                            <p className="text-xs uppercase tracking-wide text-gray-500">Số bàn</p>
-                            <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                                {tableCount}
-                            </p>
-                        </div>
+                        <InfoValueCard label="Ngày đặt" value={bookingDate} card={true} />
+                        <InfoValueCard label="Giờ" value={bookingTime} card={true} />
+                        <InfoValueCard label="Số khách" value={guestCount} card={true} />
+                        <InfoValueCard label="Số bàn" value={tableCount} card={true} />
                     </div>
 
-                    <div className="mt-6 rounded-3xl border border-gray-200 bg-white p-6">
-                        <h3 className="text-lg font-semibold text-[#1f2937]">Thông tin liên hệ</h3>
+                    <InfoSectionCard title="Thông tin liên hệ" className="mt-6">
                         <div className="mt-4 space-y-3 text-sm text-gray-600">
                             <div className="flex justify-between">
                                 <span>Người đặt</span>
@@ -224,10 +186,9 @@ function BookingCheckoutPage() {
                                 <span>{note}</span>
                             </div>
                         </div>
-                    </div>
+                    </InfoSectionCard>
 
-                    <div className="mt-6 rounded-3xl border border-gray-200 bg-white p-6">
-                        <h3 className="text-lg font-semibold text-[#1f2937]">Tóm tắt thanh toán</h3>
+                    <InfoSectionCard title="Tóm tắt thanh toán" className="mt-6">
                         <div className="mt-4 space-y-3 text-sm text-gray-600">
                             <div className="flex justify-between">
                                 <span>Tiền cọc</span>
@@ -238,10 +199,9 @@ function BookingCheckoutPage() {
                                 <span>{totalAmount?.toLocaleString?.() ?? 0}đ</span>
                             </div>
                         </div>
-                    </div>
+                    </InfoSectionCard>
 
-                    <div className="mt-6 rounded-3xl border border-gray-200 bg-white p-6">
-                        <h3 className="text-lg font-semibold text-[#1f2937]">Chọn thanh toán</h3>
+                    <InfoSectionCard title="Chọn thanh toán" className="mt-6">
                         <div className="mt-4">
                             <CustomForm
                                 values={paymentFormValues}
@@ -255,7 +215,7 @@ function BookingCheckoutPage() {
                                 renderForm={false}
                             />
                         </div>
-                    </div>
+                    </InfoSectionCard>
 
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                         <Button
@@ -264,7 +224,7 @@ function BookingCheckoutPage() {
                             className="w-full rounded-full bg-[#6f4e37] px-8 py-3"
                             onPress={handleBack}
                         >
-                            Quay lại
+                            Về trang chủ
                         </Button>
                         <Button
                             type="button"

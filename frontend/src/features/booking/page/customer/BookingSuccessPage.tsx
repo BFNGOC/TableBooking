@@ -4,44 +4,11 @@ import { useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button, Spinner } from '@heroui/react';
 import CustomCard from '@/shared/components/card/CustomCard';
-import { useGetBooking } from '@/features/booking/hook/useBookingMe';
+import InfoSectionCard from '@/features/booking/components/InfoSectionCard';
+import InfoValueCard from '@/features/booking/components/InfoValueCard';
+import { useGetBookingDetail } from '@/features/booking/hook/useBookingMe';
 import { formatDate } from '@/shared/utils/date';
-
-const translateBookingStatus = (status: string | undefined) => {
-    switch (status) {
-        case 'PENDING':
-            return 'Đang chờ';
-        case 'REJECTED':
-            return 'Bị từ chối';
-        case 'CONFIRMED':
-            return 'Đã xác nhận';
-        case 'CANCELLED':
-            return 'Đã hủy';
-        case 'CHECKED_IN':
-            return 'Đã đến';
-        case 'COMPLETED':
-            return 'Đã hoàn thành';
-        case 'NO_SHOW':
-            return 'Không đến';
-        default:
-            return status ?? '—';
-    }
-};
-
-const translatePaymentStatus = (status: string | undefined) => {
-    switch (status) {
-        case 'UNPAID':
-            return 'Chưa thanh toán';
-        case 'PAID':
-            return 'Đã thanh toán';
-        case 'PARTIAL':
-            return 'Thanh toán đặt cọc';
-        case 'REFUNDED':
-            return 'Đã hoàn tiền';
-        default:
-            return status ?? '—';
-    }
-};
+import { translateBookingStatus, translatePaymentStatus } from '../../utils/booking-status';
 
 function BookingSuccessPage() {
     const router = useRouter();
@@ -52,7 +19,7 @@ function BookingSuccessPage() {
     const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
     const bookingId = searchParams.get('bookingId') ?? '';
 
-    const { data, isPending, isError, error } = useGetBooking(bookingId);
+    const { data, isPending, isError, error } = useGetBookingDetail(bookingId);
 
     const booking = useMemo(() => {
         const payload = data?.data;
@@ -143,55 +110,27 @@ function BookingSuccessPage() {
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Mã booking</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                            {booking?._id ?? bookingId}
-                        </p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Trạng thái</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{bookingStatus}</p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Thanh toán</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{paymentStatus}</p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Ngày đặt</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{bookingDate}</p>
-                    </div>
+                    <InfoValueCard label="Mã booking" value={booking?._id ?? bookingId} />
+                    <InfoValueCard label="Trạng thái" value={bookingStatus} />
+                    <InfoValueCard label="Thanh toán" value={paymentStatus} />
+                    <InfoValueCard label="Ngày đặt" value={bookingDate} />
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Giờ</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{bookingTime}</p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Số khách</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{guestCount}</p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Số bàn</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{tableCount}</p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Tiền cọc</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                            {depositAmount?.toLocaleString?.() ?? 0}đ
-                        </p>
-                    </div>
-                    <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                        <p className="text-xs uppercase tracking-wide text-gray-500">Tổng tiền</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">
-                            {totalAmount?.toLocaleString?.() ?? 0}đ
-                        </p>
-                    </div>
+                    <InfoValueCard label="Giờ" value={bookingTime} />
+                    <InfoValueCard label="Số khách" value={guestCount} />
+                    <InfoValueCard label="Số bàn" value={tableCount} />
+                    <InfoValueCard
+                        label="Tiền cọc"
+                        value={`${depositAmount?.toLocaleString?.() ?? 0}đ`}
+                    />
+                    <InfoValueCard
+                        label="Tổng tiền"
+                        value={`${totalAmount?.toLocaleString?.() ?? 0}đ`}
+                    />
                 </div>
 
-                <div className="mt-6 rounded-3xl border border-gray-200 bg-white p-6">
-                    <h2 className="text-lg font-semibold text-[#1f2937]">Thông tin liên hệ</h2>
+                <InfoSectionCard title="Thông tin liên hệ" className="mt-6">
                     <div className="mt-4 space-y-3 text-sm text-gray-600">
                         <div className="flex justify-between">
                             <span>Người đặt</span>
@@ -202,7 +141,7 @@ function BookingSuccessPage() {
                             <span>{contactPhone}</span>
                         </div>
                     </div>
-                </div>
+                </InfoSectionCard>
 
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                     <Button

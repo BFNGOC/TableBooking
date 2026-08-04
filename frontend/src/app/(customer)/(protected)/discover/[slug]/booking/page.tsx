@@ -1,4 +1,4 @@
-import BookingTablePage from '@/features/booking/page/BookingTablePage';
+import BookingTablePage from '@/features/booking/page/customer/BookingTablePage';
 
 function BookingTable() {
     return <BookingTablePage />;

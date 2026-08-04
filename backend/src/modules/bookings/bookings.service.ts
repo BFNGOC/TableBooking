@@ -1032,6 +1032,24 @@ export class BookingsService {
     return booking;
   }
 
+  async findListById(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const bookings = await this.bookingModel
+      .find({
+        userId: new Types.ObjectId(userId),
+      })
+      .lean();
+
+    if (!bookings) {
+      throw new NotFoundException('Không tìm thấy đặt bàn');
+    }
+
+    return bookings;
+  }
+
   findAll() {
     return `This action returns all bookings`;
   }

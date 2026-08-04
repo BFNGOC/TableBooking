@@ -8,13 +8,13 @@ import { useGetRestaurantBySlug } from '@/features/restaurant/hooks/useGetRestau
 import CustomForm from '@/shared/components/form/CustomForm';
 import { formatFormValues } from '@/shared/utils/format-form-values';
 
-import BookingSummaryBar from '../components/BookingSummaryBar';
-import RestaurantHeaderCard from '../components/RestaurantHeaderCard';
-import TableSelectionPanel from '../components/TableSelectionPanel';
-import { availableTableFormField } from '../constants/availabe-table-form-field';
-import { useGetAvailableTables } from '../hook/useAvailableTables';
-import { GetAvailableTablesPayload } from '../types/booking.dto';
-import { ITableDetail } from '../types/booking-response';
+import BookingSummaryBar from '../../components/BookingSummaryBar';
+import RestaurantHeaderCard from '../../components/RestaurantHeaderCard';
+import TableSelectionPanel from '../../components/TableSelectionPanel';
+import { availableTableFormField } from '../../constants/availabe-table-form-field';
+import { useGetAvailableTables } from '../../hook/useAvailableTables';
+import { GetAvailableTablesPayload } from '../../types/booking.dto';
+import { ITableDetail } from '../../types/booking-response';
 
 interface DiscoverTablePageProps {
     slug: string;

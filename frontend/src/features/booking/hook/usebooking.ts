@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '@/shared/hooks/useToast';
 import { CreateBookingPayload, PreviewBookingPricingPayload } from '../types/booking.dto';
-import { createBookingApi, previewBookingPricingApi } from '../api/booking-api';
+import { bookingRoleCustomerApi } from '../api/booking-api';
 
 export const useCreateBooking = () => {
     const { showToast } = useToast();
@@ -13,7 +13,7 @@ export const useCreateBooking = () => {
         }: {
             restaurantId: string;
             body: CreateBookingPayload;
-        }) => createBookingApi(restaurantId, body),
+        }) => bookingRoleCustomerApi.createBooking(restaurantId, body),
 
         onSuccess: () => {
             showToast(
@@ -41,6 +41,6 @@ export const usePreviewBookingPricing = () => {
         }: {
             restaurantId: string;
             body: PreviewBookingPricingPayload;
-        }) => previewBookingPricingApi(restaurantId, body),
+        }) => bookingRoleCustomerApi.previewBookingPricing(restaurantId, body),
     });
 };
