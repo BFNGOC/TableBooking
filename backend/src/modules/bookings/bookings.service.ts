@@ -35,6 +35,7 @@ import { getBookingHoldKey } from '@app/helpers/redis/booking-hold-key.util';
 import dayjs from 'dayjs';
 import { RestaurantBookingSearchService } from './booking-restaurant-search.service';
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
+import { BookingStatusAggregate } from '../restaurants/types/aggregate';
 
 type PopulatedArea = Area & {
   _id: Types.ObjectId;
@@ -1218,6 +1219,85 @@ export class BookingsService {
         totalPages: Math.ceil(searchResult.totalItems / dto.pageSize),
       },
     };
+  }
+
+  async bookingStatusCount(userId: string) {
+    const restaurant =
+      await this.restaurantsService.getRestaurantByUserId(userId);
+
+    const now = new Date();
+
+    const counts = await this.bookingModel.aggregate<BookingStatusAggregate>([
+      {
+        $match: {
+          restaurantId: restaurant._id,
+        },
+      },
+      {
+        $facet: {
+          status: [
+            {
+              $group: {
+                _id: '$status',
+                count: {
+                  $sum: 1,
+                },
+              },
+            },
+          ],
+          upcoming: [
+            {
+              $match: {
+                bookingDate: {
+                  $gte: now,
+                },
+              },
+            },
+            {
+              $count: 'count',
+            },
+          ],
+        },
+      },
+    ]);
+
+    const result = {
+      total: 0,
+      upcoming: counts[0].upcoming[0]?.count ?? 0,
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+      rejected: 0,
+      noShow: 0,
+    };
+
+    counts[0].status.forEach(({ _id, count }) => {
+      result.total += count;
+
+      switch (_id) {
+        case BookingStatus.PENDING:
+          result.pending = count;
+          break;
+        case BookingStatus.CONFIRMED:
+          result.confirmed = count;
+          break;
+        case BookingStatus.COMPLETED:
+          result.completed = count;
+          break;
+        case BookingStatus.CANCELLED:
+          result.cancelled = count;
+          break;
+        case BookingStatus.REJECTED:
+          result.rejected = count;
+          break;
+        case BookingStatus.NO_SHOW:
+          result.noShow = count;
+          break;
+      }
+    });
+
+    return result;
   }
 
   findAll() {

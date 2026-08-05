@@ -3,7 +3,7 @@
 import PageHeader from '@/shared/components/layouts/PageHeader';
 import useTable from '@/shared/hooks/useTable';
 import { BookingRestaurantParams } from '../../types/booking-restaurant-filter-params-type';
-import { IBooking } from '../../types/booking.type';
+import { IBooking, BookingStatus } from '../../types/booking.type';
 import { bookingRoleRestaurantApi } from '../../api/booking-api';
 import TablePaginationCustom, {
     ColumnTable,
@@ -19,13 +19,18 @@ import {
     translatePaymentStatus,
 } from '../../utils/booking-status';
 import { bookingRestaurantFilterFormFields } from '../../constants/booking-filter-form-fields';
+import { useBookingStatusCount } from '../../hook/useCount';
+import StatusTabs from '@/shared/components/tabs/StatusTabs';
+import { BOOKING_STATUS_UPCOMING_OPTIONS } from '../../constants/booking-options';
 
-function BookingsRestaurantPage() {
-    const { getAll } = bookingRoleRestaurantApi;
+function BookingRestaurantUpcomingPage() {
+    const { getUpcoming } = bookingRoleRestaurantApi;
+
+    const { data: statusCount } = useBookingStatusCount();
 
     const bookingRestaurantTable = useTable<IBooking, BookingRestaurantParams>({
-        queryKey: bookingQueryKeys.GET_BOOKING_LIST_RESTAURANT,
-        fetchApi: getAll,
+        queryKey: bookingQueryKeys.GET_BOOKING_UPCOMING_RESTAURANT,
+        fetchApi: getUpcoming,
     });
 
     const bookingColumns: ColumnTable<IBooking>[] = [
@@ -61,11 +66,18 @@ function BookingsRestaurantPage() {
         },
     ];
 
+    const getStatusCounts = (): Partial<Record<BookingStatus, number>> => ({
+        [BookingStatus.PENDING]: statusCount?.pending ?? 0,
+        [BookingStatus.CONFIRMED]: statusCount?.confirmed ?? 0,
+        [BookingStatus.REJECTED]: statusCount?.rejected ?? 0,
+        [BookingStatus.CANCELLED]: statusCount?.cancelled ?? 0,
+    });
+
     return (
         <div className="flex flex-col h-full gap-4">
             <PageHeader
-                title="Quản lý đặt bàn"
-                subtitle="Xem tất cả đơn đặt bàn của nhà hàng"
+                title="Đơn đặt bàn sắp tới"
+                subtitle="Xem các đơn đặt bàn sắp tới của nhà hàng"
                 extra={
                     <Button
                         variant="danger-soft"
@@ -74,6 +86,18 @@ function BookingsRestaurantPage() {
                         Làm mới
                     </Button>
                 }
+            />
+
+            <StatusTabs
+                title="TỔNG ĐƠN ĐẶT"
+                allLabel="Tất cả"
+                total={statusCount?.upcoming ?? 0}
+                selectedStatus={bookingRestaurantTable.params.status}
+                onStatusChange={(value) =>
+                    bookingRestaurantTable.handleParamsChange({ status: value })
+                }
+                options={BOOKING_STATUS_UPCOMING_OPTIONS}
+                counts={getStatusCounts()}
             />
 
             <TableFilterCustom<BookingRestaurantParams>
@@ -105,4 +129,4 @@ function BookingsRestaurantPage() {
     );
 }
 
-export default BookingsRestaurantPage;
+export default BookingRestaurantUpcomingPage;

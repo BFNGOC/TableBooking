@@ -33,6 +33,10 @@ export interface RestaurantBookingSearchDocument {
   depositStatus?: DepositStatus;
 
   finalPrice?: number;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }
 
 export function toRestaurantBookingSearchDocument(
@@ -64,5 +68,9 @@ export function toRestaurantBookingSearchDocument(
     depositStatus: booking.depositStatus,
 
     finalPrice: booking.pricingSnapshot?.finalPrice,
+
+    createdAt: booking.createdAt,
+
+    updatedAt: booking.updatedAt,
   };
 }

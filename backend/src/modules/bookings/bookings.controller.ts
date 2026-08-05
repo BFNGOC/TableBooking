@@ -16,6 +16,8 @@ import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 import { Public } from '@app/decorator/customize';
 import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
+import { UserRole } from '../users/schemas/user.schema';
+import { Roles } from '@app/decorator/roles.decorator';
 
 @Controller('bookings')
 export class BookingsController {
@@ -63,6 +65,7 @@ export class BookingsController {
   }
 
   @Get('/restaurant/all')
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   async findAllRestaurantBookings(
     @CurrentUser() user: AuthUser,
     @Query() query: FindRestaurantBookingDto,
@@ -71,11 +74,18 @@ export class BookingsController {
   }
 
   @Get('/restaurant/upcoming')
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   async findUpcomingRestaurantBookings(
     @CurrentUser() user: AuthUser,
     @Query() query: FindRestaurantBookingDto,
   ) {
     return this.bookingsService.findUpcomingRestaurantBookings(user._id, query);
+  }
+
+  @Get('/status-count')
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  async bookingStatusCount(@CurrentUser() user: AuthUser) {
+    return this.bookingsService.bookingStatusCount(user._id);
   }
 
   @Get(':id')

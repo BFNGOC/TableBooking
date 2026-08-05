@@ -106,6 +106,14 @@ export async function createRestaurantBookingIndex(
         finalPrice: {
           type: 'double',
         },
+
+        createdAt: {
+          type: 'date',
+        },
+
+        updatedAt: {
+          type: 'date',
+        },
       },
     },
   });

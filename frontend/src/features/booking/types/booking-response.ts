@@ -59,3 +59,14 @@ export interface PreviewBookingPricingResponse {
     tableDeposits: ITableDepositSnapshot[];
     calculatedAt: string;
 }
+
+export interface BookingStatusCount {
+    total: number;
+    upcoming: number;
+    pending: number;
+    confirmed: number;
+    completed: number;
+    cancelled: number;
+    rejected: number;
+    noShow: number;
+}

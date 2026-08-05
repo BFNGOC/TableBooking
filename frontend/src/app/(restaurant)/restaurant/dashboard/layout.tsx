@@ -39,6 +39,7 @@ function Restaurant({ children }: RestaurantProps) {
                 {
                     label: 'Tất cả',
                     href: '/restaurant/dashboard/bookings',
+                    exact: true,
                 },
             ],
         },

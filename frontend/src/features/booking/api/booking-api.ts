@@ -5,6 +5,7 @@ import {
     PreviewBookingPricingPayload,
 } from '../types/booking.dto';
 import {
+    BookingStatusCount,
     GetAvailableTablesResponse,
     PreviewBookingPricingResponse,
 } from '../types/booking-response';
@@ -81,18 +82,28 @@ export const bookingRoleCustomerApi = {
 };
 
 export const bookingRoleRestaurantApi = {
-    getUpcoming: async () => {
+    getUpcoming: async (queryParams?: any) => {
         const res = await clientRequest<IBooking[]>({
             url: `${API_URL_PREFIX}/restaurant/upcoming`,
             method: 'GET',
+            queryParams,
         });
 
         return res.data;
     },
 
-    getAll: async () => {
+    getAll: async (queryParams?: any) => {
         const res = await clientRequest<IBooking[]>({
             url: `${API_URL_PREFIX}/restaurant/all`,
+            method: 'GET',
+            queryParams,
+        });
+
+        return res.data;
+    },
+    statusCount: async () => {
+        const res = await clientRequest<BookingStatusCount>({
+            url: `${API_URL_PREFIX}/status-count`,
             method: 'GET',
         });
 

@@ -71,3 +71,20 @@ export function getBookingStatusText(status?: string) {
             return status ?? '';
     }
 }
+
+export const translateDepositStatus = (status: string | undefined) => {
+    switch (status) {
+        case 'NOT_REQUIRED':
+            return 'Không yêu cầu';
+        case 'PENDING':
+            return 'Chờ thanh toán';
+        case 'PAID':
+            return 'Đã thanh toán';
+        case 'REFUNDED':
+            return 'Đã hoàn tiền';
+        case 'FORFEITED':
+            return 'Bị mất cọc';
+        default:
+            return status ?? '—';
+    }
+};
