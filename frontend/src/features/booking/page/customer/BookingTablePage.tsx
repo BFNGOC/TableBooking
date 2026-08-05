@@ -11,7 +11,7 @@ import InfoSectionCard from '@/features/booking/components/InfoSectionCard';
 import InfoValueCard from '@/features/booking/components/InfoValueCard';
 import { useGetRestaurantBySlug } from '@/features/restaurant/hooks/useGetRestaurant';
 
-import { useCreateBooking, usePreviewBookingPricing } from '../../hook/usebooking';
+import { useCreateBooking, usePreviewBookingPricing } from '../../hook/useBooking';
 import { bookingFormFields } from '../../constants/booking-form-field';
 import { CreateBookingPayload } from '../../types/booking.dto';
 

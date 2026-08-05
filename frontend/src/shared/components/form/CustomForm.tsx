@@ -9,6 +9,7 @@ import DatePikerField from '../datepicker/DatePikerField';
 import TimeFieldCustom from '../timefield/TimeFieldCustom';
 import AutocompleteCustom from '../autocomplete/AutocompleteCustom';
 import { RadioCustom } from '../radio/RadioCustom';
+import TableField from '@/shared/components/table/TableField';
 
 import { FormField } from '@/shared/types/form-field';
 import { FormModalModeType } from '@/shared/types/form-modal-mode-type';
@@ -16,6 +17,7 @@ import UploadImageCustom from '../upload/UploadImageCustom';
 import { CheckboxCustom } from '../checkbox/CheckboxCustom';
 import { getNestedValue, setNestedValue } from '@/shared/utils/object-path';
 import NumberFieldCustom from '../inputs/NumberField';
+import { FormFieldType } from '@/shared/types/form-field-types';
 
 interface CustomFormProps<T extends Record<string, any>> {
     fields: FormField[];
@@ -175,6 +177,13 @@ function CustomForm<T extends Record<string, any>>({
                                     );
                                 case 'number':
                                     return <NumberFieldCustom {...commonProps} />;
+
+                                case FormFieldType.CUSTOM:
+                                    return field.render?.({
+                                        value,
+                                        field,
+                                        onChange: (value) => updateFieldValue(field.name, value),
+                                    });
 
                                 default:
                                     return <AppTextField {...commonProps} />;

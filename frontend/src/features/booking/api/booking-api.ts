@@ -109,4 +109,12 @@ export const bookingRoleRestaurantApi = {
 
         return res.data;
     },
+    get_detail: async (bookingId: string) => {
+        const res = await clientRequest<any>({
+            url: `${API_URL_PREFIX}/restaurant/${bookingId}`,
+            method: 'GET',
+        });
+
+        return res.data;
+    },
 };

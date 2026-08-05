@@ -1015,7 +1015,41 @@ export class BookingsService {
     };
   }
 
-  async findOne(id: string, userId: string) {
+  async findBookingDetail(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Định dạng ID đặt bàn không hợp lệ');
+    }
+
+    const booking = await this.bookingModel
+      .findOne({
+        _id: new Types.ObjectId(id),
+      })
+      .populate({
+        path: 'userId',
+        select: 'name email phone avatar role',
+      })
+      .populate({
+        path: 'restaurantId',
+        select: 'restaurantName address phone avatar rating',
+      })
+      .populate({
+        path: 'tableIds',
+        select: 'tableNumber capacity status areaId',
+        populate: {
+          path: 'areaId',
+          select: 'name',
+        },
+      })
+      .lean();
+
+    if (!booking) {
+      throw new NotFoundException('Không tìm thấy đặt bàn');
+    }
+
+    return booking;
+  }
+
+  async findOneBookingMe(id: string, userId: string) {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Định dạng ID đặt bàn không hợp lệ');
     }

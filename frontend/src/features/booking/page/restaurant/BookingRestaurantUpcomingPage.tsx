@@ -22,16 +22,37 @@ import { bookingRestaurantFilterFormFields } from '../../constants/booking-filte
 import { useBookingStatusCount } from '../../hook/useCount';
 import StatusTabs from '@/shared/components/tabs/StatusTabs';
 import { BOOKING_STATUS_UPCOMING_OPTIONS } from '../../constants/booking-options';
+import ActionGroup, { TableAction } from '@/shared/components/table/ActionGroup';
+import { useBookingDetail } from '../../hook/useBooking';
+import { useFormModal } from '@/shared/hooks/useFormModal';
+import { Eye } from 'lucide-react';
+import ModalFormTabs from '@/shared/components/modals/ModalFormTabs';
+import { bookingSections } from '../../constants/booking-section';
+import { formatSectionFormValues } from '@/shared/utils/format-section-form-values';
 
 function BookingRestaurantUpcomingPage() {
     const { getUpcoming } = bookingRoleRestaurantApi;
 
     const { data: statusCount } = useBookingStatusCount();
 
+    const { open, openView, close, selectedRecord } = useFormModal<IBooking>();
+
+    const detailQuery = useBookingDetail(selectedRecord?._id);
+
     const bookingRestaurantTable = useTable<IBooking, BookingRestaurantParams>({
         queryKey: bookingQueryKeys.GET_BOOKING_UPCOMING_RESTAURANT,
         fetchApi: getUpcoming,
     });
+
+    const actions: TableAction<IBooking>[] = [
+        {
+            icon: <Eye size={18} />,
+            tooltip: 'Xem thông tin đơn đặt bàn',
+            onPress: (record) => {
+                openView(record);
+            },
+        },
+    ];
 
     const bookingColumns: ColumnTable<IBooking>[] = [
         { id: '_id', name: 'Mã đặt bàn' },
@@ -64,6 +85,11 @@ function BookingRestaurantUpcomingPage() {
             name: 'Ngày tạo',
             render: (value) => formatDateTime(value),
         },
+        {
+            id: 'action',
+            name: 'Thao tác',
+            render: (_, record) => <ActionGroup record={record} actions={actions} />,
+        },
     ];
 
     const getStatusCounts = (): Partial<Record<BookingStatus, number>> => ({
@@ -72,6 +98,12 @@ function BookingRestaurantUpcomingPage() {
         [BookingStatus.REJECTED]: statusCount?.rejected ?? 0,
         [BookingStatus.CANCELLED]: statusCount?.cancelled ?? 0,
     });
+
+    const formValues = formatSectionFormValues(
+        detailQuery.data ?? null,
+        bookingSections(),
+        'toForm'
+    );
 
     return (
         <div className="flex flex-col h-full gap-4">
@@ -124,6 +156,18 @@ function BookingRestaurantUpcomingPage() {
                 onChangPage={bookingRestaurantTable.handleChangePage}
                 pagination={bookingRestaurantTable.pagination ?? DEFAULT_PAGINATION}
                 isPending={bookingRestaurantTable.loading}
+            />
+
+            <ModalFormTabs
+                isOpen={open}
+                title="Thông tin đơn đặt bàn"
+                mode="view"
+                values={formValues ?? {}}
+                onValuesChange={() => {}}
+                sections={bookingSections()}
+                onClose={close}
+                onSubmit={() => {}}
+                isPending={detailQuery.isPending}
             />
         </div>
     );

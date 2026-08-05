@@ -69,8 +69,7 @@ export function toRestaurantBookingSearchDocument(
 
     finalPrice: booking.pricingSnapshot?.finalPrice,
 
-    createdAt: booking.createdAt,
-
-    updatedAt: booking.updatedAt,
+    createdAt: booking.get('createdAt'),
+    updatedAt: booking.get('updatedAt'),
   };
 }

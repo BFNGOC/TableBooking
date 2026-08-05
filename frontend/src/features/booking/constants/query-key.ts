@@ -13,4 +13,5 @@ export const bookingQueryKeys = {
     GET_BOOKING_LIST_RESTAURANT: ['booking', 'list', 'restaurant'],
     GET_BOOKING_UPCOMING_RESTAURANT: ['booking', 'upcoming', 'restaurant'],
     GET_STATUS_COUNT: ['booking', 'status-count'],
+    GET_DETAIL_RESTAURANT: (bookingId: string) => ['booking', 'restaurant', bookingId],
 };

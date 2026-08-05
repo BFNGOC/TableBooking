@@ -36,6 +36,7 @@ export const FormFieldType = {
     // Others
     SLIDER: 'slider',
     COLOR: 'color',
+    CUSTOM: 'custom',
 } as const;
 
 export type FormFieldType = (typeof FormFieldType)[keyof typeof FormFieldType];

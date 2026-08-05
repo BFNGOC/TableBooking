@@ -88,9 +88,15 @@ export class BookingsController {
     return this.bookingsService.bookingStatusCount(user._id);
   }
 
+  @Get('/restaurant/:id')
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  findBookingDetail(@Param('id') id: string) {
+    return this.bookingsService.findBookingDetail(id);
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.bookingsService.findOne(id, user._id);
+  findOneBookingMe(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.bookingsService.findOneBookingMe(id, user._id);
   }
 
   @Get()
