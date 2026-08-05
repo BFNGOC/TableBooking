@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { TablesService } from './tables.service';
 import { CreateTableDto } from './dto/create-table.dto';
@@ -14,7 +15,9 @@ import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { Roles } from '@app/decorator/roles.decorator';
-
+import { FindTablesDto } from './dto/find-table.dto';
+import { TableParamDto } from './dto/table-param.dto';
+import { UpdateTablePositionDto } from './dto/update-table-position.dto';
 @Controller('tables')
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
@@ -24,27 +27,47 @@ export class TablesController {
   create(
     @Body() createTableDto: CreateTableDto,
     @CurrentUser() user: AuthUser,
-  ): string {
+  ) {
     return this.tablesService.create(createTableDto, user);
   }
 
   @Get()
-  findAll() {
-    return this.tablesService.findAll();
+  findAll(@Query() findTablesDto: FindTablesDto) {
+    return this.tablesService.findAll(findTablesDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tablesService.findOne(+id);
+  @Get(':tableId')
+  findOne(@Param() params: TableParamDto) {
+    return this.tablesService.findOne(params.tableId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTableDto: UpdateTableDto) {
-    return this.tablesService.update(+id, updateTableDto);
+  @Patch(':tableId')
+  @Roles(UserRole.RESTAURANT)
+  update(
+    @Param() params: TableParamDto,
+    @Body() updateTableDto: UpdateTableDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.tablesService.update(params.tableId, updateTableDto, user);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tablesService.remove(+id);
+  @Patch(':tableId/position')
+  @Roles(UserRole.RESTAURANT)
+  updatePosition(
+    @Param() params: TableParamDto,
+    @Body() updateTablePositionDto: UpdateTablePositionDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.tablesService.updatePosition(
+      params.tableId,
+      updateTablePositionDto,
+      user,
+    );
+  }
+
+  @Delete(':tableId')
+  @Roles(UserRole.RESTAURANT)
+  remove(@Param() params: TableParamDto, @CurrentUser() user: AuthUser) {
+    return this.tablesService.remove(params.tableId, user);
   }
 }

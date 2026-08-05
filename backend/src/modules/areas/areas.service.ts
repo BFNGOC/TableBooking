@@ -126,4 +126,20 @@ export class AreasService {
 
     return area;
   }
+
+  async findByRestaurant(
+    areaId: string,
+    restaurantId: string,
+  ): Promise<AreaDocument> {
+    const area = await this.areaModel.findOne({
+      _id: areaId,
+      restaurantId,
+    });
+
+    if (!area) {
+      throw new BadRequestException('Area not found.');
+    }
+
+    return area;
+  }
 }

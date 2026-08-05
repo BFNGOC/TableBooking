@@ -19,7 +19,7 @@ import { BookingsModule } from '../bookings/bookings.module';
     CounterModule,
     TaxModule,
     UsersModule,
-    forwardRef(() => BookingsModule),
+    //forwardRef(() => BookingsModule),
   ],
   controllers: [RestaurantsController],
   providers: [RestaurantsService, RestaurantSearchService],
