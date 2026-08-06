@@ -43,23 +43,13 @@ export const customerInfoFormField: FormField[] = [
         type: FormFieldType.IMAGE,
     },
     {
-        name: 'userId.name',
-        label: 'Tên khách hàng',
+        name: 'contactName',
+        label: 'Tên khách hàng liên hệ',
         type: FormFieldType.TEXT,
     },
     {
-        name: 'userId.email',
-        label: 'Email',
-        type: FormFieldType.EMAIL,
-    },
-    {
-        name: 'userId.phone',
-        label: 'Số điện thoại',
-        type: FormFieldType.TEXT,
-    },
-    {
-        name: 'userId.role',
-        label: 'Vai trò',
+        name: 'contactPhone',
+        label: 'Số điện thoại liên hệ',
         type: FormFieldType.TEXT,
     },
 ];

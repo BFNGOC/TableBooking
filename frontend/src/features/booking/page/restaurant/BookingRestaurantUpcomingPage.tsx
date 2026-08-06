@@ -5,12 +5,10 @@ import useTable from '@/shared/hooks/useTable';
 import { BookingRestaurantParams } from '../../types/booking-restaurant-filter-params-type';
 import { IBooking, BookingStatus } from '../../types/booking.type';
 import { bookingRoleRestaurantApi } from '../../api/booking-api';
-import TablePaginationCustom, {
-    ColumnTable,
-} from '@/shared/components/table/TablePaginationCustom';
+import { ColumnTable } from '@/shared/components/table/TablePaginationCustom';
 import { DEFAULT_PAGINATION } from '@/shared/constants/default-pagination';
 import TableFilterCustom from '@/shared/components/table/TableFilterCustom';
-import { Button } from '@heroui/react';
+import { Button, ButtonGroup } from '@heroui/react';
 import { bookingQueryKeys } from '../../constants/query-key';
 import { formatDate, formatDateTime } from '@/shared/utils/date';
 import {
@@ -25,13 +23,18 @@ import { BOOKING_STATUS_UPCOMING_OPTIONS } from '../../constants/booking-options
 import ActionGroup, { TableAction } from '@/shared/components/table/ActionGroup';
 import { useBookingDetail } from '../../hook/useBooking';
 import { useFormModal } from '@/shared/hooks/useFormModal';
-import { Eye } from 'lucide-react';
+import { CalendarDays, Eye, List } from 'lucide-react';
 import ModalFormTabs from '@/shared/components/modals/ModalFormTabs';
 import { bookingSections } from '../../constants/booking-section';
 import { formatSectionFormValues } from '@/shared/utils/format-section-form-values';
+import { useState } from 'react';
+import UpcomingBookingTable from '../../components/bookingRestaurant/UpcomingBookingTable';
+import UpcomingBookingCalendar from '../../components/bookingRestaurant/UpcomingBookingCalendar';
 
 function BookingRestaurantUpcomingPage() {
     const { getUpcoming } = bookingRoleRestaurantApi;
+
+    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
     const { data: statusCount } = useBookingStatusCount();
 
@@ -111,12 +114,23 @@ function BookingRestaurantUpcomingPage() {
                 title="Đơn đặt bàn sắp tới"
                 subtitle="Xem các đơn đặt bàn sắp tới của nhà hàng"
                 extra={
-                    <Button
-                        variant="danger-soft"
-                        onPress={bookingRestaurantTable.handleFilterReset}
-                    >
-                        Làm mới
-                    </Button>
+                    <ButtonGroup>
+                        <Button
+                            variant={viewMode === 'list' ? 'danger' : 'danger-soft'}
+                            onPress={() => setViewMode('list')}
+                        >
+                            <List size={18} />
+                            Danh sách
+                        </Button>
+
+                        <Button
+                            variant={viewMode === 'calendar' ? 'danger' : 'danger-soft'}
+                            onPress={() => setViewMode('calendar')}
+                        >
+                            <CalendarDays size={18} />
+                            Lịch
+                        </Button>
+                    </ButtonGroup>
                 }
             />
 
@@ -150,13 +164,17 @@ function BookingRestaurantUpcomingPage() {
                 }
             />
 
-            <TablePaginationCustom<IBooking>
-                columns={bookingColumns}
-                data={bookingRestaurantTable.data ?? []}
-                onChangPage={bookingRestaurantTable.handleChangePage}
-                pagination={bookingRestaurantTable.pagination ?? DEFAULT_PAGINATION}
-                isPending={bookingRestaurantTable.loading}
-            />
+            {viewMode === 'list' ? (
+                <UpcomingBookingTable
+                    columns={bookingColumns}
+                    data={bookingRestaurantTable.data ?? []}
+                    loading={bookingRestaurantTable.loading}
+                    pagination={bookingRestaurantTable.pagination ?? DEFAULT_PAGINATION}
+                    onChangePage={bookingRestaurantTable.handleChangePage}
+                />
+            ) : (
+                <UpcomingBookingCalendar bookings={bookingRestaurantTable.data ?? []} />
+            )}
 
             <ModalFormTabs
                 isOpen={open}

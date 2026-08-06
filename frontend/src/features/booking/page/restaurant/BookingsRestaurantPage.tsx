@@ -95,18 +95,7 @@ function BookingsRestaurantPage() {
 
     return (
         <div className="flex flex-col h-full gap-4">
-            <PageHeader
-                title="Quản lý đặt bàn"
-                subtitle="Xem tất cả đơn đặt bàn của nhà hàng"
-                extra={
-                    <Button
-                        variant="danger-soft"
-                        onPress={bookingRestaurantTable.handleFilterReset}
-                    >
-                        Làm mới
-                    </Button>
-                }
-            />
+            <PageHeader title="Quản lý đặt bàn" subtitle="Xem tất cả đơn đặt bàn của nhà hàng" />
 
             <TableFilterCustom<BookingRestaurantParams>
                 fields={bookingRestaurantFilterFormFields}

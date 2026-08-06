@@ -1259,7 +1259,8 @@ export class BookingsService {
     const restaurant =
       await this.restaurantsService.getRestaurantByUserId(userId);
 
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const counts = await this.bookingModel.aggregate<BookingStatusAggregate>([
       {
@@ -1283,7 +1284,7 @@ export class BookingsService {
             {
               $match: {
                 bookingDate: {
-                  $gte: now,
+                  $gte: today,
                 },
               },
             },

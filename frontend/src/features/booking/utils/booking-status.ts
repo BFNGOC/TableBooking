@@ -24,7 +24,7 @@ export const translatePaymentStatus = (status: string | undefined) => {
         case 'UNPAID':
             return 'Chưa thanh toán';
         case 'PAID':
-            return 'Đã thanh toán';
+            return 'Đã thanh toán đầy đủ';
         case 'PARTIAL':
             return 'Thanh toán đặt cọc';
         case 'REFUNDED':

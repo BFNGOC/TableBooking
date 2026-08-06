@@ -7,6 +7,7 @@ import {
 import {
     BookingStatusCount,
     GetAvailableTablesResponse,
+    IBookingDetail,
     PreviewBookingPricingResponse,
 } from '../types/booking-response';
 import { IBooking } from '../types/booking.type';
@@ -110,7 +111,7 @@ export const bookingRoleRestaurantApi = {
         return res.data;
     },
     get_detail: async (bookingId: string) => {
-        const res = await clientRequest<any>({
+        const res = await clientRequest<IBookingDetail>({
             url: `${API_URL_PREFIX}/restaurant/${bookingId}`,
             method: 'GET',
         });

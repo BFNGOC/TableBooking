@@ -1,3 +1,5 @@
+import { IBooking } from './booking.type';
+
 export interface IAreaDetail {
     _id: string;
     restaurantId: string;
@@ -23,6 +25,30 @@ export interface ITableDetail {
     __v?: number;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface IBookingUserDetail {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+    avatar?: string;
+    role?: string;
+}
+
+export interface IBookingRestaurantDetail {
+    _id: string;
+    restaurantName: string;
+    address: string;
+    phone: string;
+    avatar?: string;
+    rating?: number;
+}
+
+export interface IBookingDetail extends Omit<IBooking, 'userId' | 'restaurantId' | 'tableIds'> {
+    userId?: string | IBookingUserDetail;
+    restaurantId?: string | IBookingRestaurantDetail;
+    tableIds: ITableDetail[];
 }
 
 import { IPriceAdjustment, ITableDepositSnapshot } from './booking.type';
