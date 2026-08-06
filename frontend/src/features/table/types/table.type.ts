@@ -21,6 +21,8 @@ export interface ITable {
     basePrice?: number;
     depositAmount?: number;
     depositType?: DepositType;
+    x?: number;
+    y?: number;
     createdAt?: string | Date;
     updatedAt?: string | Date;
 }

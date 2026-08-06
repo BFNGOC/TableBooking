@@ -3,6 +3,8 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -12,6 +14,7 @@ import { FindAreasDto } from './dto/find-areas.dto';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 import { Area, AreaDocument } from './schemas/area.schema';
 import { RestaurantsService } from '../restaurants/restaurants.service';
+import { TablesService } from '../tables/tables.service';
 
 @Injectable()
 export class AreasService {
@@ -20,10 +23,12 @@ export class AreasService {
     private readonly areaModel: Model<AreaDocument>,
 
     private readonly restaurantsService: RestaurantsService,
+    @Inject(forwardRef(() => TablesService))
+    private readonly tablesService: TablesService,
   ) {}
 
   async create(createAreaDto: CreateAreaDto, user: AuthUser) {
-    const restaurant = await this.restaurantsService.getRestaurantByUserId(
+    const restaurant = await this.restaurantsService.getCurrentUserRestaurant(
       user._id,
     );
 
@@ -43,13 +48,14 @@ export class AreasService {
   }
 
   async findAll(findAreasDto: FindAreasDto) {
-    return this.areaModel
+    const areas = await this.areaModel
       .find({
-        restaurantId: findAreasDto.restaurantId,
+        restaurantId: new Types.ObjectId(findAreasDto.restaurantId),
       })
       .sort({
         createdAt: 1,
       });
+    return areas;
   }
 
   async findOne(areaId: string) {
@@ -86,17 +92,20 @@ export class AreasService {
 
   async remove(areaId: string, user: AuthUser) {
     const area = await this.findOwnedArea(areaId, user);
+    const restaurant = await this.restaurantsService.getCurrentUserRestaurant(
+      user._id,
+    );
 
-    // TODO:
-    // const tableCount = await this.tableModel.countDocuments({
-    //   areaId: area._id,
-    // });
-    //
-    // if (tableCount > 0) {
-    //   throw new BadRequestException(
-    //     'Cannot delete area because it still contains tables.',
-    //   );
-    // }
+    const tableCount = await this.tablesService.countByArea(
+      area._id.toString(),
+      restaurant._id.toString(),
+    );
+
+    if (tableCount > 0) {
+      throw new BadRequestException(
+        'Cannot delete area because it still contains tables.',
+      );
+    }
 
     await area.deleteOne();
 
@@ -109,12 +118,12 @@ export class AreasService {
     areaId: string,
     user: AuthUser,
   ): Promise<AreaDocument> {
-    const restaurant = await this.restaurantsService.getRestaurantByUserId(
+    const restaurant = await this.restaurantsService.getCurrentUserRestaurant(
       user._id,
     );
 
     const area = await this.areaModel.findOne({
-      _id: areaId,
+      _id: new Types.ObjectId(areaId),
       restaurantId: restaurant._id,
     });
 
@@ -132,8 +141,8 @@ export class AreasService {
     restaurantId: string,
   ): Promise<AreaDocument> {
     const area = await this.areaModel.findOne({
-      _id: areaId,
-      restaurantId,
+      _id: new Types.ObjectId(areaId),
+      restaurantId: new Types.ObjectId(restaurantId),
     });
 
     if (!area) {

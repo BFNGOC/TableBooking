@@ -21,14 +21,15 @@ export class CreateTableDto {
   @IsMongoId()
   areaId!: string;
 
-  @ApiProperty({
-    description: 'Tên hoặc số bàn',
+  @ApiPropertyOptional({
+    description: 'Số hiệu bàn do người dùng nhập (bỏ trống để tự sinh)',
     example: 'A01',
   })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(50)
-  tableNumber!: string;
+  @MaxLength(20)
+  tableNumber?: string;
 
   @ApiProperty({
     description: 'Sức chứa',
