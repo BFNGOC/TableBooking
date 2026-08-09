@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { formatDate } from '@/shared/utils/date';
-import { getBookingStatusText } from '../utils/booking-status';
-import { formatMoney } from '../utils/booking-helpers';
+import { getBookingStatusText } from '../../utils/booking-status';
+import { formatMoney } from '../../utils/booking-helpers';
 
 export default function RecentBookingCard({ booking }: { booking: any }) {
     const isCancelled = booking.status === 'CANCELLED';
@@ -17,7 +17,7 @@ export default function RecentBookingCard({ booking }: { booking: any }) {
         >
             <div className="min-w-0">
                 <h3 className="truncate font-semibold text-[#211b18]">
-                    {booking.restaurantId?.name ?? 'Nhà hàng'}
+                    {booking.restaurantId?.restaurantName}
                 </h3>
 
                 <p className="mt-1 text-sm text-[#8a7d75]">

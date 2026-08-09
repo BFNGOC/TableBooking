@@ -1127,7 +1127,8 @@ export class BookingsService {
       })
       .populate({
         path: 'restaurantId',
-        select: 'name images address slug',
+        select:
+          'name avatar restaurantName description rating images address slug',
       })
       .lean();
 
@@ -1157,7 +1158,8 @@ export class BookingsService {
       .limit(3)
       .populate({
         path: 'restaurantId',
-        select: 'name images address slug',
+        select:
+          'name avatar restaurantName description rating images address slug',
       })
       .lean();
 

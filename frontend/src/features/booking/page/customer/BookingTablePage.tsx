@@ -87,9 +87,9 @@ export default function BookingTablePage() {
         });
 
         if (data.data.payDepositNow) {
-            router.push(`/discover/${slug}/booking/checkout?bookingId=${data.data.booking._id}`);
+            router.push(`/discover/${slug}/booking/checkout/${data.data.booking._id}`);
         } else {
-            router.push(`/discover/${slug}/booking/success?bookingId=${data.data.booking._id}`);
+            router.push(`/discover/${slug}/booking/success/${data.data.booking._id}`);
         }
     };
 

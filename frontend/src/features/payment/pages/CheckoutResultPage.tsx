@@ -58,8 +58,7 @@ function CheckoutResultPage({ id }: CheckoutResultProps) {
 
     console.log(slug);
 
-    const successLink =
-        slug && bookingId ? `/discover/${slug}/booking/success?bookingId=${bookingId}` : '';
+    const successLink = slug && bookingId ? `/discover/${slug}/booking/success/${bookingId}` : '';
 
     const paymentStatus = translatePaymentStatus(payment?.status);
     const paymentMethod = renderValue(payment?.method ?? '—');

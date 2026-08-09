@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { CalendarDays, History, ChevronRight, Heart } from 'lucide-react';
 import { useGetBookingRecentMe, useGetBookingUpcomingMe } from '../../hook/useBookingMe';
-import UpcomingBookingCard from '@/features/booking/components/UpcomingBookingCard';
-import RecentBookingCard from '@/features/booking/components/RecentBookingCard';
 import FavoriteRestaurantCard from '@/features/booking/components/FavoriteRestaurantCard';
 import BookingEmpty from '@/features/booking/components/BookingEmpty';
 import { UpcomingSkeleton, RecentSkeleton } from '@/features/booking/components/BookingSkeletons';
+import UpcomingBookingCard from '../../components/MyBooking/UpcomingBookingCard';
+import RecentBookingCard from '../../components/MyBooking/RecentBookingCard';
 
 function MyBookingsPage() {
     const {

@@ -3,23 +3,20 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock3, Users, MapPin, QrCode } from 'lucide-react';
-import BookingStatusBadge from './BookingStatusBadge';
 import { formatDate } from '@/shared/utils/date';
+import BookingStatusBadge from '../BookingStatusBadge';
 
 export default function UpcomingBookingCard({ booking }: { booking: any }) {
     return (
         <Link
-            href={`/discover/${booking.restaurantId?.slug}/booking/checkout?bookingId=${booking._id}`}
+            href={`/discover/${booking.restaurantId?.slug}/booking/checkout/${booking._id}`}
             className="group block overflow-hidden rounded-[28px] border border-[#eee2da] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
         >
             <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">
                 <div className="relative h-56 overflow-hidden md:h-full md:min-h-[260px]">
                     <Image
-                        src={
-                            booking.restaurantId?.images?.[0]?.url ??
-                            '/images/restaurant-placeholder.jpg'
-                        }
-                        alt={booking.restaurantId?.name ?? 'Nhà hàng'}
+                        src={booking.restaurantId?.avatar.url}
+                        alt={booking.restaurantId?.restaurantName}
                         fill
                         className="object-cover transition duration-500 group-hover:scale-105"
                     />
@@ -33,7 +30,7 @@ export default function UpcomingBookingCard({ booking }: { booking: any }) {
                     <div className="flex items-start justify-between gap-4">
                         <div>
                             <h3 className="text-xl font-semibold text-[#211b18]">
-                                {booking.restaurantId?.name ?? 'Nhà hàng'}
+                                {booking.restaurantId?.restaurantName}
                             </h3>
 
                             <BookingStatusBadge status={booking.status} />

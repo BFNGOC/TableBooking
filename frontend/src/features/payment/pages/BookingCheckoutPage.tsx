@@ -20,7 +20,8 @@ function BookingCheckoutPage() {
 
     const rawSlug = params?.slug ?? '';
     const slug = Array.isArray(rawSlug) ? rawSlug[0] : String(rawSlug);
-    const bookingId = searchParams.get('bookingId') ?? '';
+    const rawBookingId = params?.bookingId ?? searchParams.get('bookingId') ?? '';
+    const bookingId = Array.isArray(rawBookingId) ? rawBookingId[0] : String(rawBookingId);
 
     const { data, isPending, isError, error } = useGetBookingDetail(bookingId);
 

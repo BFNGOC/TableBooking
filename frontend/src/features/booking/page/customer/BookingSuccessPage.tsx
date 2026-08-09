@@ -17,7 +17,8 @@ function BookingSuccessPage() {
 
     const rawSlug = params?.slug ?? '';
     const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
-    const bookingId = searchParams.get('bookingId') ?? '';
+    const rawBookingId = params?.bookingId ?? searchParams.get('bookingId') ?? '';
+    const bookingId = Array.isArray(rawBookingId) ? rawBookingId[0] : String(rawBookingId);
 
     const { data, isPending, isError, error } = useGetBookingDetail(bookingId);
 
@@ -39,11 +40,6 @@ function BookingSuccessPage() {
     const totalAmount = booking?.pricingSnapshot?.finalPrice ?? booking?.depositAmount ?? 0;
 
     const handleBackToRestaurant = () => {
-        if (slug) {
-            router.push(`/discover/${slug}`);
-            return;
-        }
-
         router.push('/');
     };
 
