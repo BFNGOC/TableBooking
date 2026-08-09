@@ -9,6 +9,10 @@ export enum PaymentTransactionStatus {
   FAILED = 'FAILED',
   CANCELLED = 'CANCELLED',
   EXPIRED = 'EXPIRED',
+
+  REFUND_PENDING = 'REFUND_PENDING',
+  REFUNDED = 'REFUNDED',
+  REFUND_FAILED = 'REFUND_FAILED',
 }
 
 export enum PaymentMethod {
@@ -82,6 +86,18 @@ export class Payment {
   // Mã giao dịch từ payment provider
   @Prop()
   transactionId?: string;
+
+  @Prop()
+  refundTransactionId?: string;
+
+  @Prop()
+  refundedAt?: Date;
+
+  @Prop({
+    type: Number,
+    min: 0,
+  })
+  refundedAmount?: number;
 
   // Mã order của hệ thống
   @Prop({

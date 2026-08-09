@@ -9,6 +9,7 @@ import { TableAvailabilitiesModule } from '../table-availabilities/table-availab
 import { PricingRuleModule } from '../pricing-rule/pricing-rule.module';
 import { RestaurantBookingSearchService } from './booking-restaurant-search.service';
 import { SearchModule } from '../search/elasticsearch.module';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SearchModule } from '../search/elasticsearch.module';
     forwardRef(() => RestaurantsModule),
     PricingRuleModule,
     SearchModule,
+    forwardRef(() => PaymentModule),
   ],
   controllers: [BookingsController],
   providers: [BookingsService, RestaurantBookingSearchService],

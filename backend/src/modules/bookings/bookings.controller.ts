@@ -18,6 +18,7 @@ import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 import { UserRole } from '../users/schemas/user.schema';
 import { Roles } from '@app/decorator/roles.decorator';
+import { CancelBookingDto } from './dto/cancel-booking.dto';
 
 @Controller('bookings')
 export class BookingsController {
@@ -92,6 +93,15 @@ export class BookingsController {
   @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   findBookingDetail(@Param('id') id: string) {
     return this.bookingsService.findBookingDetail(id);
+  }
+
+  @Patch(':bookingId/cancel')
+  cancelBooking(
+    @Param('bookingId') bookingId: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CancelBookingDto,
+  ) {
+    return this.bookingsService.cancelBooking(bookingId, user._id, dto);
   }
 
   @Get(':id')

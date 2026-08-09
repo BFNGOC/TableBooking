@@ -27,8 +27,7 @@ export const useCreatePayment = () => {
             showToast(
                 'error',
                 'Tạo thanh toán thất bại',
-                error?.response?.data?.message ??
-                    'Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.'
+                error?.message ?? 'Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.'
             );
         },
     });

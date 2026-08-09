@@ -161,6 +161,9 @@ export class Booking {
   @Prop()
   cancelReason?: string;
 
+  @Prop()
+  cancelledAt?: Date;
+
   @Prop({
     type: Types.ObjectId,
     ref: 'User',

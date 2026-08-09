@@ -1,22 +1,23 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Button, Spinner } from '@heroui/react';
+import { Button, Separator, Spinner } from '@heroui/react';
+import { CheckCircle2, QrCode, MapPin, Phone, Share2, CalendarPlus } from 'lucide-react';
 import CustomCard from '@/shared/components/card/CustomCard';
-import InfoSectionCard from '@/features/booking/components/InfoSectionCard';
 import InfoValueCard from '@/features/booking/components/InfoValueCard';
 import { useGetBookingDetail } from '@/features/booking/hook/useBookingMe';
 import { formatDate } from '@/shared/utils/date';
 import { translateBookingStatus, translatePaymentStatus } from '../../utils/booking-status';
+import ConfirmModal from '@/shared/components/modals/ConfirmModal';
 
 function BookingSuccessPage() {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
 
-    const rawSlug = params?.slug ?? '';
-    const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
     const rawBookingId = params?.bookingId ?? searchParams.get('bookingId') ?? '';
     const bookingId = Array.isArray(rawBookingId) ? rawBookingId[0] : String(rawBookingId);
 
@@ -31,17 +32,31 @@ function BookingSuccessPage() {
     const bookingDate = booking?.bookingDate ? formatDate(booking.bookingDate) : '—';
     const bookingTime = booking?.startTime ?? '—';
     const guestCount = booking?.guestCount ?? '—';
-    const tableCount = booking?.tableIds?.length ?? '—';
+    const tableInfo = booking?.tableIds
+        ? booking.tableIds
+              .map((table: any) =>
+                  typeof table === 'string' ? table : (table.tableNumber ?? table.name ?? '—')
+              )
+              .join(', ')
+        : '—';
     const contactName = booking?.contactName ?? '—';
-    const contactPhone = booking?.contactPhone ?? '—';
     const bookingStatus = translateBookingStatus(booking?.status);
     const paymentStatus = translatePaymentStatus(booking?.paymentStatus);
     const depositAmount = booking?.pricingSnapshot?.depositAmount ?? booking?.depositAmount ?? 0;
     const totalAmount = booking?.pricingSnapshot?.finalPrice ?? booking?.depositAmount ?? 0;
+    const restaurantName =
+        booking?.restaurantId?.restaurantName ?? booking?.restaurantName ?? 'Nhà hàng';
+    const checkInCode = booking?.checkInCode ?? booking?._id?.slice(0, 8) ?? '';
 
     const handleBackToRestaurant = () => {
         router.push('/');
     };
+
+    const handleCancelBooking = () => {
+        setIsConfirmModalOpen(true);
+    };
+
+    const handleConfirmCancelBooking = () => {};
 
     if (!bookingId) {
         return (
@@ -96,68 +111,133 @@ function BookingSuccessPage() {
     }
 
     return (
-        <div className="flex items-center justify-center">
-            <CustomCard className="w-full max-w-5xl p-6">
-                <div className="space-y-4">
-                    <h1 className="text-2xl font-semibold text-[#1f2937]">Đặt bàn thành công</h1>
-                    <p className="text-sm text-gray-500">
-                        Cảm ơn bạn đã đặt bàn. Dưới đây là thông tin chi tiết của booking.
-                    </p>
+        <div className="mx-auto flex w-full max-w-7xl flex-col py-3 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+                <div className="mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[#f3e7dc] text-[#865b3b] shadow-sm">
+                    <CheckCircle2 size={36} />
                 </div>
+                <h1 className="text-3xl font-semibold text-[#1f2937]">Đặt bàn thành công!</h1>
+                <p className="mt-3 text-sm text-[#5f5a55]">Chúng tôi rất mong được đón tiếp bạn.</p>
+            </div>
 
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <InfoValueCard label="Mã booking" value={booking?._id ?? bookingId} />
-                    <InfoValueCard label="Trạng thái" value={bookingStatus} />
-                    <InfoValueCard label="Thanh toán" value={paymentStatus} />
-                    <InfoValueCard label="Ngày đặt" value={bookingDate} />
-                </div>
-
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    <InfoValueCard label="Giờ" value={bookingTime} />
-                    <InfoValueCard label="Số khách" value={guestCount} />
-                    <InfoValueCard label="Số bàn" value={tableCount} />
-                    <InfoValueCard
-                        label="Tiền cọc"
-                        value={`${depositAmount?.toLocaleString?.() ?? 0}đ`}
-                    />
-                    <InfoValueCard
-                        label="Tổng tiền"
-                        value={`${totalAmount?.toLocaleString?.() ?? 0}đ`}
-                    />
-                </div>
-
-                <InfoSectionCard title="Thông tin liên hệ" className="mt-6">
-                    <div className="mt-4 space-y-3 text-sm text-gray-600">
-                        <div className="flex justify-between">
-                            <span>Người đặt</span>
-                            <span>{contactName}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Điện thoại</span>
-                            <span>{contactPhone}</span>
+            <div className="mt-8 grid gap-6 lg:grid-cols-[380px_1fr]">
+                <div className="space-y-6 rounded-[32px] border border-[#ece2d8] bg-[#f5efeb] p-6 shadow-sm">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-xs uppercase tracking-[0.24em] text-gray-500">
+                                Mã đặt bàn
+                            </p>
+                            <p className="mt-2 text-3xl font-semibold text-[#1f2937]">
+                                #{booking?._id ?? bookingId}
+                            </p>
                         </div>
                     </div>
-                </InfoSectionCard>
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Button
-                        type="button"
-                        size="lg"
-                        className="w-full rounded-full border border-gray-300 bg-white px-8 py-3 text-[#1f2937]"
-                        onPress={() => router.back()}
-                    >
-                        Quay lại
-                    </Button>
-                    <Button
-                        type="button"
-                        size="lg"
-                        className="w-full rounded-full bg-[#6f4e37] px-8 py-3"
-                        onPress={handleBackToRestaurant}
-                    >
-                        Về trang chủ
-                    </Button>
+                    <div className="overflow-hidden rounded-3xl border border-[#f1e6dd] bg-[#faf4ef] p-6 text-center">
+                        <div className="mx-auto mb-4 flex h-36 w-36 items-center justify-center rounded-3xl bg-white shadow-sm">
+                            <QrCode size={52} className="text-[#8b6f53]" />
+                        </div>
+                        <p className="text-sm font-medium text-[#1f2937]">Mã check-in</p>
+                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{checkInCode}</p>
+                    </div>
+
+                    <div className="space-y-3 rounded-3xl border border-[#efe1d5] bg-[#fff7f1] p-4 text-sm text-[#5f5a55]">
+                        <p className="font-semibold text-[#1f2937]">Thông tin nhà hàng</p>
+                        <p>{restaurantName}</p>
+                        <p>
+                            {bookingDate} • {bookingTime}
+                        </p>
+                        <p>Bàn: {tableInfo}</p>
+                    </div>
                 </div>
-            </CustomCard>
+
+                <CustomCard className="bg-white">
+                    <div>
+                        <div className="grid gap-4">
+                            <InfoValueCard label="Khách hàng" value={contactName} />
+                            <InfoValueCard label="Số lượng" value={`${guestCount} người`} />
+                            <InfoValueCard
+                                label="Thời gian"
+                                value={`${bookingTime} • ${bookingDate}`}
+                            />
+                            <InfoValueCard label="Vị trí bàn" value={tableInfo} />
+
+                            <InfoValueCard label="Trạng thái" value={bookingStatus} />
+                            <InfoValueCard label="Thanh toán" value={paymentStatus} />
+                            <InfoValueCard
+                                label="Tiền cọc"
+                                value={`${depositAmount?.toLocaleString?.() ?? 0}đ`}
+                            />
+                            <InfoValueCard
+                                label="Tổng tiền"
+                                value={`${totalAmount?.toLocaleString?.() ?? 0}đ`}
+                            />
+                            <div className="text-sm">
+                                <span className="text-gray-500">Ghi chú khách hàng:</span>
+                                <div className="mt-2 rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                    {booking?.restaurantNote ? booking.restaurantNote : '—'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div>
+                        <div className="grid gap-3 mb-4 sm:grid-cols-4">
+                            <Button
+                                type="button"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#e4dacb] bg-white px-4 py-3 text-sm text-[#1f2937]"
+                            >
+                                <MapPin size={18} /> Xem chỉ đường
+                            </Button>
+                            <Button
+                                type="button"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#e4dacb] bg-white px-4 py-3 text-sm text-[#1f2937]"
+                            >
+                                <CalendarPlus size={18} /> Thêm vào lịch
+                            </Button>
+                            <Button
+                                type="button"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#e4dacb] bg-white px-4 py-3 text-sm text-[#1f2937]"
+                            >
+                                <Phone size={18} /> Gọi hotline
+                            </Button>
+                            <Button
+                                type="button"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#e4dacb] bg-white px-4 py-3 text-sm text-[#1f2937]"
+                            >
+                                <Share2 size={18} /> Chia sẻ
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="flex flex-col items-center justify-center gap-3 text-center">
+                        <div>
+                            <Button
+                                type="button"
+                                className="bg-[#6f4e37] px-6 py-4 text-base font-semibold text-white"
+                                onPress={handleCancelBooking}
+                            >
+                                Hủy đặt bàn
+                            </Button>
+                        </div>
+                        <p className="text-center text-sm text-[#857468]">
+                            Hoàn tiền 100% nếu hủy trước giờ hẹn 2 tiếng.
+                        </p>
+                    </div>
+                </CustomCard>
+            </div>
+
+            <ConfirmModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleConfirmCancelBooking}
+                title="Xác nhận hủy đặt bàn"
+                description="Bạn có chắc chắn muốn hủy đặt bàn này không?"
+            />
         </div>
     );
 }

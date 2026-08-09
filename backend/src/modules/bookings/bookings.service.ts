@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
@@ -36,6 +37,8 @@ import dayjs from 'dayjs';
 import { RestaurantBookingSearchService } from './booking-restaurant-search.service';
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 import { BookingStatusAggregate } from '../restaurants/types/aggregate';
+import { CancelBookingDto } from './dto/cancel-booking.dto';
+import { PaymentService } from '../payment/payment.service';
 
 type PopulatedArea = Area & {
   _id: Types.ObjectId;
@@ -58,6 +61,8 @@ export class BookingsService {
     private readonly redisService: RedisService,
 
     private readonly restaurantSearchService: RestaurantBookingSearchService,
+
+    private readonly paymentService: PaymentService,
   ) {}
 
   async reindexAll() {
@@ -666,6 +671,13 @@ export class BookingsService {
     return `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
       .padStart(2, '0')}`;
+  }
+
+  private combineDateAndTime(bookingDate: Date, startTime: string): Date {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const dateTime = new Date(bookingDate);
+    dateTime.setHours(hours, minutes, 0, 0);
+    return dateTime;
   }
 
   //Lấy bàn có thể booking
@@ -1335,6 +1347,200 @@ export class BookingsService {
     });
 
     return result;
+  }
+
+  async cancelBooking(
+    bookingId: string,
+    userId: string,
+    dto: CancelBookingDto,
+  ) {
+    // ============================================
+    // 1. Validate bookingId
+    // ============================================
+
+    if (!Types.ObjectId.isValid(bookingId)) {
+      throw new BadRequestException('Định dạng booking ID không hợp lệ');
+    }
+
+    const session = await this.bookingModel.db.startSession();
+
+    try {
+      // ============================================
+      // 2. MongoDB Transaction
+      // ============================================
+
+      const result = await session.withTransaction(async () => {
+        // ============================================
+        // 2.1. Tìm booking
+        // ============================================
+
+        const booking = await this.bookingModel
+          .findById(bookingId)
+          .session(session)
+          .exec();
+
+        if (!booking) {
+          throw new NotFoundException('Không tìm thấy booking');
+        }
+
+        // ============================================
+        // 2.2. Check quyền
+        // ============================================
+
+        const userObjectId = new Types.ObjectId(userId);
+
+        if (booking.userId.toString() !== userObjectId.toString()) {
+          throw new ForbiddenException('Bạn không có quyền hủy booking này');
+        }
+
+        // ============================================
+        // 2.3. Check status
+        // ============================================
+
+        const cancellableStatuses = [
+          BookingStatus.PENDING,
+          BookingStatus.CONFIRMED,
+        ];
+
+        if (!booking.status || !cancellableStatuses.includes(booking.status)) {
+          throw new BadRequestException(
+            `Không thể hủy booking ở trạng thái ${
+              booking.status ?? 'không xác định'
+            }`,
+          );
+        }
+
+        // ============================================
+        // 2.4. Check thời gian
+        // ============================================
+
+        const bookingDateTime = this.combineDateAndTime(
+          booking.bookingDate,
+          booking.startTime,
+        );
+
+        const now = new Date();
+
+        if (bookingDateTime <= now) {
+          throw new BadRequestException(
+            'Không thể hủy booking đã đến giờ sử dụng',
+          );
+        }
+
+        // ============================================
+        // 2.5. Check refund
+        // ============================================
+
+        const diffMinutes =
+          (bookingDateTime.getTime() - now.getTime()) / (1000 * 60);
+
+        const REFUND_LIMIT_MINUTES = 120;
+
+        /**
+         * Đủ điều kiện refund nếu:
+         *
+         * - Còn ít nhất 120 phút
+         * - Booking đã có thanh toán
+         *
+         * Điều này xử lý được cả:
+         * DEPOSIT + FULL
+         */
+        const shouldRefund =
+          diffMinutes >= REFUND_LIMIT_MINUTES &&
+          booking.paymentStatus !== PaymentStatus.UNPAID;
+
+        // ============================================
+        // 2.6. Update booking
+        // ============================================
+
+        booking.status = BookingStatus.CANCELLED;
+
+        booking.cancelledAt = now;
+        booking.cancelReason = dto.reason;
+        booking.cancelledBy = userObjectId;
+        booking.holdExpiresAt = undefined;
+
+        // --------------------------------------------
+        // Chưa thanh toán
+        // --------------------------------------------
+
+        if (booking.paymentStatus === PaymentStatus.UNPAID) {
+          if (booking.depositStatus === DepositStatus.PENDING) {
+            booking.depositStatus = DepositStatus.FORFEITED;
+          }
+        }
+
+        // --------------------------------------------
+        // Đã thanh toán nhưng không đủ điều kiện refund
+        // --------------------------------------------
+        else if (!shouldRefund) {
+          if (booking.depositStatus === DepositStatus.PAID) {
+            booking.depositStatus = DepositStatus.FORFEITED;
+          }
+
+          // Giữ nguyên paymentStatus = PAID
+        }
+
+        /**
+         * QUAN TRỌNG:
+         *
+         * Nếu shouldRefund = true
+         * thì CHƯA set:
+         *
+         * depositStatus = REFUNDED
+         * paymentStatus = REFUNDED
+         *
+         * Vì VNPAY chưa refund.
+         */
+
+        await booking.save({ session });
+
+        return {
+          booking,
+          shouldRefund,
+        };
+      });
+
+      // ============================================
+      // 3. Refund sau khi Mongo transaction commit
+      // ============================================
+
+      if (result.shouldRefund) {
+        await this.paymentService.refundBooking(result.booking._id.toString());
+
+        // ============================================
+        // 4. Refund thành công → update Booking
+        // ============================================
+
+        result.booking.paymentStatus = PaymentStatus.REFUNDED;
+
+        if (result.booking.depositStatus === DepositStatus.PAID) {
+          result.booking.depositStatus = DepositStatus.REFUNDED;
+        }
+
+        await result.booking.save();
+      }
+
+      // ============================================
+      // 5. Xóa Redis hold
+      // ============================================
+
+      for (const tableId of result.booking.tableIds) {
+        const holdKey = getBookingHoldKey(
+          result.booking.restaurantId.toString(),
+          tableId.toString(),
+          result.booking.bookingDate,
+          result.booking.startTime,
+          result.booking.endTime,
+        );
+
+        await this.redisService.delete(holdKey);
+      }
+
+      return result.booking;
+    } finally {
+      await session.endSession();
+    }
   }
 
   findAll() {

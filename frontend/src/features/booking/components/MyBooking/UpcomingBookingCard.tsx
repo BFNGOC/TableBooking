@@ -5,11 +5,20 @@ import Link from 'next/link';
 import { Clock3, Users, MapPin, QrCode } from 'lucide-react';
 import { formatDate } from '@/shared/utils/date';
 import BookingStatusBadge from '../BookingStatusBadge';
+import { BookingStatus } from '../../types/booking.type';
 
 export default function UpcomingBookingCard({ booking }: { booking: any }) {
+    const handleHref = () => {
+        if (booking.status === BookingStatus.PENDING) {
+            return `/discover/${booking.restaurantId?.slug}/booking/checkout/${booking._id}`;
+        } else {
+            return `/discover/${booking.restaurantId?.slug}/booking/success/${booking._id}`;
+        }
+    };
+
     return (
         <Link
-            href={`/discover/${booking.restaurantId?.slug}/booking/checkout/${booking._id}`}
+            href={handleHref()}
             className="group block overflow-hidden rounded-[28px] border border-[#eee2da] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
         >
             <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">

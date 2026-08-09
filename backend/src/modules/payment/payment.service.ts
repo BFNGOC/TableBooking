@@ -573,4 +573,111 @@ export class PaymentService {
       return;
     }
   }
+
+  async refundBooking(bookingId: string) {
+    // ============================================
+    // 1. Validate bookingId
+    // ============================================
+
+    if (!Types.ObjectId.isValid(bookingId)) {
+      throw new BadRequestException('Định dạng booking ID không hợp lệ');
+    }
+
+    // ============================================
+    // 2. Tìm payment đã thanh toán
+    // ============================================
+
+    const payment = await this.paymentModel.findOne({
+      bookingId: new Types.ObjectId(bookingId),
+      status: PaymentTransactionStatus.PAID,
+    });
+
+    if (!payment) {
+      return {
+        refunded: false,
+        amount: 0,
+        message: 'Không có payment cần refund',
+      };
+    }
+
+    // ============================================
+    // 3. Validate transaction
+    // ============================================
+
+    if (!payment.transactionId) {
+      throw new BadRequestException('Payment không có transactionId');
+    }
+
+    // ============================================
+    // 4. Đánh dấu REFUND_PENDING
+    // ============================================
+
+    payment.status = PaymentTransactionStatus.REFUND_PENDING;
+
+    await payment.save();
+
+    try {
+      // ============================================
+      // 5. Gọi VNPAY
+      // ============================================
+
+      const result = await this.vnpayService.refund({
+        transactionId: payment.transactionId,
+        orderCode: payment.orderCode,
+        amount: payment.amount,
+        transactionDate: payment.providerData?.vnp_PayDate,
+      });
+
+      // ============================================
+      // 6. Refund thất bại
+      // ============================================
+
+      if (result.responseCode !== '00') {
+        payment.status = PaymentTransactionStatus.REFUND_FAILED;
+
+        await payment.save();
+
+        throw new BadRequestException(
+          `VNPAY refund thất bại: ${result.message ?? 'Không xác định'}`,
+        );
+      }
+
+      // ============================================
+      // 7. Refund thành công
+      // ============================================
+
+      payment.status = PaymentTransactionStatus.REFUNDED;
+
+      payment.refundTransactionId = result.transactionId;
+
+      payment.refundedAmount = payment.amount;
+
+      payment.refundedAt = new Date();
+
+      await payment.save();
+
+      // ============================================
+      // 8. Return
+      // ============================================
+
+      return {
+        refunded: true,
+        amount: payment.amount,
+        paymentId: payment._id,
+        refundTransactionId: payment.refundTransactionId,
+      };
+    } catch (error) {
+      // ============================================
+      // 9. Exception ngoài responseCode
+      // ============================================
+
+      if (payment.status === PaymentTransactionStatus.REFUND_PENDING) {
+        payment.status = PaymentTransactionStatus.REFUND_FAILED;
+
+        await payment.save();
+      }
+
+      throw error;
+    }
+  }
 }
