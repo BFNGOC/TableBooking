@@ -1,5 +1,5 @@
-import TableManagementPage from '@/features/table/pages/TableManagementPage';
+import TableManagementRestaurantPage from "@/features/table/pages/TableManagementRestaurantPage";
 
 export default function TablesRestaurant() {
-    return <TableManagementPage />;
+	return <TableManagementRestaurantPage />;
 }

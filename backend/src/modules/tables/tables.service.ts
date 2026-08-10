@@ -80,7 +80,9 @@ export class TablesService {
     const table = await this.tableModel.findById(tableId);
 
     if (!table) {
-      throw new NotFoundException('Table not found.');
+      throw new NotFoundException(
+        'Không tìm thấy bàn hoặc bàn không thuộc nhà hàng của bạn',
+      );
     }
 
     return table;
@@ -138,10 +140,32 @@ export class TablesService {
     });
 
     if (!table) {
-      throw new NotFoundException('Table not found.');
+      throw new NotFoundException(
+        'Không tìm thấy bàn hoặc bàn không thuộc nhà hàng của bạn',
+      );
     }
 
     return table;
+  }
+
+  async assertTablesBelongToRestaurant(
+    tableIds: string[],
+    restaurantId: string,
+  ): Promise<void> {
+    if (!tableIds?.length) {
+      throw new BadRequestException('tableIds không được rỗng');
+    }
+
+    const count = await this.tableModel.countDocuments({
+      _id: { $in: tableIds.map((id) => new Types.ObjectId(id)) },
+      restaurantId: new Types.ObjectId(restaurantId),
+    });
+
+    if (count !== tableIds.length) {
+      throw new BadRequestException(
+        'Một hoặc nhiều bàn không thuộc nhà hàng của bạn',
+      );
+    }
   }
 
   private async ensureUniqueTableNumber(
@@ -163,7 +187,9 @@ export class TablesService {
     const existed = await this.tableModel.exists(filter);
 
     if (existed) {
-      throw new ConflictException('Table number already exists.');
+      throw new ConflictException(
+        'Số hiệu bàn đã tồn tại trong nhà hàng của bạn',
+      );
     }
   }
 
