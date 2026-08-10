@@ -21,20 +21,30 @@ import { useBookingStatusCount } from '../../hook/useCount';
 import StatusTabs from '@/shared/components/tabs/StatusTabs';
 import { BOOKING_STATUS_UPCOMING_OPTIONS } from '../../constants/booking-options';
 import ActionGroup, { TableAction } from '@/shared/components/table/ActionGroup';
-import { useBookingDetail } from '../../hook/useBooking';
+import { useBookingDetail, useRejectBooking } from '../../hook/useBooking';
 import { useFormModal } from '@/shared/hooks/useFormModal';
-import { CalendarDays, Eye, List } from 'lucide-react';
+import { CalendarDays, Eye, List, X } from 'lucide-react';
 import ModalFormTabs from '@/shared/components/modals/ModalFormTabs';
 import { bookingSections } from '../../constants/booking-section';
 import { formatSectionFormValues } from '@/shared/utils/format-section-form-values';
 import { useState } from 'react';
 import UpcomingBookingTable from '../../components/bookingRestaurant/UpcomingBookingTable';
 import UpcomingBookingCalendar from '../../components/bookingRestaurant/UpcomingBookingCalendar';
+import TextAreaField from '@/shared/components/inputs/TextAreaField';
+import ModalCustom from '@/shared/components/modals/ModalCustom';
 
 function BookingRestaurantUpcomingPage() {
     const { getUpcoming } = bookingRoleRestaurantApi;
 
     const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+
+    const [isReasonRejectModalOpen, setIsReasonRejectModalOpen] = useState<boolean>(false);
+
+    const [rejectRecord, setRejectRecord] = useState<IBooking | null>(null);
+
+    const [rejectReason, setRejectReason] = useState('');
+
+    const { mutate: rejectBooking, isPending: isRejecting } = useRejectBooking();
 
     const { data: statusCount } = useBookingStatusCount();
 
@@ -47,6 +57,25 @@ function BookingRestaurantUpcomingPage() {
         fetchApi: getUpcoming,
     });
 
+    const handleReject = () => {
+        if (!rejectRecord?._id) {
+            return;
+        }
+
+        if (!rejectReason.trim()) {
+            return;
+        }
+
+        rejectBooking({
+            bookingId: rejectRecord._id,
+            reason: rejectReason.trim(),
+        });
+
+        setIsReasonRejectModalOpen(false);
+        setRejectRecord(null);
+        setRejectReason('');
+    };
+
     const actions: TableAction<IBooking>[] = [
         {
             icon: <Eye size={18} />,
@@ -54,6 +83,17 @@ function BookingRestaurantUpcomingPage() {
             onPress: (record) => {
                 openView(record);
             },
+        },
+        {
+            icon: <X />,
+            tooltip: 'Từ chối',
+            variant: 'danger',
+            onPress: (record) => {
+                setRejectRecord(record);
+                setRejectReason('');
+                setIsReasonRejectModalOpen(true);
+            },
+            show: (booking) => booking.status == BookingStatus.CONFIRMED,
         },
     ];
 
@@ -96,10 +136,10 @@ function BookingRestaurantUpcomingPage() {
     ];
 
     const getStatusCounts = (): Partial<Record<BookingStatus, number>> => ({
-        [BookingStatus.PENDING]: statusCount?.pending ?? 0,
-        [BookingStatus.CONFIRMED]: statusCount?.confirmed ?? 0,
-        [BookingStatus.REJECTED]: statusCount?.rejected ?? 0,
-        [BookingStatus.CANCELLED]: statusCount?.cancelled ?? 0,
+        [BookingStatus.PENDING]: statusCount?.upcoming.pending ?? 0,
+        [BookingStatus.CONFIRMED]: statusCount?.upcoming.confirmed ?? 0,
+        [BookingStatus.CANCELLED]: statusCount?.upcoming.cancelled ?? 0,
+        [BookingStatus.REJECTED]: statusCount?.upcoming.rejected ?? 0,
     });
 
     const formValues = formatSectionFormValues(
@@ -137,10 +177,12 @@ function BookingRestaurantUpcomingPage() {
             <StatusTabs
                 title="TỔNG ĐƠN ĐẶT"
                 allLabel="Tất cả"
-                total={statusCount?.upcoming ?? 0}
+                total={statusCount?.upcoming.total ?? 0}
                 selectedStatus={bookingRestaurantTable.params.status}
                 onStatusChange={(value) =>
-                    bookingRestaurantTable.handleParamsChange({ status: value })
+                    bookingRestaurantTable.handleParamsChange({
+                        status: value,
+                    })
                 }
                 options={BOOKING_STATUS_UPCOMING_OPTIONS}
                 counts={getStatusCounts()}
@@ -187,6 +229,62 @@ function BookingRestaurantUpcomingPage() {
                 onSubmit={() => {}}
                 isPending={detailQuery.isPending}
             />
+
+            <ModalCustom
+                open={isReasonRejectModalOpen}
+                onOpenChange={(open) => {
+                    setIsReasonRejectModalOpen(open);
+
+                    if (!open) {
+                        setRejectRecord(null);
+                        setRejectReason('');
+                    }
+                }}
+                title="Từ chối đơn đặt hàng"
+                size="md"
+                isDismissable={!isRejecting}
+                footer={
+                    <>
+                        <Button
+                            variant="tertiary"
+                            onPress={() => {
+                                setIsReasonRejectModalOpen(false);
+                                setRejectRecord(null);
+                                setRejectReason('');
+                            }}
+                            isDisabled={isRejecting}
+                        >
+                            Hủy
+                        </Button>
+
+                        <Button
+                            variant="danger"
+                            onPress={handleReject}
+                            isDisabled={!rejectReason.trim() || isRejecting}
+                            isPending={isRejecting}
+                        >
+                            Từ chối
+                        </Button>
+                    </>
+                }
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="text-sm">
+                        Bạn đang từ chối đơn đặt hàng <strong>{rejectRecord?._id}</strong> (
+                        <strong>{rejectRecord?.contactName}</strong>
+                        ).
+                    </div>
+
+                    <TextAreaField
+                        name="verifyNote"
+                        label="Lý do từ chối"
+                        placeholder="Nhập lý do từ chối đơn đặt hàng..."
+                        value={rejectReason}
+                        onChange={(value: any) => setRejectReason(value)}
+                        isRequired
+                    />
+                </div>
+            </ModalCustom>
         </div>
     );
 }

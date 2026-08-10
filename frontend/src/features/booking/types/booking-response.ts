@@ -86,13 +86,17 @@ export interface PreviewBookingPricingResponse {
     calculatedAt: string;
 }
 
-export interface BookingStatusCount {
+export interface BookingStatusCountItem {
     total: number;
-    upcoming: number;
     pending: number;
     confirmed: number;
     completed: number;
     cancelled: number;
     rejected: number;
     noShow: number;
+}
+
+export interface BookingStatusCount {
+    all: BookingStatusCountItem;
+    upcoming: BookingStatusCountItem;
 }

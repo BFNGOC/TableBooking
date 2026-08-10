@@ -10,6 +10,9 @@ import { useGetBookingDetail } from '@/features/booking/hook/useBookingMe';
 import { formatDate } from '@/shared/utils/date';
 import { translateBookingStatus, translatePaymentStatus } from '../../utils/booking-status';
 import ConfirmModal from '@/shared/components/modals/ConfirmModal';
+import { BookingStatus } from '../../types/booking.type';
+import { useCancelBooking } from '../../hook/useBooking';
+import ModalCustom from '@/shared/components/modals/ModalCustom';
 
 function BookingSuccessPage() {
     const router = useRouter();
@@ -17,11 +20,15 @@ function BookingSuccessPage() {
     const searchParams = useSearchParams();
 
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [reason, setReason] = useState('');
+    const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
 
     const rawBookingId = params?.bookingId ?? searchParams.get('bookingId') ?? '';
     const bookingId = Array.isArray(rawBookingId) ? rawBookingId[0] : String(rawBookingId);
 
     const { data, isPending, isError, error } = useGetBookingDetail(bookingId);
+
+    const { mutate: cancelBooking, isPending: isCancelPending } = useCancelBooking();
 
     const booking = useMemo(() => {
         const payload = data?.data;
@@ -48,6 +55,22 @@ function BookingSuccessPage() {
         booking?.restaurantId?.restaurantName ?? booking?.restaurantName ?? 'Nhà hàng';
     const checkInCode = booking?.checkInCode ?? booking?._id?.slice(0, 8) ?? '';
 
+    const isCancelled = booking?.status === BookingStatus.CANCELLED;
+    const isRejected = booking?.status === BookingStatus.REJECTED;
+    const cancellationReason = booking?.cancelReason ?? '—';
+    const rejectionReason = booking?.rejectionReason ?? '—';
+
+    const pageTitle = isCancelled
+        ? 'Đã hủy đặt bàn'
+        : isRejected
+          ? 'Đơn đặt bàn bị từ chối'
+          : 'Đặt bàn thành công!';
+    const pageSubtitle = isCancelled
+        ? 'Đơn đặt bàn của bạn đã được hủy.'
+        : isRejected
+          ? 'Đơn đặt bàn của bạn đã bị từ chối.'
+          : 'Chúng tôi rất mong được đón tiếp bạn.';
+
     const handleBackToRestaurant = () => {
         router.push('/');
     };
@@ -56,7 +79,18 @@ function BookingSuccessPage() {
         setIsConfirmModalOpen(true);
     };
 
-    const handleConfirmCancelBooking = () => {};
+    const handleConfirmCancelBooking = () => {
+        setIsReasonModalOpen(true);
+        setIsConfirmModalOpen(false);
+    };
+
+    const handleConfirmCancelBookingWithReason = () => {
+        cancelBooking({
+            bookingId,
+            reason,
+        });
+        setIsReasonModalOpen(false);
+    };
 
     if (!bookingId) {
         return (
@@ -116,8 +150,8 @@ function BookingSuccessPage() {
                 <div className="mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[#f3e7dc] text-[#865b3b] shadow-sm">
                     <CheckCircle2 size={36} />
                 </div>
-                <h1 className="text-3xl font-semibold text-[#1f2937]">Đặt bàn thành công!</h1>
-                <p className="mt-3 text-sm text-[#5f5a55]">Chúng tôi rất mong được đón tiếp bạn.</p>
+                <h1 className="text-3xl font-semibold text-[#1f2937]">{pageTitle}</h1>
+                <p className="mt-3 text-sm text-[#5f5a55]">{pageSubtitle}</p>
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-[380px_1fr]">
@@ -172,6 +206,14 @@ function BookingSuccessPage() {
                                 label="Tổng tiền"
                                 value={`${totalAmount?.toLocaleString?.() ?? 0}đ`}
                             />
+                            {isCancelled && (
+                                <>
+                                    <InfoValueCard label="Lý do hủy" value={cancellationReason} />
+                                </>
+                            )}
+                            {isRejected && (
+                                <InfoValueCard label="Lý do từ chối" value={rejectionReason} />
+                            )}
                             <div className="text-sm">
                                 <span className="text-gray-500">Ghi chú khách hàng:</span>
                                 <div className="mt-2 rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-700 whitespace-pre-wrap break-words">
@@ -214,20 +256,22 @@ function BookingSuccessPage() {
 
                     <Separator className="my-4" />
 
-                    <div className="flex flex-col items-center justify-center gap-3 text-center">
-                        <div>
-                            <Button
-                                type="button"
-                                className="bg-[#6f4e37] px-6 py-4 text-base font-semibold text-white"
-                                onPress={handleCancelBooking}
-                            >
-                                Hủy đặt bàn
-                            </Button>
+                    {!isCancelled && !isRejected && (
+                        <div className="flex flex-col items-center justify-center gap-3 text-center">
+                            <div>
+                                <Button
+                                    type="button"
+                                    className="bg-[#6f4e37] px-6 py-4 text-base font-semibold text-white"
+                                    onPress={handleCancelBooking}
+                                >
+                                    Hủy đặt bàn
+                                </Button>
+                            </div>
+                            <p className="text-center text-sm text-[#857468]">
+                                Hoàn tiền 100% nếu hủy trước giờ hẹn 2 tiếng.
+                            </p>
                         </div>
-                        <p className="text-center text-sm text-[#857468]">
-                            Hoàn tiền 100% nếu hủy trước giờ hẹn 2 tiếng.
-                        </p>
-                    </div>
+                    )}
                 </CustomCard>
             </div>
 
@@ -238,6 +282,37 @@ function BookingSuccessPage() {
                 title="Xác nhận hủy đặt bàn"
                 description="Bạn có chắc chắn muốn hủy đặt bàn này không?"
             />
+
+            <ModalCustom
+                open={isReasonModalOpen}
+                onOpenChange={() => setIsReasonModalOpen(false)}
+                title="Lý do hủy đặt bàn"
+            >
+                <div>
+                    <textarea
+                        className="mt-4 w-full rounded-md border border-[#d1c8b9] bg-[#f9f5f0] p-3 text-sm text-[#1f2937] placeholder:text-[#a8a29e]"
+                        placeholder="Nhập lý do hủy đặt bàn..."
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                    />
+                    <div className="mt-4 flex justify-end gap-3">
+                        <Button
+                            type="button"
+                            className="border border-[#e4dacb] bg-white px-4 py-2 text-sm text-[#1f2937]"
+                            onPress={() => setIsReasonModalOpen(false)}
+                        >
+                            Hủy
+                        </Button>
+                        <Button
+                            type="button"
+                            className="bg-[#6f4e37] px-4 py-2 text-sm font-semibold text-white"
+                            onPress={handleConfirmCancelBookingWithReason}
+                        >
+                            Xác nhận
+                        </Button>
+                    </div>
+                </div>
+            </ModalCustom>
         </div>
     );
 }

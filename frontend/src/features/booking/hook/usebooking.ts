@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/shared/hooks/useToast';
 import { CreateBookingPayload, PreviewBookingPricingPayload } from '../types/booking.dto';
 import { bookingRoleCustomerApi, bookingRoleRestaurantApi } from '../api/booking-api';
@@ -57,5 +57,91 @@ export const useBookingDetail = (bookingId?: string) => {
             return bookingRoleRestaurantApi.get_detail(bookingId);
         },
         enabled: Boolean(bookingId),
+    });
+};
+
+export const useCancelBooking = () => {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
+            bookingRoleCustomerApi.cancelBooking(bookingId, reason),
+
+        onSuccess: (_, variables) => {
+            showToast(
+                'success',
+                'Hủy đặt bàn thành công',
+                'Yêu cầu hủy đặt bàn của bạn đã được gửi thành công.'
+            );
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_BOOKING_DETAIL(variables.bookingId),
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_BOOKING_LIST_ME,
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_BOOKING_UPCOMING_ME,
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_BOOKING_RECENT_ME,
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_STATUS_COUNT,
+            });
+        },
+        onError: (error: any) => {
+            showToast(
+                'error',
+                'Hủy đặt bàn thất bại',
+                error?.message || 'Đã xảy ra lỗi khi hủy đặt bàn. Vui lòng thử lại.'
+            );
+        },
+    });
+};
+
+export const useRejectBooking = () => {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
+            bookingRoleRestaurantApi.rejectBooking(bookingId, reason),
+
+        onSuccess: (_, variables) => {
+            showToast(
+                'success',
+                'Từ chối đặt bàn thành công',
+                'Yêu cầu từ chối đặt bàn của bạn đã được gửi thành công.'
+            );
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_DETAIL_RESTAURANT(variables.bookingId),
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_BOOKING_LIST_RESTAURANT,
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_BOOKING_UPCOMING_RESTAURANT,
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: bookingQueryKeys.GET_STATUS_COUNT,
+            });
+        },
+        onError: (error: any) => {
+            showToast(
+                'error',
+                'Từ chối đặt bàn thất bại',
+                error?.message || 'Đã xảy ra lỗi khi từ chối đặt bàn. Vui lòng thử lại.'
+            );
+        },
     });
 };

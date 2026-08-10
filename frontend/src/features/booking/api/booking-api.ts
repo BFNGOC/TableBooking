@@ -80,6 +80,15 @@ export const bookingRoleCustomerApi = {
 
         return res.data;
     },
+    cancelBooking: async (bookingId: string, reason: string) => {
+        const res = await clientRequest<IBooking>({
+            url: `${API_URL_PREFIX}/${bookingId}/cancel`,
+            method: 'PATCH',
+            body: { reason },
+        });
+
+        return res;
+    },
 };
 
 export const bookingRoleRestaurantApi = {
@@ -117,5 +126,14 @@ export const bookingRoleRestaurantApi = {
         });
 
         return res.data;
+    },
+    rejectBooking: async (bookingId: string, reason: string) => {
+        const res = await clientRequest<IBooking>({
+            url: `${API_URL_PREFIX}/${bookingId}/reject`,
+            method: 'PATCH',
+            body: { reason },
+        });
+
+        return res;
     },
 };

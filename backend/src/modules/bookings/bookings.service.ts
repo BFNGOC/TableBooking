@@ -36,7 +36,6 @@ import { getBookingHoldKey } from '@app/helpers/redis/booking-hold-key.util';
 import dayjs from 'dayjs';
 import { RestaurantBookingSearchService } from './booking-restaurant-search.service';
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
-import { BookingStatusAggregate } from '../restaurants/types/aggregate';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { PaymentService } from '../payment/payment.service';
 
@@ -626,7 +625,13 @@ export class BookingsService {
       });
 
       // ===================================================
-      // 19. RETURN BOOKING
+      // 19. INDEX BOOKING TO ELASTICSEARCH
+      // ===================================================
+
+      await this.restaurantSearchService.index(booking);
+
+      // ===================================================
+      // 20. RETURN BOOKING
       // ===================================================
 
       return {
@@ -635,7 +640,7 @@ export class BookingsService {
       };
     } catch (error) {
       // ===================================================
-      // 20. ROLLBACK REDIS LOCK
+      // 21. ROLLBACK REDIS LOCK
       // ===================================================
 
       if (acquiredLockKeys.length > 0) {
@@ -1128,10 +1133,6 @@ export class BookingsService {
         bookingDate: {
           $gte: today,
         },
-
-        status: {
-          $in: [BookingStatus.PENDING, BookingStatus.CONFIRMED],
-        },
       })
       .sort({
         bookingDate: 1,
@@ -1155,13 +1156,6 @@ export class BookingsService {
     const bookings = await this.bookingModel
       .find({
         userId: new Types.ObjectId(userId),
-        status: {
-          $in: [
-            BookingStatus.COMPLETED,
-            BookingStatus.CANCELLED,
-            BookingStatus.NO_SHOW,
-          ],
-        },
       })
       .sort({
         bookingDate: -1,
@@ -1273,18 +1267,28 @@ export class BookingsService {
     const restaurant =
       await this.restaurantsService.getRestaurantByUserId(userId);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
 
-    const counts = await this.bookingModel.aggregate<BookingStatusAggregate>([
+    const createEmptyCount = () => ({
+      total: 0,
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+      rejected: 0,
+      noShow: 0,
+    });
+
+    const counts = await this.bookingModel.aggregate([
       {
         $match: {
           restaurantId: restaurant._id,
         },
       },
+
       {
         $facet: {
-          status: [
+          all: [
             {
               $group: {
                 _id: '$status',
@@ -1294,59 +1298,92 @@ export class BookingsService {
               },
             },
           ],
+
           upcoming: [
             {
               $match: {
-                bookingDate: {
-                  $gte: today,
+                $expr: {
+                  $gt: [
+                    {
+                      $dateFromString: {
+                        dateString: {
+                          $concat: [
+                            {
+                              $dateToString: {
+                                date: '$bookingDate',
+                                format: '%Y-%m-%d',
+                              },
+                            },
+                            'T',
+                            '$startTime',
+                            ':00',
+                          ],
+                        },
+                      },
+                    },
+                    now,
+                  ],
                 },
               },
             },
             {
-              $count: 'count',
+              $group: {
+                _id: '$status',
+                count: {
+                  $sum: 1,
+                },
+              },
             },
           ],
         },
       },
     ]);
 
-    const result = {
-      total: 0,
-      upcoming: counts[0].upcoming[0]?.count ?? 0,
-      pending: 0,
-      confirmed: 0,
-      completed: 0,
-      cancelled: 0,
-      rejected: 0,
-      noShow: 0,
+    const mapStatusCount = (
+      data: {
+        _id: BookingStatus;
+        count: number;
+      }[],
+    ) => {
+      const result = createEmptyCount();
+
+      data.forEach(({ _id, count }) => {
+        result.total += count;
+
+        switch (_id) {
+          case BookingStatus.PENDING:
+            result.pending = count;
+            break;
+
+          case BookingStatus.CONFIRMED:
+            result.confirmed = count;
+            break;
+
+          case BookingStatus.COMPLETED:
+            result.completed = count;
+            break;
+
+          case BookingStatus.CANCELLED:
+            result.cancelled = count;
+            break;
+
+          case BookingStatus.REJECTED:
+            result.rejected = count;
+            break;
+
+          case BookingStatus.NO_SHOW:
+            result.noShow = count;
+            break;
+        }
+      });
+
+      return result;
     };
 
-    counts[0].status.forEach(({ _id, count }) => {
-      result.total += count;
-
-      switch (_id) {
-        case BookingStatus.PENDING:
-          result.pending = count;
-          break;
-        case BookingStatus.CONFIRMED:
-          result.confirmed = count;
-          break;
-        case BookingStatus.COMPLETED:
-          result.completed = count;
-          break;
-        case BookingStatus.CANCELLED:
-          result.cancelled = count;
-          break;
-        case BookingStatus.REJECTED:
-          result.rejected = count;
-          break;
-        case BookingStatus.NO_SHOW:
-          result.noShow = count;
-          break;
-      }
-    });
-
-    return result;
+    return {
+      all: mapStatusCount(counts[0].all),
+      upcoming: mapStatusCount(counts[0].upcoming),
+    };
   }
 
   async cancelBooking(
@@ -1436,15 +1473,6 @@ export class BookingsService {
 
         const REFUND_LIMIT_MINUTES = 120;
 
-        /**
-         * Đủ điều kiện refund nếu:
-         *
-         * - Còn ít nhất 120 phút
-         * - Booking đã có thanh toán
-         *
-         * Điều này xử lý được cả:
-         * DEPOSIT + FULL
-         */
         const shouldRefund =
           diffMinutes >= REFUND_LIMIT_MINUTES &&
           booking.paymentStatus !== PaymentStatus.UNPAID;
@@ -1460,38 +1488,17 @@ export class BookingsService {
         booking.cancelledBy = userObjectId;
         booking.holdExpiresAt = undefined;
 
-        // --------------------------------------------
-        // Chưa thanh toán
-        // --------------------------------------------
-
         if (booking.paymentStatus === PaymentStatus.UNPAID) {
           if (booking.depositStatus === DepositStatus.PENDING) {
             booking.depositStatus = DepositStatus.FORFEITED;
           }
-        }
-
-        // --------------------------------------------
-        // Đã thanh toán nhưng không đủ điều kiện refund
-        // --------------------------------------------
-        else if (!shouldRefund) {
+        } else if (!shouldRefund) {
           if (booking.depositStatus === DepositStatus.PAID) {
             booking.depositStatus = DepositStatus.FORFEITED;
           }
 
           // Giữ nguyên paymentStatus = PAID
         }
-
-        /**
-         * QUAN TRỌNG:
-         *
-         * Nếu shouldRefund = true
-         * thì CHƯA set:
-         *
-         * depositStatus = REFUNDED
-         * paymentStatus = REFUNDED
-         *
-         * Vì VNPAY chưa refund.
-         */
 
         await booking.save({ session });
 
@@ -1522,7 +1529,165 @@ export class BookingsService {
       }
 
       // ============================================
-      // 5. Xóa Redis hold
+      // 5. Update Elasticsearch document
+      // ============================================
+
+      await this.restaurantSearchService.update(result.booking);
+
+      // ============================================
+      // 6. Xóa Redis hold
+      // ============================================
+
+      for (const tableId of result.booking.tableIds) {
+        const holdKey = getBookingHoldKey(
+          result.booking.restaurantId.toString(),
+          tableId.toString(),
+          result.booking.bookingDate,
+          result.booking.startTime,
+          result.booking.endTime,
+        );
+
+        await this.redisService.delete(holdKey);
+      }
+
+      return result.booking;
+    } finally {
+      await session.endSession();
+    }
+  }
+
+  async rejectBooking(bookingId: string, userId: string, reason: string) {
+    // ============================================
+    // 1. Validate bookingId
+    // ============================================
+
+    if (!Types.ObjectId.isValid(bookingId)) {
+      throw new BadRequestException('Định dạng booking ID không hợp lệ');
+    }
+
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng user ID không hợp lệ');
+    }
+
+    const session = await this.bookingModel.db.startSession();
+
+    try {
+      // ============================================
+      // 2. MongoDB Transaction
+      // ============================================
+
+      const result = await session.withTransaction(async () => {
+        // ============================================
+        // 2.1. Tìm booking
+        // ============================================
+
+        const booking = await this.bookingModel
+          .findById(bookingId)
+          .session(session)
+          .exec();
+
+        if (!booking) {
+          throw new NotFoundException('Không tìm thấy booking');
+        }
+
+        // ============================================
+        // 2.2. Check booking thuộc restaurant
+        // ============================================
+
+        const restaurant =
+          await this.restaurantsService.getRestaurantByUserId(userId);
+
+        if (!restaurant) {
+          throw new NotFoundException('Không tìm thấy nhà hàng của người dùng');
+        }
+
+        console.log(restaurant._id);
+        console.log(booking.restaurantId);
+
+        if (booking.restaurantId.toString() !== restaurant._id.toString()) {
+          throw new ForbiddenException('Booking không thuộc nhà hàng này');
+        }
+
+        // ============================================
+        // 2.3. Check status
+        // ============================================
+
+        const rejectableStatuses = [
+          BookingStatus.PENDING,
+          BookingStatus.CONFIRMED,
+        ];
+
+        if (!booking.status || !rejectableStatuses.includes(booking.status)) {
+          throw new BadRequestException(
+            `Không thể từ chối booking ở trạng thái ${
+              booking.status ?? 'không xác định'
+            }`,
+          );
+        }
+
+        // ============================================
+        // 2.4. Check thời gian
+        // ============================================
+
+        const bookingDateTime = this.combineDateAndTime(
+          booking.bookingDate,
+          booking.startTime,
+        );
+
+        const now = new Date();
+
+        if (bookingDateTime <= now) {
+          throw new BadRequestException(
+            'Không thể từ chối booking đã đến giờ sử dụng',
+          );
+        }
+
+        // ============================================
+        // 2.5. Update booking
+        // ============================================
+
+        booking.status = BookingStatus.REJECTED;
+        booking.rejectionReason = reason;
+        booking.holdExpiresAt = undefined;
+
+        await booking.save({ session });
+
+        return {
+          booking,
+          shouldRefund:
+            booking.paymentStatus === PaymentStatus.PAID ||
+            booking.paymentStatus === PaymentStatus.PARTIAL,
+        };
+      });
+
+      // ============================================
+      // 3. Refund sau khi transaction commit
+      // ============================================
+
+      if (result.shouldRefund) {
+        await this.paymentService.refundBooking(result.booking._id.toString());
+
+        // ============================================
+        // 4. Update Booking sau refund
+        // ============================================
+
+        result.booking.paymentStatus = PaymentStatus.REFUNDED;
+
+        if (result.booking.depositStatus === DepositStatus.PAID) {
+          result.booking.depositStatus = DepositStatus.REFUNDED;
+        }
+
+        await result.booking.save();
+      }
+
+      // ============================================
+      // 5. Update Elasticsearch document
+      // ============================================
+
+      await this.restaurantSearchService.update(result.booking);
+
+      // ============================================
+      // 6. Xóa Redis hold
       // ============================================
 
       for (const tableId of result.booking.tableIds) {

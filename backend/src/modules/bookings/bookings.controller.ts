@@ -104,6 +104,16 @@ export class BookingsController {
     return this.bookingsService.cancelBooking(bookingId, user._id, dto);
   }
 
+  @Patch(':bookingId/reject')
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  rejectBooking(
+    @Param('bookingId') bookingId: string,
+    @CurrentUser() user: AuthUser,
+    @Body() body: { reason: string },
+  ) {
+    return this.bookingsService.rejectBooking(bookingId, user._id, body.reason);
+  }
+
   @Get(':id')
   findOneBookingMe(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.bookingsService.findOneBookingMe(id, user._id);
