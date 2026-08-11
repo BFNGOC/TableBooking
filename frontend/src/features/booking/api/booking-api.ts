@@ -136,4 +136,21 @@ export const bookingRoleRestaurantApi = {
 
         return res;
     },
+    verifyCheckIn: async (data: { checkInToken?: string; checkInCode?: string }) => {
+        const res = await clientRequest<IBooking>({
+            url: `${API_URL_PREFIX}/check-in/verify`,
+            method: 'POST',
+            body: data,
+        });
+
+        return res;
+    },
+    checkIn: async (bookingId: string) => {
+        const res = await clientRequest<IBooking>({
+            url: `${API_URL_PREFIX}/${bookingId}/check-in`,
+            method: 'POST',
+        });
+
+        return res;
+    },
 };

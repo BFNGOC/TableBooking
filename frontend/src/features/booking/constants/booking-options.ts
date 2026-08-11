@@ -15,6 +15,9 @@ export const BOOKING_STATUS_UPCOMING_OPTIONS = [
     { id: BookingStatus.CONFIRMED, text: 'Đã xác nhận' },
     { id: BookingStatus.REJECTED, text: 'Bị từ chối' },
     { id: BookingStatus.CANCELLED, text: 'Đã hủy' },
+    { id: BookingStatus.CHECKED_IN, text: 'Đã đến' },
+    { id: BookingStatus.COMPLETED, text: 'Hoàn thành' },
+    { id: BookingStatus.NO_SHOW, text: 'Không đến' },
 ];
 
 export const PAYMENT_STATUS_OPTIONS = [

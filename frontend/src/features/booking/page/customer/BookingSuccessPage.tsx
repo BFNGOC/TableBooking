@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button, Separator, Spinner } from '@heroui/react';
-import { CheckCircle2, QrCode, MapPin, Phone, Share2, CalendarPlus } from 'lucide-react';
+import { CheckCircle2, MapPin, Phone, Share2, CalendarPlus } from 'lucide-react';
 import CustomCard from '@/shared/components/card/CustomCard';
 import InfoValueCard from '@/features/booking/components/InfoValueCard';
 import { useGetBookingDetail } from '@/features/booking/hook/useBookingMe';
@@ -13,6 +13,7 @@ import ConfirmModal from '@/shared/components/modals/ConfirmModal';
 import { BookingStatus } from '../../types/booking.type';
 import { useCancelBooking } from '../../hook/useBooking';
 import ModalCustom from '@/shared/components/modals/ModalCustom';
+import BookingCheckInCard from '../../components/checkin/BookingCheckInCard';
 
 function BookingSuccessPage() {
     const router = useRouter();
@@ -53,7 +54,6 @@ function BookingSuccessPage() {
     const totalAmount = booking?.pricingSnapshot?.finalPrice ?? booking?.depositAmount ?? 0;
     const restaurantName =
         booking?.restaurantId?.restaurantName ?? booking?.restaurantName ?? 'Nhà hàng';
-    const checkInCode = booking?.checkInCode ?? booking?._id?.slice(0, 8) ?? '';
 
     const isCancelled = booking?.status === BookingStatus.CANCELLED;
     const isRejected = booking?.status === BookingStatus.REJECTED;
@@ -167,13 +167,12 @@ function BookingSuccessPage() {
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-3xl border border-[#f1e6dd] bg-[#faf4ef] p-6 text-center">
-                        <div className="mx-auto mb-4 flex h-36 w-36 items-center justify-center rounded-3xl bg-white shadow-sm">
-                            <QrCode size={52} className="text-[#8b6f53]" />
-                        </div>
-                        <p className="text-sm font-medium text-[#1f2937]">Mã check-in</p>
-                        <p className="mt-2 text-lg font-semibold text-[#1f2937]">{checkInCode}</p>
-                    </div>
+                    {booking?.checkInToken && (
+                        <BookingCheckInCard
+                            checkInToken={booking.checkInToken}
+                            checkInCode={booking.checkInCode}
+                        />
+                    )}
 
                     <div className="space-y-3 rounded-3xl border border-[#efe1d5] bg-[#fff7f1] p-4 text-sm text-[#5f5a55]">
                         <p className="font-semibold text-[#1f2937]">Thông tin nhà hàng</p>

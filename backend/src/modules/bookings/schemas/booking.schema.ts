@@ -231,6 +231,27 @@ export class Booking {
     type: PricingSnapshotSchema,
   })
   pricingSnapshot?: PricingSnapshot;
+
+  @Prop({
+    type: String,
+    unique: true,
+    sparse: true,
+    index: true,
+  })
+  checkInToken?: string;
+
+  @Prop({
+    type: String,
+    unique: true,
+    sparse: true,
+    index: true,
+  })
+  checkInCode?: string;
+
+  @Prop({
+    type: Date,
+  })
+  checkedInAt?: Date;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

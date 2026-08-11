@@ -140,6 +140,9 @@ function BookingRestaurantUpcomingPage() {
         [BookingStatus.CONFIRMED]: statusCount?.upcoming.confirmed ?? 0,
         [BookingStatus.CANCELLED]: statusCount?.upcoming.cancelled ?? 0,
         [BookingStatus.REJECTED]: statusCount?.upcoming.rejected ?? 0,
+        [BookingStatus.CHECKED_IN]: statusCount?.upcoming.checkedIn ?? 0,
+        [BookingStatus.COMPLETED]: statusCount?.upcoming.completed ?? 0,
+        [BookingStatus.NO_SHOW]: statusCount?.upcoming.noShow ?? 0,
     });
 
     const formValues = formatSectionFormValues(

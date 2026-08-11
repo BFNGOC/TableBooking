@@ -27,6 +27,7 @@ import {
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { RedisService } from '@app/shared/redis/redis.service';
 import { getBookingHoldKey } from '@app/helpers/redis/booking-hold-key.util';
+import { assignCheckInCredentials } from '@app/helpers/checkin.helper';
 import { VnpayService } from './vnpay.service';
 import { ConfigService } from '@nestjs/config';
 import { ReturnQueryFromVNPay } from 'vnpay';
@@ -543,6 +544,7 @@ export class PaymentService {
       booking.status = BookingStatus.CONFIRMED;
 
       booking.confirmedAt = new Date();
+      assignCheckInCredentials(booking);
 
       await booking.save();
 
@@ -567,6 +569,7 @@ export class PaymentService {
       booking.status = BookingStatus.CONFIRMED;
 
       booking.confirmedAt = new Date();
+      assignCheckInCredentials(booking);
 
       await booking.save();
 

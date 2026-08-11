@@ -38,6 +38,7 @@ import { RestaurantBookingSearchService } from './booking-restaurant-search.serv
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { PaymentService } from '../payment/payment.service';
+import { CheckInBookingDto } from './dto/check-in.dto';
 
 type PopulatedArea = Area & {
   _id: Types.ObjectId;
@@ -416,10 +417,7 @@ export class BookingsService {
     const minBookingNoticeMinutes = restaurant.minBookingNoticeMinutes ?? 60;
 
     // Tạo thời gian booking bắt đầu
-    //
-    // Lưu ý:
-    // bookingDate nên là ngày booking theo local timezone
-    // của hệ thống bạn.
+
     const bookingStart = new Date(bookingDate);
 
     const [hours, minutes] = dto.startTime.split(':').map(Number);
@@ -1273,6 +1271,7 @@ export class BookingsService {
       total: 0,
       pending: 0,
       confirmed: 0,
+      checkedIn: 0,
       completed: 0,
       cancelled: 0,
       rejected: 0,
@@ -1357,6 +1356,10 @@ export class BookingsService {
 
           case BookingStatus.CONFIRMED:
             result.confirmed = count;
+            break;
+
+          case BookingStatus.CHECKED_IN:
+            result.checkedIn = count;
             break;
 
           case BookingStatus.COMPLETED:
@@ -1706,6 +1709,140 @@ export class BookingsService {
     } finally {
       await session.endSession();
     }
+  }
+
+  async verifyCheckInBooking(dto: CheckInBookingDto, userId: string) {
+    if (!dto.checkInToken && !dto.checkInCode) {
+      throw new BadRequestException('Vui lòng cung cấp mã QR hoặc mã check-in');
+    }
+
+    if (dto.checkInToken && dto.checkInCode) {
+      throw new BadRequestException('Chỉ được cung cấp mã QR hoặc mã check-in');
+    }
+
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng user ID không hợp lệ');
+    }
+
+    const restaurant =
+      await this.restaurantsService.getRestaurantByUserId(userId);
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng của tài khoản này');
+    }
+
+    const query = dto.checkInToken
+      ? {
+          checkInToken: dto.checkInToken,
+          restaurantId: restaurant._id,
+        }
+      : {
+          checkInCode: dto.checkInCode,
+          restaurantId: restaurant._id,
+        };
+
+    const booking = await this.bookingModel
+      .findOne(query)
+      .populate('tableIds', 'tableNumber capacity')
+      .lean();
+
+    if (!booking) {
+      throw new NotFoundException('Không tìm thấy booking thuộc nhà hàng này');
+    }
+
+    if (booking.status === BookingStatus.CHECKED_IN) {
+      throw new BadRequestException('Booking này đã được check-in trước đó');
+    }
+
+    if (booking.status !== BookingStatus.CONFIRMED) {
+      throw new BadRequestException(
+        `Không thể check-in booking đang ở trạng thái ${booking.status}`,
+      );
+    }
+
+    return {
+      _id: booking._id,
+
+      status: booking.status,
+
+      contactName: booking.contactName,
+      contactPhone: booking.contactPhone,
+
+      guestCount: booking.guestCount,
+
+      bookingDate: booking.bookingDate,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+
+      tables: booking.tableIds,
+
+      checkInCode: booking.checkInCode,
+
+      paymentStatus: booking.paymentStatus,
+      depositStatus: booking.depositStatus,
+      depositAmount: booking.depositAmount,
+
+      customerNote: booking.customerNote,
+
+      pricingSnapshot: booking.pricingSnapshot,
+    };
+  }
+
+  async checkInBooking(bookingId: string, userId: string) {
+    if (!Types.ObjectId.isValid(bookingId)) {
+      throw new BadRequestException('Định dạng booking ID không hợp lệ');
+    }
+
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng user ID không hợp lệ');
+    }
+
+    const restaurant =
+      await this.restaurantsService.getRestaurantByUserId(userId);
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng của tài khoản này');
+    }
+
+    const booking = await this.bookingModel.findOne({
+      _id: new Types.ObjectId(bookingId),
+      restaurantId: restaurant._id,
+    });
+
+    if (!booking) {
+      throw new NotFoundException('Không tìm thấy booking thuộc nhà hàng này');
+    }
+
+    if (booking.status === BookingStatus.CHECKED_IN) {
+      throw new BadRequestException('Booking này đã được check-in trước đó');
+    }
+
+    if (booking.status !== BookingStatus.CONFIRMED) {
+      throw new BadRequestException(
+        `Không thể check-in booking đang ở trạng thái ${booking.status}`,
+      );
+    }
+
+    booking.status = BookingStatus.CHECKED_IN;
+    booking.checkedInAt = new Date();
+
+    await booking.save();
+
+    await this.restaurantSearchService.index(booking);
+
+    return {
+      _id: booking._id,
+      status: booking.status,
+      checkedInAt: booking.checkedInAt,
+
+      bookingDate: booking.bookingDate,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+
+      guestCount: booking.guestCount,
+
+      checkInCode: booking.checkInCode,
+    };
   }
 
   findAll() {

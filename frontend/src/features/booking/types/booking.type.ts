@@ -76,4 +76,8 @@ export interface IBooking {
     pricingSnapshot?: IPricingSnapshot;
     createdAt?: string | Date;
     updatedAt?: string | Date;
+
+    checkInToken?: string;
+    checkInCode?: string;
+    checkedInAt?: string | Date;
 }

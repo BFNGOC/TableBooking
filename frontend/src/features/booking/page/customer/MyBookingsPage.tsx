@@ -6,8 +6,8 @@ import { useGetBookingRecentMe, useGetBookingUpcomingMe } from '../../hook/useBo
 import FavoriteRestaurantCard from '@/features/booking/components/FavoriteRestaurantCard';
 import BookingEmpty from '@/features/booking/components/BookingEmpty';
 import { UpcomingSkeleton, RecentSkeleton } from '@/features/booking/components/BookingSkeletons';
-import UpcomingBookingCard from '../../components/MyBooking/UpcomingBookingCard';
-import RecentBookingCard from '../../components/MyBooking/RecentBookingCard';
+import UpcomingBookingCard from '../../components/my-booking/UpcomingBookingCard';
+import RecentBookingCard from '../../components/my-booking/RecentBookingCard';
 
 function MyBookingsPage() {
     const {

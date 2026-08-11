@@ -19,6 +19,7 @@ import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 import { UserRole } from '../users/schemas/user.schema';
 import { Roles } from '@app/decorator/roles.decorator';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
+import { CheckInBookingDto } from './dto/check-in.dto';
 
 @Controller('bookings')
 export class BookingsController {
@@ -112,6 +113,24 @@ export class BookingsController {
     @Body() body: { reason: string },
   ) {
     return this.bookingsService.rejectBooking(bookingId, user._id, body.reason);
+  }
+
+  @Post('check-in/verify')
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  async verifyCheckInBooking(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CheckInBookingDto,
+  ) {
+    return this.bookingsService.verifyCheckInBooking(dto, user._id);
+  }
+
+  @Post(':bookingId/check-in')
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
+  async checkInBooking(
+    @Param('bookingId') bookingId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.bookingsService.checkInBooking(bookingId, user._id);
   }
 
   @Get(':id')
