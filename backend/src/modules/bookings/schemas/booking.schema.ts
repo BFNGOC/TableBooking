@@ -255,3 +255,8 @@ export class Booking {
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);
+
+BookingSchema.index({
+  status: 1,
+  holdExpiresAt: 1,
+});

@@ -10,6 +10,7 @@ import { PricingRuleModule } from '../pricing-rule/pricing-rule.module';
 import { RestaurantBookingSearchService } from './booking-restaurant-search.service';
 import { SearchModule } from '../search/elasticsearch.module';
 import { PaymentModule } from '../payment/payment.module';
+import { BookingStatusScheduler } from './schedulers/booking-status.scheduler';
 
 @Module({
   imports: [
@@ -22,7 +23,11 @@ import { PaymentModule } from '../payment/payment.module';
     forwardRef(() => PaymentModule),
   ],
   controllers: [BookingsController],
-  providers: [BookingsService, RestaurantBookingSearchService],
+  providers: [
+    BookingsService,
+    RestaurantBookingSearchService,
+    BookingStatusScheduler,
+  ],
   exports: [BookingsService, MongooseModule, RestaurantBookingSearchService],
 })
 export class BookingsModule {}

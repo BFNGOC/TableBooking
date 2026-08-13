@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
@@ -46,6 +47,7 @@ type PopulatedArea = Area & {
 
 @Injectable()
 export class BookingsService {
+  private readonly logger = new Logger(BookingsService.name);
   constructor(
     @InjectModel(Booking.name)
     private readonly bookingModel: Model<BookingDocument>,
@@ -1843,6 +1845,128 @@ export class BookingsService {
 
       checkInCode: booking.checkInCode,
     };
+  }
+
+  async processExpiredPendingBookings(): Promise<number> {
+    const now = new Date();
+
+    const bookings = await this.bookingModel.find({
+      status: BookingStatus.PENDING,
+      holdExpiresAt: {
+        $lte: now,
+      },
+    });
+
+    let count = 0;
+
+    for (const booking of bookings) {
+      booking.status = BookingStatus.CANCELLED;
+      booking.cancelledAt = now;
+      booking.cancelReason = 'Booking expired';
+
+      await booking.save();
+
+      // Release Redis HOLD
+      try {
+        for (const tableId of booking.tableIds) {
+          const holdKey = getBookingHoldKey(
+            booking.restaurantId.toString(),
+            tableId.toString(),
+            booking.bookingDate,
+            booking.startTime,
+            booking.endTime,
+          );
+
+          await this.redisService.delete(holdKey);
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Failed to release Redis hold for booking : ${
+            error instanceof Error ? error.message : error
+          }`,
+        );
+      }
+
+      // Update search index
+      try {
+        await this.restaurantSearchService.update(booking);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to update restaurant search index for booking : ${error instanceof Error ? error.message : error}`,
+        );
+      }
+
+      count++;
+    }
+
+    return count;
+  }
+  async processNoShowBookings(): Promise<number> {
+    const now = new Date();
+
+    const bookings = await this.bookingModel.find({
+      status: BookingStatus.CONFIRMED,
+      checkedInAt: { $exists: false },
+    });
+
+    let count = 0;
+
+    for (const booking of bookings) {
+      const endDateTime = this.combineBookingDateAndTime(
+        booking.bookingDate,
+        booking.endTime,
+      );
+
+      if (endDateTime > now) {
+        continue;
+      }
+
+      booking.status = BookingStatus.NO_SHOW;
+
+      await booking.save();
+
+      // Release Redis HOLD của booking (if any)
+      try {
+        for (const tableId of booking.tableIds) {
+          const holdKey = getBookingHoldKey(
+            booking.restaurantId.toString(),
+            tableId.toString(),
+            booking.bookingDate,
+            booking.startTime,
+            booking.endTime,
+          );
+
+          await this.redisService.delete(holdKey);
+        }
+      } catch (err) {
+        this.logger?.warn?.(
+          `Failed to release Redis hold for booking : ${err}`,
+        );
+      }
+
+      // Update search index
+      try {
+        await this.restaurantSearchService.update(booking);
+      } catch (err) {
+        this.logger?.warn?.(
+          `Failed to update restaurant search index for booking : ${err}`,
+        );
+      }
+
+      count++;
+    }
+
+    return count;
+  }
+
+  private combineBookingDateAndTime(bookingDate: Date, time: string): Date {
+    const [hours, minutes] = time.split(':').map(Number);
+
+    const result = new Date(bookingDate);
+
+    result.setHours(hours, minutes, 0, 0);
+
+    return result;
   }
 
   findAll() {

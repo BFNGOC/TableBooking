@@ -23,6 +23,7 @@ import { AreasModule } from './modules/areas/areas.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { RedisModule } from './shared/redis/redis.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     UsersModule,
@@ -94,6 +95,8 @@ import { PaymentModule } from './modules/payment/payment.module';
     RedisModule,
 
     PaymentModule,
+
+    ScheduleModule.forRoot(),
   ],
 
   controllers: [AppController],
