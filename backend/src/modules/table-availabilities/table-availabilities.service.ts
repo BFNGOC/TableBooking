@@ -12,6 +12,7 @@ import {
   TableAvailability,
   TableAvailabilityDocument,
 } from './schemas/table-availability.schema';
+import { Table, TableDocument } from '../tables/schemas/table.schema';
 import { CreateTableAvailabilityDto } from './dto/create-table-availability.dto';
 import { FindTableAvailabilityDto } from './dto/find-table-availability.dto';
 import { UpdateTableAvailabilityDto } from './dto/update-table-availability.dto';
@@ -21,6 +22,8 @@ export class TableAvailabilitiesService {
   constructor(
     @InjectModel(TableAvailability.name)
     private readonly tableAvailabilityModel: Model<TableAvailabilityDocument>,
+    @InjectModel(Table.name)
+    private readonly tableModel: Model<TableDocument>,
     private readonly restaurantsService: RestaurantsService,
     private readonly tablesService: TablesService,
   ) {}
@@ -31,6 +34,11 @@ export class TableAvailabilitiesService {
     );
 
     await this.tablesService.assertTablesBelongToRestaurant(
+      dto.tableIds,
+      restaurant._id.toString(),
+    );
+
+    await this.assertTableIdsAreUniqueAcrossAvailabilities(
       dto.tableIds,
       restaurant._id.toString(),
     );
@@ -56,6 +64,15 @@ export class TableAvailabilitiesService {
     });
 
     return created;
+  }
+
+  async findMy(user: AuthUser) {
+    const restaurant = await this.restaurantsService.getCurrentUserRestaurant(
+      user._id,
+    );
+    return this.tableAvailabilityModel
+      .find({ restaurantId: restaurant._id })
+      .lean();
   }
 
   async findAvailable(dto: FindTableAvailabilityDto, user: AuthUser) {
@@ -134,6 +151,12 @@ export class TableAvailabilitiesService {
         dto.tableIds,
         restaurant._id.toString(),
       );
+
+      await this.assertTableIdsAreUniqueAcrossAvailabilities(
+        dto.tableIds,
+        restaurant._id.toString(),
+        id,
+      );
     }
 
     const updatePayload: Partial<TableAvailability> = {};
@@ -193,6 +216,63 @@ export class TableAvailabilitiesService {
     }
 
     return availability;
+  }
+
+  private async assertTableIdsAreUniqueAcrossAvailabilities(
+    tableIds: string[],
+    restaurantId: string,
+    currentAvailabilityId?: string,
+  ) {
+    const uniqueTableIds = [...new Set(tableIds.map((id) => id.toString()))];
+
+    if (uniqueTableIds.length !== tableIds.length) {
+      throw new BadRequestException(
+        'Danh sách tableIds không được chứa trùng lặp cùng một bàn.',
+      );
+    }
+
+    const query: any = {
+      restaurantId: new Types.ObjectId(restaurantId),
+      tableIds: { $in: uniqueTableIds.map((id) => new Types.ObjectId(id)) },
+    };
+
+    if (currentAvailabilityId) {
+      query._id = { $ne: new Types.ObjectId(currentAvailabilityId) };
+    }
+
+    const existing = await this.tableAvailabilityModel.find(query).lean();
+
+    if (existing.length > 0) {
+      const duplicatedTables = new Set<string>();
+
+      for (const availability of existing) {
+        for (const tableId of availability.tableIds ?? []) {
+          if (uniqueTableIds.includes(tableId.toString())) {
+            duplicatedTables.add(tableId.toString());
+          }
+        }
+      }
+
+      if (duplicatedTables.size > 0) {
+        const tableNumbers = await this.tableModel
+          .find({
+            _id: {
+              $in: [...duplicatedTables].map((id) => new Types.ObjectId(id)),
+            },
+          })
+          .select('tableNumber')
+          .lean();
+
+        const tableNumberText = tableNumbers
+          .map((table) => table.tableNumber)
+          .filter(Boolean)
+          .join(', ');
+
+        throw new BadRequestException(
+          `Một số bàn đã thuộc lịch khả dụng khác: ${tableNumberText || [...duplicatedTables].join(', ')}`,
+        );
+      }
+    }
   }
 
   private validateTimeSlots(

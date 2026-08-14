@@ -1,71 +1,79 @@
-'use client';
+"use client";
 
-import SidebarLayout from '@/shared/components/layouts/sidebar/Sidebar';
-import { NavItem } from '@/shared/types/navigation';
-import { type ReactNode } from 'react';
+import SidebarLayout from "@/shared/components/layouts/sidebar/Sidebar";
+import { NavItem } from "@/shared/types/navigation";
+import { type ReactNode } from "react";
 
 interface RestaurantProps {
-    children: ReactNode;
+	children: ReactNode;
 }
 
 function Restaurant({ children }: RestaurantProps) {
-    const menus: NavItem[] = [
-        {
-            label: 'Tổng quan',
-            href: '/restaurant/dashboard',
-            exact: true,
-        },
-        {
-            label: 'Quản lý bàn',
-            children: [
-                {
-                    label: 'Danh sách bàn',
-                    href: '/restaurant/dashboard/tables',
-                    exact: true,
-                },
-                {
-                    label: 'Khu vực bàn',
-                    href: '/restaurant/dashboard/table/area',
-                },
-            ],
-        },
-        {
-            label: 'Đơn đặt bàn',
-            children: [
-                {
-                    label: 'Hôm nay',
-                    href: '/restaurant/dashboard/bookings/today',
-                },
-                {
-                    label: 'Lịch sử',
-                    href: '/restaurant/dashboard/bookings/history',
-                },
-            ],
-        },
-        {
-            label: 'Quản lý nhà hàng',
-            children: [
-                {
-                    label: 'Hồ sơ',
-                    href: '/restaurant/dashboard/profile',
-                },
-                {
-                    label: 'Cài đặt',
-                    href: '/restaurant/dashboard/settings',
-                },
-            ],
-        },
-    ];
+	const menus: NavItem[] = [
+		{
+			label: "Tổng quan",
+			href: "/restaurant/dashboard",
+			exact: true,
+		},
+		{
+			label: "Quản lý bàn",
+			children: [
+				{
+					label: "Danh sách bàn",
+					href: "/restaurant/dashboard/tables",
+					exact: true,
+				},
+			],
+		},
+		{
+			label: "Quản lý giờ đặt bàn",
+			children: [
+				{
+					label: "Danh sách giờ đặt bàn",
+					href: "/restaurant/dashboard/availabilities",
+					exact: true,
+				},
+			],
+		},
+		{
+			label: "Đơn đặt bàn",
+			children: [
+				{
+					label: "Hôm nay",
+					href: "/restaurant/dashboard/bookings/today",
+				},
+				{
+					label: "Lịch sử",
+					href: "/restaurant/dashboard/bookings/history",
+				},
+			],
+		},
+		{
+			label: "Quản lý nhà hàng",
+			children: [
+				{
+					label: "Hồ sơ",
+					href: "/restaurant/dashboard/profile",
+				},
+				{
+					label: "Cài đặt",
+					href: "/restaurant/dashboard/settings",
+				},
+			],
+		},
+	];
 
-    return (
-        <div className="flex h-screen overflow-hidden bg-[#f5efeb]">
-            {/* Sidebar */}
-            <SidebarLayout menus={menus} />
+	return (
+		<div className="flex h-screen overflow-hidden bg-[#f5efeb]">
+			{/* Sidebar */}
+			<SidebarLayout menus={menus} />
 
-            {/* Content */}
-            <main className="min-w-0 flex-1 overflow-y-auto p-6">{children}</main>
-        </div>
-    );
+			{/* Content */}
+			<main className="min-w-0 flex-1 overflow-y-auto p-6">
+				{children}
+			</main>
+		</div>
+	);
 }
 
 export default Restaurant;

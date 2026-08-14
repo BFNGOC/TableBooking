@@ -35,6 +35,12 @@ export class TableAvailabilitiesController {
     );
   }
 
+  @Get('my')
+  @Roles(UserRole.RESTAURANT)
+  findMy(@CurrentUser() user: AuthUser) {
+    return this.tableAvailabilitiesService.findMy(user);
+  }
+
   @Get()
   @Roles(UserRole.CUSTOMER)
   findAvailable(
