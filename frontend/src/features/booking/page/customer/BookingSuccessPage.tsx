@@ -3,11 +3,19 @@
 import { useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button, Separator, Spinner } from '@heroui/react';
-import { CheckCircle2, MapPin, Phone, Share2, CalendarPlus } from 'lucide-react';
+import {
+    CheckCircle2,
+    MapPin,
+    Phone,
+    Share2,
+    CalendarPlus,
+    XCircle,
+    AlertCircle,
+} from 'lucide-react';
 import CustomCard from '@/shared/components/card/CustomCard';
 import InfoValueCard from '@/features/booking/components/InfoValueCard';
 import { useGetBookingDetail } from '@/features/booking/hook/useBookingMe';
-import { formatDate } from '@/shared/utils/date';
+import { formatDate, formatDateTime } from '@/shared/utils/date';
 import { translateBookingStatus, translatePaymentStatus } from '../../utils/booking-status';
 import ConfirmModal from '@/shared/components/modals/ConfirmModal';
 import { BookingStatus } from '../../types/booking.type';
@@ -29,7 +37,7 @@ function BookingSuccessPage() {
 
     const { data, isPending, isError, error } = useGetBookingDetail(bookingId);
 
-    const { mutate: cancelBooking, isPending: isCancelPending } = useCancelBooking();
+    const { mutate: cancelBooking } = useCancelBooking();
 
     const booking = useMemo(() => {
         const payload = data?.data;
@@ -57,19 +65,35 @@ function BookingSuccessPage() {
 
     const isCancelled = booking?.status === BookingStatus.CANCELLED;
     const isRejected = booking?.status === BookingStatus.REJECTED;
+    const isCheckedIn = booking?.status === BookingStatus.CHECKED_IN;
+    const isCompleted = booking?.status === BookingStatus.COMPLETED;
+    const isNoShow = booking?.status === BookingStatus.NO_SHOW;
+
+    const canCancel =
+        booking?.status === BookingStatus.PENDING || booking?.status === BookingStatus.CONFIRMED;
+
     const cancellationReason = booking?.cancelReason ?? '—';
     const rejectionReason = booking?.rejectionReason ?? '—';
 
-    const pageTitle = isCancelled
-        ? 'Đã hủy đặt bàn'
-        : isRejected
-          ? 'Đơn đặt bàn bị từ chối'
-          : 'Đặt bàn thành công!';
-    const pageSubtitle = isCancelled
-        ? 'Đơn đặt bàn của bạn đã được hủy.'
-        : isRejected
-          ? 'Đơn đặt bàn của bạn đã bị từ chối.'
-          : 'Chúng tôi rất mong được đón tiếp bạn.';
+    let pageTitle = 'Đặt bàn thành công!';
+    let pageSubtitle = 'Chúng tôi rất mong được đón tiếp bạn.';
+
+    if (isCancelled) {
+        pageTitle = 'Đã hủy đặt bàn';
+        pageSubtitle = 'Đơn đặt bàn của bạn đã được hủy.';
+    } else if (isRejected) {
+        pageTitle = 'Đơn đặt bàn bị từ chối';
+        pageSubtitle = 'Đơn đặt bàn của bạn đã bị nhà hàng từ chối.';
+    } else if (isCheckedIn) {
+        pageTitle = 'Đã Check-in thành công!';
+        pageSubtitle = 'Bạn đã làm thủ tục check-in tại nhà hàng. Chúc bạn có bữa ăn ngon miệng!';
+    } else if (isCompleted) {
+        pageTitle = 'Hoàn thành đặt bàn';
+        pageSubtitle = 'Cảm ơn bạn đã sử dụng dịch vụ tại nhà hàng.';
+    } else if (isNoShow) {
+        pageTitle = 'Vắng mặt (No-show)';
+        pageSubtitle = 'Đơn đặt bàn đã quá khung giờ phục vụ nhưng không nhận được check-in.';
+    }
 
     const handleBackToRestaurant = () => {
         router.push('/');
@@ -103,7 +127,7 @@ function BookingSuccessPage() {
                     <div className="mt-6">
                         <Button
                             type="button"
-                            className="rounded-full bg-[#6f4e37] px-8 py-3"
+                            className="rounded-full bg-[#6f4e37] px-8 py-3 text-white"
                             onPress={handleBackToRestaurant}
                         >
                             Quay về nhà hàng
@@ -133,7 +157,7 @@ function BookingSuccessPage() {
                     <div className="mt-6">
                         <Button
                             type="button"
-                            className="rounded-full bg-[#6f4e37] px-8 py-3"
+                            className="rounded-full bg-[#6f4e37] px-8 py-3 text-white"
                             onPress={handleBackToRestaurant}
                         >
                             Quay lại
@@ -147,8 +171,22 @@ function BookingSuccessPage() {
     return (
         <div className="mx-auto flex w-full max-w-7xl flex-col py-3 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
-                <div className="mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[#f3e7dc] text-[#865b3b] shadow-sm">
-                    <CheckCircle2 size={36} />
+                <div
+                    className={`mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full shadow-sm ${
+                        isCancelled || isRejected || isNoShow
+                            ? 'bg-red-100 text-red-600'
+                            : isCheckedIn
+                              ? 'bg-emerald-100 text-emerald-600'
+                              : 'bg-[#f3e7dc] text-[#865b3b]'
+                    }`}
+                >
+                    {isCancelled || isRejected || isNoShow ? (
+                        <XCircle size={36} />
+                    ) : isCheckedIn ? (
+                        <CheckCircle2 size={36} />
+                    ) : (
+                        <CheckCircle2 size={36} />
+                    )}
                 </div>
                 <h1 className="text-3xl font-semibold text-[#1f2937]">{pageTitle}</h1>
                 <p className="mt-3 text-sm text-[#5f5a55]">{pageSubtitle}</p>
@@ -167,11 +205,26 @@ function BookingSuccessPage() {
                         </div>
                     </div>
 
-                    {booking?.checkInToken && (
-                        <BookingCheckInCard
-                            checkInToken={booking.checkInToken}
-                            checkInCode={booking.checkInCode}
-                        />
+                    {isCheckedIn ? (
+                        <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-center text-emerald-900">
+                            <p className="font-semibold text-emerald-800">
+                                ✓ Đã làm thủ tục Check-in
+                            </p>
+                            {booking?.checkedInAt && (
+                                <p className="mt-1 text-xs text-emerald-700">
+                                    Lúc {formatDateTime(booking.checkedInAt, 'HH:mm • DD/MM/YYYY')}
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        booking?.checkInToken &&
+                        !isCancelled &&
+                        !isRejected && (
+                            <BookingCheckInCard
+                                checkInToken={booking.checkInToken}
+                                checkInCode={booking.checkInCode}
+                            />
+                        )
                     )}
 
                     <div className="space-y-3 rounded-3xl border border-[#efe1d5] bg-[#fff7f1] p-4 text-sm text-[#5f5a55]">
@@ -206,9 +259,7 @@ function BookingSuccessPage() {
                                 value={`${totalAmount?.toLocaleString?.() ?? 0}đ`}
                             />
                             {isCancelled && (
-                                <>
-                                    <InfoValueCard label="Lý do hủy" value={cancellationReason} />
-                                </>
+                                <InfoValueCard label="Lý do hủy" value={cancellationReason} />
                             )}
                             {isRejected && (
                                 <InfoValueCard label="Lý do từ chối" value={rejectionReason} />
@@ -255,12 +306,13 @@ function BookingSuccessPage() {
 
                     <Separator className="my-4" />
 
-                    {!isCancelled && !isRejected && (
+                    {/* Chỉ hiển thị nút Hủy đặt bàn khi đơn đang ở trạng thái PENDING hoặc CONFIRMED */}
+                    {canCancel && (
                         <div className="flex flex-col items-center justify-center gap-3 text-center">
                             <div>
                                 <Button
                                     type="button"
-                                    className="bg-[#6f4e37] px-6 py-4 text-base font-semibold text-white"
+                                    className="bg-[#6f4e37] px-6 py-4 text-base font-semibold text-white rounded-full"
                                     onPress={handleCancelBooking}
                                 >
                                     Hủy đặt bàn

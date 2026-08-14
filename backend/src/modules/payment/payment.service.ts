@@ -2,8 +2,11 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -31,9 +34,12 @@ import { assignCheckInCredentials } from '@app/helpers/checkin.helper';
 import { VnpayService } from './vnpay.service';
 import { ConfigService } from '@nestjs/config';
 import { ReturnQueryFromVNPay } from 'vnpay';
+import { RestaurantBookingSearchService } from '../bookings/booking-restaurant-search.service';
 
 @Injectable()
 export class PaymentService {
+  private readonly logger = new Logger(PaymentService.name);
+
   constructor(
     @InjectModel(Payment.name)
     private readonly paymentModel: Model<PaymentDocument>,
@@ -44,6 +50,9 @@ export class PaymentService {
     private readonly redisService: RedisService,
     private readonly vnpayService: VnpayService,
     private readonly configService: ConfigService,
+
+    @Inject(forwardRef(() => RestaurantBookingSearchService))
+    private readonly restaurantBookingSearchService: RestaurantBookingSearchService,
   ) {}
 
   private async validateBookingRedisHold(booking: BookingDocument) {
@@ -548,6 +557,16 @@ export class PaymentService {
 
       await booking.save();
 
+      try {
+        await this.restaurantBookingSearchService.update(booking);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to update Elasticsearch booking document after payment: ${
+            error instanceof Error ? error.message : error
+          }`,
+        );
+      }
+
       return;
     }
 
@@ -572,6 +591,16 @@ export class PaymentService {
       assignCheckInCredentials(booking);
 
       await booking.save();
+
+      try {
+        await this.restaurantBookingSearchService.update(booking);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to update Elasticsearch booking document after payment: ${
+            error instanceof Error ? error.message : error
+          }`,
+        );
+      }
 
       return;
     }

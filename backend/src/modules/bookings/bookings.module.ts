@@ -11,6 +11,10 @@ import { RestaurantBookingSearchService } from './booking-restaurant-search.serv
 import { SearchModule } from '../search/elasticsearch.module';
 import { PaymentModule } from '../payment/payment.module';
 import { BookingStatusScheduler } from './schedulers/booking-status.scheduler';
+import { BookingValidationService } from './services/booking-validation.service';
+import { BookingLockService } from './services/booking-lock.service';
+import { BookingStateService } from './services/booking-state.service';
+import { BookingQueryService } from './services/booking-query.service';
 
 @Module({
   imports: [
@@ -25,9 +29,21 @@ import { BookingStatusScheduler } from './schedulers/booking-status.scheduler';
   controllers: [BookingsController],
   providers: [
     BookingsService,
+    BookingValidationService,
+    BookingLockService,
+    BookingStateService,
+    BookingQueryService,
     RestaurantBookingSearchService,
     BookingStatusScheduler,
   ],
-  exports: [BookingsService, MongooseModule, RestaurantBookingSearchService],
+  exports: [
+    BookingsService,
+    BookingValidationService,
+    BookingLockService,
+    BookingStateService,
+    BookingQueryService,
+    MongooseModule,
+    RestaurantBookingSearchService,
+  ],
 })
 export class BookingsModule {}

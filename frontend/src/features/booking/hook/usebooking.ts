@@ -5,6 +5,7 @@ import { bookingRoleCustomerApi, bookingRoleRestaurantApi } from '../api/booking
 import { bookingQueryKeys } from '../constants/query-key';
 
 export const useCreateBooking = () => {
+    const queryClient = useQueryClient();
     const { showToast } = useToast();
 
     return useMutation({
@@ -22,6 +23,9 @@ export const useCreateBooking = () => {
                 'Đặt bàn thành công',
                 'Yêu cầu đặt bàn của bạn đã được gửi thành công.'
             );
+
+            queryClient.invalidateQueries({ queryKey: bookingQueryKeys.ROOT });
+            queryClient.invalidateQueries({ queryKey: ['available-tables'] });
         },
 
         onError: (error: any) => {
@@ -57,6 +61,15 @@ export const useBookingDetail = (bookingId?: string) => {
             return bookingRoleRestaurantApi.get_detail(bookingId);
         },
         enabled: Boolean(bookingId),
+        refetchInterval: (query) => {
+            const booking = query.state.data?.data;
+            const status = booking?.status;
+            if (status === 'PENDING' || status === 'CONFIRMED') {
+                return 8000;
+            }
+            return false;
+        },
+        refetchOnWindowFocus: true,
     });
 };
 
@@ -68,32 +81,15 @@ export const useCancelBooking = () => {
         mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
             bookingRoleCustomerApi.cancelBooking(bookingId, reason),
 
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             showToast(
                 'success',
                 'Hủy đặt bàn thành công',
                 'Yêu cầu hủy đặt bàn của bạn đã được gửi thành công.'
             );
 
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_DETAIL(variables.bookingId),
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_LIST_ME,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_UPCOMING_ME,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_RECENT_ME,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_STATUS_COUNT,
-            });
+            queryClient.invalidateQueries({ queryKey: bookingQueryKeys.ROOT });
+            queryClient.invalidateQueries({ queryKey: ['available-tables'] });
         },
         onError: (error: any) => {
             showToast(
@@ -113,28 +109,15 @@ export const useRejectBooking = () => {
         mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
             bookingRoleRestaurantApi.rejectBooking(bookingId, reason),
 
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             showToast(
                 'success',
                 'Từ chối đặt bàn thành công',
                 'Yêu cầu từ chối đặt bàn của bạn đã được gửi thành công.'
             );
 
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_DETAIL_RESTAURANT(variables.bookingId),
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_LIST_RESTAURANT,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_UPCOMING_RESTAURANT,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_STATUS_COUNT,
-            });
+            queryClient.invalidateQueries({ queryKey: bookingQueryKeys.ROOT });
+            queryClient.invalidateQueries({ queryKey: ['available-tables'] });
         },
         onError: (error: any) => {
             showToast(

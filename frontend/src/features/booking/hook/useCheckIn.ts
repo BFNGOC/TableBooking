@@ -22,38 +22,20 @@ export const useVerifyCheckIn = () => {
 
 export const useCheckInBooking = () => {
     const queryClient = useQueryClient();
-
     const { showToast } = useToast();
 
     return useMutation({
         mutationFn: (bookingId: string) => bookingRoleRestaurantApi.checkIn(bookingId),
 
-        onSuccess: (_, bookingId) => {
+        onSuccess: () => {
             showToast(
                 'success',
                 'Xác nhận check-in thành công',
-                'Xác nhận check-in của bạn đã được gửi thành công.'
+                'Xác nhận check-in đã được thực hiện thành công.'
             );
 
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_DETAIL(bookingId),
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_UPCOMING_RESTAURANT,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_BOOKING_LIST_RESTAURANT,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_STATUS_COUNT,
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: bookingQueryKeys.GET_DETAIL_RESTAURANT(bookingId),
-            });
+            queryClient.invalidateQueries({ queryKey: bookingQueryKeys.ROOT });
+            queryClient.invalidateQueries({ queryKey: ['available-tables'] });
         },
 
         onError: (error: any) => {

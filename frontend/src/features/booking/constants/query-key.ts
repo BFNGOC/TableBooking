@@ -1,6 +1,7 @@
 import { GetAvailableTablesPayload } from '../types/booking.dto';
 
 export const bookingQueryKeys = {
+    ROOT: ['booking'],
     GET_AVAILABLE_TABLES: (restaurantId: string, query: GetAvailableTablesPayload) => [
         'available-tables',
         restaurantId,
