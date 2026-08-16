@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -20,6 +21,12 @@ import {
 import { DepositStatus } from '../bookings/schemas/booking.schema';
 import { TablePricingResult } from './types/pricing-type';
 import { PreviewBookingPricingDto } from './dto/preview-booking-pricing.dto';
+import { CreatePricingRuleDto } from './dto/create-pricing-rule.dto';
+import { UpdatePricingRuleDto } from './dto/update-pricing-rule.dto';
+import { FindPricingRulesDto } from './dto/find-pricing-rules.dto';
+import { RestaurantsService } from '../restaurants/restaurants.service';
+import { AreasService } from '../areas/areas.service';
+import { TablesService } from '../tables/tables.service';
 
 @Injectable()
 export class PricingRuleService {
@@ -28,7 +35,290 @@ export class PricingRuleService {
     private readonly pricingRuleModel: Model<PricingRuleDocument>,
     @InjectModel(Table.name)
     private readonly tableModel: Model<TableDocument>,
+    private readonly restaurantsService: RestaurantsService,
+    private readonly areasService: AreasService,
+    private readonly tablesService: TablesService,
   ) {}
+
+  async findAllByRestaurant(userId: string, query: FindPricingRulesDto = {}) {
+    const restaurant =
+      await this.restaurantsService.getCurrentUserRestaurant(userId);
+
+    const filter: any = {
+      restaurantId: restaurant._id,
+    };
+
+    if (query.keyword) {
+      filter.name = {
+        $regex: query.keyword,
+        $options: 'i',
+      };
+    }
+
+    if (query.type) {
+      filter.type = query.type;
+    }
+
+    if (query.applyType) {
+      filter.applyType = query.applyType;
+    }
+
+    if (query.isActive !== undefined) {
+      filter.isActive = query.isActive;
+    }
+
+    const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
+    let sortBy = query.sortBy || 'priority';
+
+    const allowedSortFields = ['priority', 'name', 'createdAt', 'updatedAt'];
+    if (!allowedSortFields.includes(sortBy)) {
+      sortBy = 'priority';
+    }
+
+    const sort: any = {};
+    sort[sortBy] = sortOrder;
+
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.pricingRuleModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.pricingRuleModel.countDocuments(filter),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async findOneByRestaurant(pricingRuleId: string, userId: string) {
+    const restaurant =
+      await this.restaurantsService.getCurrentUserRestaurant(userId);
+
+    const pricingRule = await this.pricingRuleModel.findOne({
+      _id: new Types.ObjectId(pricingRuleId),
+      restaurantId: restaurant._id,
+    });
+
+    if (!pricingRule) {
+      throw new NotFoundException('Pricing rule not found.');
+    }
+
+    return pricingRule;
+  }
+
+  async create(createPricingRuleDto: CreatePricingRuleDto, userId: string) {
+    const restaurant =
+      await this.restaurantsService.getCurrentUserRestaurant(userId);
+
+    await this.validateRuleScope(
+      createPricingRuleDto,
+      restaurant._id.toString(),
+    );
+
+    const existed = await this.pricingRuleModel.exists({
+      restaurantId: restaurant._id,
+      name: createPricingRuleDto.name.trim(),
+    });
+
+    if (existed) {
+      throw new BadRequestException('Pricing rule name already exists.');
+    }
+
+    return this.pricingRuleModel.create({
+      ...createPricingRuleDto,
+      restaurantId: restaurant._id,
+      name: createPricingRuleDto.name.trim(),
+      tableIds: createPricingRuleDto.tableIds?.map(
+        (id) => new Types.ObjectId(id),
+      ),
+      areaIds: createPricingRuleDto.areaIds?.map(
+        (id) => new Types.ObjectId(id),
+      ),
+      startDate: createPricingRuleDto.startDate
+        ? new Date(createPricingRuleDto.startDate)
+        : undefined,
+      endDate: createPricingRuleDto.endDate
+        ? new Date(createPricingRuleDto.endDate)
+        : undefined,
+      daysOfWeek: createPricingRuleDto.daysOfWeek ?? [],
+      isActive: createPricingRuleDto.isActive ?? true,
+    });
+  }
+
+  async update(
+    pricingRuleId: string,
+    updatePricingRuleDto: UpdatePricingRuleDto,
+    userId: string,
+  ) {
+    const pricingRule = await this.findOwnedPricingRule(pricingRuleId, userId);
+
+    if (updatePricingRuleDto.name) {
+      const existed = await this.pricingRuleModel.exists({
+        restaurantId: pricingRule.restaurantId,
+        name: updatePricingRuleDto.name.trim(),
+        _id: { $ne: pricingRule._id },
+      });
+
+      if (existed) {
+        throw new BadRequestException('Pricing rule name already exists.');
+      }
+    }
+
+    if (
+      updatePricingRuleDto.applyType ||
+      updatePricingRuleDto.tableIds ||
+      updatePricingRuleDto.areaIds
+    ) {
+      const nextDto: Parameters<PricingRuleService['validateRuleScope']>[0] = {
+        ...pricingRule.toObject(),
+        ...updatePricingRuleDto,
+        tableIds: updatePricingRuleDto.tableIds
+          ? updatePricingRuleDto.tableIds.map((id) => id.toString())
+          : pricingRule.tableIds?.map((id) => id.toString()),
+        areaIds: updatePricingRuleDto.areaIds
+          ? updatePricingRuleDto.areaIds.map((id) => id.toString())
+          : pricingRule.areaIds?.map((id) => id.toString()),
+      };
+
+      await this.validateRuleScope(
+        nextDto,
+        pricingRule.restaurantId.toString(),
+      );
+    }
+
+    Object.assign(pricingRule, {
+      ...updatePricingRuleDto,
+      name: updatePricingRuleDto.name?.trim() ?? pricingRule.name,
+      tableIds: updatePricingRuleDto.tableIds
+        ? updatePricingRuleDto.tableIds.map((id) => new Types.ObjectId(id))
+        : pricingRule.tableIds,
+      areaIds: updatePricingRuleDto.areaIds
+        ? updatePricingRuleDto.areaIds.map((id) => new Types.ObjectId(id))
+        : pricingRule.areaIds,
+      startDate: updatePricingRuleDto.startDate
+        ? new Date(updatePricingRuleDto.startDate)
+        : pricingRule.startDate,
+      endDate: updatePricingRuleDto.endDate
+        ? new Date(updatePricingRuleDto.endDate)
+        : pricingRule.endDate,
+      daysOfWeek: updatePricingRuleDto.daysOfWeek ?? pricingRule.daysOfWeek,
+      isActive: updatePricingRuleDto.isActive ?? pricingRule.isActive,
+    });
+
+    return pricingRule.save();
+  }
+
+  async remove(pricingRuleId: string, userId: string) {
+    const pricingRule = await this.findOwnedPricingRule(pricingRuleId, userId);
+
+    await pricingRule.deleteOne();
+
+    return {
+      message: 'Pricing rule deleted successfully.',
+    };
+  }
+
+  private async findOwnedPricingRule(pricingRuleId: string, userId: string) {
+    const restaurant =
+      await this.restaurantsService.getCurrentUserRestaurant(userId);
+
+    const pricingRule = await this.pricingRuleModel.findOne({
+      _id: new Types.ObjectId(pricingRuleId),
+      restaurantId: restaurant._id,
+    });
+
+    if (!pricingRule) {
+      throw new ForbiddenException(
+        'You do not have permission to access this pricing rule.',
+      );
+    }
+
+    return pricingRule;
+  }
+
+  private async validateRuleScope(
+    dto: {
+      applyType?: PricingApplyType;
+      tableIds?: string[];
+      areaIds?: string[];
+      startTime?: string;
+      endTime?: string;
+      startDate?: string | Date;
+      endDate?: string | Date;
+      daysOfWeek?: number[];
+    },
+    restaurantId: string,
+  ) {
+    const applyType = dto.applyType ?? PricingApplyType.ALL_TABLES;
+
+    if (
+      applyType === PricingApplyType.TABLE &&
+      (!dto.tableIds || dto.tableIds.length === 0)
+    ) {
+      throw new BadRequestException(
+        'tableIds is required when applyType is TABLE.',
+      );
+    }
+
+    if (
+      applyType === PricingApplyType.AREA &&
+      (!dto.areaIds || dto.areaIds.length === 0)
+    ) {
+      throw new BadRequestException(
+        'areaIds is required when applyType is AREA.',
+      );
+    }
+
+    if (applyType === PricingApplyType.TABLE && dto.tableIds?.length) {
+      await this.tablesService.assertTablesBelongToRestaurant(
+        dto.tableIds,
+        restaurantId,
+      );
+    }
+
+    if (applyType === PricingApplyType.AREA && dto.areaIds?.length) {
+      for (const areaId of dto.areaIds) {
+        await this.areasService.findByRestaurant(areaId, restaurantId);
+      }
+    }
+
+    if (applyType === PricingApplyType.ALL_TABLES) {
+      dto.tableIds = [];
+      dto.areaIds = [];
+    }
+
+    if (dto.startTime && dto.endTime && dto.startTime >= dto.endTime) {
+      throw new BadRequestException('startTime must be earlier than endTime.');
+    }
+
+    if (
+      dto.startDate &&
+      dto.endDate &&
+      new Date(dto.startDate) > new Date(dto.endDate)
+    ) {
+      throw new BadRequestException(
+        'startDate must be earlier than or equal to endDate.',
+      );
+    }
+
+    if (dto.daysOfWeek) {
+      const invalid = dto.daysOfWeek.some((day) => day < 0 || day > 6);
+      if (invalid) {
+        throw new BadRequestException('daysOfWeek must be from 0 to 6.');
+      }
+    }
+  }
 
   async calculateBasePrice(tableIds: string[]) {
     const tableObjectIds = tableIds.map((id) => new Types.ObjectId(id));

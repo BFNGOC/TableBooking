@@ -4,6 +4,7 @@ import { PricingRuleController } from './pricing-rule.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PricingRule, PricingRuleSchema } from './schemas/pricing-rule.schema';
 import { TablesModule } from '../tables/tables.module';
+import { AreasModule } from '../areas/areas.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { TablesModule } from '../tables/tables.module';
       { name: PricingRule.name, schema: PricingRuleSchema },
     ]),
     TablesModule,
+    AreasModule,
   ],
   controllers: [PricingRuleController],
   providers: [PricingRuleService],
