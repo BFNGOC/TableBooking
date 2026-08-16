@@ -56,17 +56,29 @@ function CheckoutResultPage({ id }: CheckoutResultProps) {
     const queryBookingId = searchParams.get('bookingId') ?? '';
     const bookingId = getBookingId(payment, queryBookingId);
 
-    console.log(slug);
-
-    const successLink = slug && bookingId ? `/discover/${slug}/booking/success/${bookingId}` : '';
+    const isPaymentSuccess = payment?.status === 'PAID';
+    const successLink =
+        isPaymentSuccess && slug && bookingId
+            ? `/discover/${slug}/booking/success/${bookingId}`
+            : '';
+    const retryLink =
+        !isPaymentSuccess && slug && bookingId
+            ? `/discover/${slug}/booking/checkout/${bookingId}`
+            : '';
 
     const paymentStatus = translatePaymentStatus(payment?.status);
     const paymentMethod = renderValue(payment?.method ?? '—');
     const paymentType = translatePaymentType(payment?.type);
 
-    const handleGoSuccess = () => {
-        if (!successLink) return;
-        router.push(successLink);
+    const handlePrimaryAction = () => {
+        if (successLink) {
+            router.push(successLink);
+            return;
+        }
+
+        if (retryLink) {
+            router.push(retryLink);
+        }
     };
 
     if (isPending) {
@@ -147,12 +159,14 @@ function CheckoutResultPage({ id }: CheckoutResultProps) {
                         type="button"
                         size="lg"
                         className="w-full rounded-full bg-[#6f4e37] px-8 py-3"
-                        onPress={handleGoSuccess}
-                        isDisabled={!successLink}
+                        onPress={handlePrimaryAction}
+                        isDisabled={!successLink && !retryLink}
                     >
                         {successLink
                             ? 'Xem trạng thái thành công'
-                            : 'Không có đường dẫn thành công'}
+                            : retryLink
+                              ? 'Thanh toán lại'
+                              : 'Không có đường dẫn'}
                     </Button>
                 </div>
             </CustomCard>

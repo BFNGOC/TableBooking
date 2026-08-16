@@ -236,7 +236,9 @@ export class BookingStateService {
       };
     } catch (error) {
       if (acquiredLockKeys.length > 0) {
-        await this.bookingLockService.releaseBookingTableLocks(acquiredLockKeys);
+        await this.bookingLockService.releaseBookingTableLocks(
+          acquiredLockKeys,
+        );
       }
       throw error;
     }
@@ -528,7 +530,8 @@ export class BookingStateService {
     for (const booking of bookings) {
       booking.status = BookingStatus.CANCELLED;
       booking.cancelledAt = now;
-      booking.cancelReason = 'Booking expired';
+      booking.cancelReason =
+        'Hệ thống tự động hủy do không thanh toán đặt cọc đúng hạn';
 
       await booking.save();
 
