@@ -50,8 +50,8 @@ const Search: React.FC<SearchProps> = ({
 						Tìm kiếm
 					</Button>
 				}
-				footerCol={3}
 				renderForm={false}
+				footerClassName="justify-end col-span-3"
 			/>
 		</div>
 	);

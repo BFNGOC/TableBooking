@@ -137,10 +137,10 @@ export class RestaurantsController {
   //booking
 
   //to-do
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.restaurantsService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.restaurantsService.findOne(+id);
+  // }
 
   @Patch(':id')
   update(

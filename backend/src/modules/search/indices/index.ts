@@ -7,9 +7,5 @@ export const SEARCH_INDICES = [
   createUserIndex,
   createRestaurantAdminIndex,
   createRestaurantBookingIndex,
-];
-export const SEARCH_INDICES = [
-  createUserIndex,
-  createRestaurantAdminIndex,
   createRestaurantCustomerIndex,
 ];

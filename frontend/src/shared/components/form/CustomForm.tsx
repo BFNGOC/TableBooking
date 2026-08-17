@@ -35,8 +35,6 @@ interface CustomFormProps<T extends Record<string, any>> {
 
 	mode?: FormModalModeType;
 
-	footerCol?: number;
-
 	onUploadLoadingChange?: (isLoading: boolean) => void;
 
 	renderForm?: boolean;
@@ -52,7 +50,6 @@ function CustomForm<T extends Record<string, any>>({
 	footerClassName,
 	onUploadLoadingChange,
 	renderForm = true,
-	footerCol = 12,
 }: CustomFormProps<T>) {
 	const isViewMode = mode === "view";
 
