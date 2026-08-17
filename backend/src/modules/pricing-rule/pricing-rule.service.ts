@@ -93,11 +93,13 @@ export class PricingRuleService {
     ]);
 
     return {
-      items,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      data: items,
+      meta: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        pageSize: limit,
+      },
     };
   }
 

@@ -36,6 +36,16 @@ function Restaurant({ children }: RestaurantProps) {
 			],
 		},
 		{
+			label: "Quản lý giá",
+			children: [
+				{
+					label: "Quy tắc giá",
+					href: "/restaurant/dashboard/pricing-rules",
+					exact: true,
+				},
+			],
+		},
+		{
 			label: "Đơn đặt bàn",
 			children: [
 				{
