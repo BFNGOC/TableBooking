@@ -8,4 +8,5 @@ export const restaurantQueryKeys = {
 		["restaurant", "admin", "detail", id] as const,
 	CHECK_TAX_CODE: (id: string) =>
 		["restaurant", "admin", "check-tax-code", id] as const,
+	GET_RESTAURANT_SLUG: (slug: string) => ["restaurant", slug] as const,
 };

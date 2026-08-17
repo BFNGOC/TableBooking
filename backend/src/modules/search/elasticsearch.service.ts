@@ -245,8 +245,20 @@ export class SearchService implements OnModuleInit {
       }
 
       filters.push({
-        range: {
-          onboardingRequestedAt: range,
+        bool: {
+          should: [
+            {
+              range: {
+                onboardingRequestedAt: range,
+              },
+            },
+            {
+              range: {
+                bookingDate: range,
+              },
+            },
+          ],
+          minimum_should_match: 1,
         },
       });
     }

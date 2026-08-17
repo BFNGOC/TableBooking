@@ -1,5 +1,7 @@
+import BookingsRestaurantPage from '@/features/booking/page/restaurant/BookingsRestaurantPage';
+
 function BookingsRestaurant() {
-    return <div>BookingsRestaurant</div>;
+    return <BookingsRestaurantPage />;
 }
 
 export default BookingsRestaurant;

@@ -1,4 +1,4 @@
-import { parseDate, CalendarDate } from '@internationalized/date';
+import { parseDate, CalendarDate, Time } from '@internationalized/date';
 import { FormField } from '@/shared/types/form-field';
 import { FormFieldType } from '../types/form-field-types';
 
@@ -34,7 +34,15 @@ export function formatFormValues<T extends Record<string, any>>(
                 break;
 
             case FormFieldType.TIME_PICKER:
-                if (mode === 'toApi') {
+                if (mode === 'toForm') {
+                    if (typeof value === 'string') {
+                        const [hour, minute] = value.split(':').map(Number);
+
+                        if (!isNaN(hour) && !isNaN(minute)) {
+                            result[field.name] = new Time(hour, minute);
+                        }
+                    }
+                } else {
                     if (
                         typeof value === 'object' &&
                         value !== null &&
@@ -47,7 +55,6 @@ export function formatFormValues<T extends Record<string, any>>(
                     }
                 }
                 break;
-
             case FormFieldType.SELECT:
                 if (field.name === 'isActive' && typeof value === 'string') {
                     result[field.name] = value === 'true';

@@ -20,6 +20,7 @@ import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
 import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
 import { FindPublicRestaurantDto } from './dto/find-public-restaurant.dto';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
+import { GetAvailableTablesDto } from '../bookings/dto/get-available-tables.dto';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -131,6 +132,14 @@ export class RestaurantsController {
     @Body() dto: UpdateRestaurantOnboardingDto,
   ) {
     return this.restaurantsService.updateOnboarding(user._id, dto);
+  }
+
+  //booking
+
+  //to-do
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.restaurantsService.findOne(+id);
   }
 
   @Patch(':id')

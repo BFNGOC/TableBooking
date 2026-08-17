@@ -1,6 +1,7 @@
 import { DateValue, TimeValue } from "@heroui/react";
 import { FormFieldType } from "./form-field-types";
 import { FormModalModeType } from "./form-modal-mode-type";
+import { ReactNode } from "react";
 
 export interface FieldContext<T = Record<string, any>> {
 	mode: FormModalModeType;
@@ -61,4 +62,10 @@ export interface FormField {
 	onLoadingChange?: (isLoading: boolean) => void;
 
 	selectionMode?: "single" | "multiple";
+
+	render?: (props: {
+		value: any;
+		field: FormField;
+		onChange: (value: any) => void;
+	}) => ReactNode;
 }

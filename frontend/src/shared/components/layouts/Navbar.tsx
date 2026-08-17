@@ -46,7 +46,7 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
 			id: "booking",
 			label: "Đặt bàn của tôi",
 			icon: <CalendarDays size={16} />,
-			onAction: () => router.push("/reservations"),
+			onAction: () => router.push("/my-bookings"),
 		},
 		{
 			id: "profile",

@@ -56,6 +56,14 @@ export interface IRestaurant {
 
 	onboardingRequestedAt?: Date;
 
+	isAcceptingBookings?: boolean;
+
+	minBookingNoticeMinutes?: number;
+
+	tableHoldMinutes?: number;
+
+	advanceBookingDays?: number;
+
 	userId?: string;
 
 	slug?: string;

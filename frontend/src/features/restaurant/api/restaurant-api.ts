@@ -49,6 +49,14 @@ export const getRestaurantMeApi = async () => {
 	return res.data;
 };
 
+export const getRestaurantBySlugApi = async (slug: string) => {
+    const res = await clientRequest<IRestaurant>({
+        url: `${API_URL_PREFIX}/${slug}`,
+        method: 'GET',
+    });
+    return res.data;
+};
+
 export const restaurantRoleRestaurantApi = {
 	updateMe: async (payload: UpdateRestaurantProfilePayload) => {
 		const res = await clientRequest<IRestaurant>({

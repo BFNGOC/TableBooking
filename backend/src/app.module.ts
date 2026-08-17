@@ -16,7 +16,14 @@ import { RestaurantsModule } from './modules/restaurants/restaurants.module';
 import { SearchModule } from './modules/search/elasticsearch.module';
 import { CounterModule } from './modules/counter/counter.module';
 import { TaxModule } from './modules/tax/tax.module';
-
+import { PricingRuleModule } from './modules/pricing-rule/pricing-rule.module';
+import { TablesModule } from './modules/tables/tables.module';
+import { TableAvailabilitiesModule } from './modules/table-availabilities/table-availabilities.module';
+import { AreasModule } from './modules/areas/areas.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
+import { RedisModule } from './shared/redis/redis.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     UsersModule,
@@ -74,6 +81,22 @@ import { TaxModule } from './modules/tax/tax.module';
     CounterModule,
 
     TaxModule,
+
+    TablesModule,
+
+    TableAvailabilitiesModule,
+
+    AreasModule,
+
+    PricingRuleModule,
+
+    BookingsModule,
+
+    RedisModule,
+
+    PaymentModule,
+
+    ScheduleModule.forRoot(),
   ],
 
   controllers: [AppController],

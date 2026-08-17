@@ -12,7 +12,7 @@ import {
   RestaurantStatus,
   RestaurantVerifyStatus,
 } from './schemas/restaurant.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CUISINE_TYPES } from '@app/shared/dto/constants/cuisine-type.constant';
 import { v4 as uuidv4 } from 'uuid';
@@ -82,6 +82,56 @@ export class RestaurantsService {
       id: item,
       text: item,
     }));
+  }
+
+  async getRestaurantById(restaurantId: string) {
+    if (!Types.ObjectId.isValid(restaurantId)) {
+      throw new BadRequestException('Định dạng ID nhà hàng không hợp lệ');
+    }
+
+    const restaurant = await this.restaurantModel.findById(restaurantId).lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    return restaurant;
+  }
+
+  async getRestaurantBySlug(slug: string) {
+    const restaurant = await this.restaurantModel
+      .findOne({
+        slug,
+        verifyStatus: RestaurantVerifyStatus.APPROVED,
+      })
+      .select(
+        'avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+      )
+      .lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng');
+    }
+
+    return restaurant;
+  }
+
+  async getRestaurantByUserId(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const restaurant = await this.restaurantModel
+      .findOne({
+        userId,
+      })
+      .lean();
+
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng của người dùng');
+    }
+
+    return restaurant;
   }
 
   /***********************************

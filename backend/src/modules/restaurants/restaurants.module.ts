@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import { RestaurantsController } from './restaurants.controller';
 import { Restaurant, RestaurantSchema } from './schemas/restaurant.schema';
@@ -9,6 +9,7 @@ import { RestaurantCustomerSearchService } from './restaurant-customer-search.se
 import { CounterModule } from '../counter/counter.module';
 import { TaxModule } from '../tax/tax.module';
 import { UsersModule } from '../users/users.module';
+import { BookingsModule } from '../bookings/bookings.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UsersModule } from '../users/users.module';
     CounterModule,
     TaxModule,
     UsersModule,
+    forwardRef(() => BookingsModule),
   ],
   controllers: [RestaurantsController],
   providers: [

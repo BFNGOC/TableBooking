@@ -4,7 +4,7 @@ import { UserRole } from '@/features/users/types/user-role';
 
 const guestOnlyRoutes = ['/login', '/register', '/verify-email'];
 
-const protectedRoutes = ['/reservations', '/settings', '/profile'];
+const protectedRoutes = ['/reservations', '/settings', '/profile', 'discover'];
 
 /**
  * Access Rights
