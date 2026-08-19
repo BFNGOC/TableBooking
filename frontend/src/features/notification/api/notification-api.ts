@@ -1,0 +1,39 @@
+import { clientRequest } from '@/shared/library/axios/client-api';
+
+const API_URL_PREFIX = '/notification';
+
+export const getUnreadCountApi = async () => {
+    const res = await clientRequest<any>({
+        url: `${API_URL_PREFIX}/unread-count`,
+        method: 'GET',
+    });
+
+    return res;
+};
+
+export const findAllNotification = async () => {
+    const res = await clientRequest<any>({
+        url: `${API_URL_PREFIX}`,
+        method: 'GET',
+    });
+
+    return res;
+};
+
+export const markAsReadNotification = async (notificationId: string) => {
+    const res = await clientRequest<any>({
+        url: `${API_URL_PREFIX}/mark-as-read/${notificationId}`,
+        method: 'POST',
+    });
+
+    return res;
+};
+
+export const markAllAsReadNotification = async () => {
+    const res = await clientRequest<any>({
+        url: `${API_URL_PREFIX}/mark-all-as-read`,
+        method: 'POST',
+    });
+
+    return res;
+};

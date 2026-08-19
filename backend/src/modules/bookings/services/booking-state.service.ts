@@ -33,6 +33,7 @@ import {
   minutesToTime,
   timeToMinutes,
 } from '../utils/booking-time.util';
+import { NotificationService } from '@app/modules/notification/notification.service';
 
 @Injectable()
 export class BookingStateService {
@@ -50,6 +51,7 @@ export class BookingStateService {
     private readonly restaurantSearchService: RestaurantBookingSearchService,
     private readonly bookingLockService: BookingLockService,
     private readonly bookingValidationService: BookingValidationService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async createBooking(
@@ -229,6 +231,20 @@ export class BookingStateService {
       });
 
       await this.restaurantSearchService.index(booking);
+
+      await this.notificationService.notifyBookingCreated(
+        userId,
+        booking.toObject(),
+        'Đặt bàn thành công',
+        `Bạn đã đặt bàn tại ${restaurant.restaurantName} vào ngày ${bookingDate.toLocaleDateString()} lúc ${dto.startTime}.`,
+      );
+
+      await this.notificationService.notifyBookingCreated(
+        userId,
+        booking.toObject(),
+        'Có đơn đặt bàn mới',
+        `Người dùng ${dto.contactName} đã đặt bàn tại nhà hàng của bạn vào ngày ${bookingDate.toLocaleDateString()} lúc ${dto.startTime}.`,
+      );
 
       return {
         booking,

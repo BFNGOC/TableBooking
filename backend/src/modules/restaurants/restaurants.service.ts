@@ -182,24 +182,6 @@ export class RestaurantsService {
     };
   }
 
-  async getRestaurantBySlug(slug: string) {
-    const restaurant = await this.restaurantModel
-      .findOne({
-        slug,
-        verifyStatus: RestaurantVerifyStatus.APPROVED,
-      })
-      .select(
-        'avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
-      )
-      .lean();
-
-    if (!restaurant) {
-      throw new NotFoundException('Không tìm thấy nhà hàng');
-    }
-
-    return restaurant;
-  }
-
   /***********************************
    *  ME
    ***********************************/
