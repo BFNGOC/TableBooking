@@ -9,4 +9,6 @@ export const restaurantQueryKeys = {
 	CHECK_TAX_CODE: (id: string) =>
 		["restaurant", "admin", "check-tax-code", id] as const,
 	GET_RESTAURANT_SLUG: (slug: string) => ["restaurant", slug] as const,
+	GET_AVAILABLE_TIME_SLOTS: (slug: string) =>
+		["restaurant", "available-time-slots", slug] as const,
 };

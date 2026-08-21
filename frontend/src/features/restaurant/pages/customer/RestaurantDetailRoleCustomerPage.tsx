@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import GoogleMapEmbed from "@/features/restaurant/components/GoogleMapEmbed";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import { useToast } from "@/shared/hooks/useToast";
@@ -24,6 +25,7 @@ interface RestaurantDetailRoleCustomerPageProps {
 function RestaurantDetailRoleCustomerPage({
 	restaurant,
 }: RestaurantDetailRoleCustomerPageProps) {
+	const router = useRouter();
 	const { showToast } = useToast();
 	const [isBookingOpen, setIsBookingOpen] = useState(false);
 	const [isLiked, setIsLiked] = useState(false);
@@ -243,7 +245,20 @@ function RestaurantDetailRoleCustomerPage({
 					<div className="lg:col-span-4">
 						<BookingCard
 							restaurant={restaurant}
-							onBook={() => setIsBookingOpen(false)}
+							onBook={(values) => {
+								if (!restaurant.slug) return;
+
+								const query = new URLSearchParams({
+									bookingDate: String(
+										values.bookingDate ?? "",
+									),
+									startTime: String(values.startTime ?? ""),
+									guestCount: String(values.guestCount ?? 1),
+								});
+								router.push(
+									`/restaurants/${restaurant.slug}/reserve?${query}`,
+								);
+							}}
 						/>
 					</div>
 				</div>

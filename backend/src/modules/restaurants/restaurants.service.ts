@@ -35,6 +35,7 @@ import { RestaurantCustomerSearchService } from './restaurant-customer-search.se
 import { RESTAURANT_ADMIN_SEARCH_INDEX } from './restaurant-admin-search.document';
 import { RESTAURANT_CUSTOMER_SEARCH_INDEX } from './restaurant-customer-search.document';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { TableAvailabilitiesService } from '../table-availabilities/table-availabilities.service';
 
 @Injectable()
 export class RestaurantsService {
@@ -49,7 +50,20 @@ export class RestaurantsService {
     private readonly userSearchService: UserSearchService,
     private readonly restaurantCustomerSearchService: RestaurantCustomerSearchService,
     private readonly elasticsearchService: ElasticsearchService,
+    private readonly tableAvailabilitiesService: TableAvailabilitiesService,
   ) {}
+
+  async getAvailableTimeSlotsBySlug(slug: string) {
+    const restaurant = await this.getRestaurantBySlug(slug);
+    const timeSlots = await this.tableAvailabilitiesService.getAvailableTimeSlots(
+      restaurant._id.toString(),
+    );
+
+    return {
+      restaurantSlug: slug,
+      timeSlots,
+    };
+  }
 
   async reindexAll() {
     const restaurants = await this.restaurantModel.find();
@@ -105,7 +119,7 @@ export class RestaurantsService {
         verifyStatus: RestaurantVerifyStatus.APPROVED,
       })
       .select(
-        'avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+        'slug avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
       )
       .lean();
 

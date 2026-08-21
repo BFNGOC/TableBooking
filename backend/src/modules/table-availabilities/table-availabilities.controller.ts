@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { TableAvailabilitiesService } from './table-availabilities.service';
 import { CreateTableAvailabilityDto } from './dto/create-table-availability.dto';
 import { UpdateTableAvailabilityDto } from './dto/update-table-availability.dto';
 
 @Controller('table-availabilities')
 export class TableAvailabilitiesController {
-  constructor(private readonly tableAvailabilitiesService: TableAvailabilitiesService) {}
+  constructor(
+    private readonly tableAvailabilitiesService: TableAvailabilitiesService,
+  ) {}
 
   @Post()
   create(@Body() createTableAvailabilityDto: CreateTableAvailabilityDto) {
@@ -23,8 +33,14 @@ export class TableAvailabilitiesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTableAvailabilityDto: UpdateTableAvailabilityDto) {
-    return this.tableAvailabilitiesService.update(+id, updateTableAvailabilityDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateTableAvailabilityDto: UpdateTableAvailabilityDto,
+  ) {
+    return this.tableAvailabilitiesService.update(
+      +id,
+      updateTableAvailabilityDto,
+    );
   }
 
   @Delete(':id')

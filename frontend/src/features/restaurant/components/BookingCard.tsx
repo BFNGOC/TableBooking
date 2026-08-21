@@ -1,19 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, ShieldAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
 import CustomForm from "@/shared/components/form/CustomForm";
-import { FormField } from "@/shared/types/form-field";
-import { FormFieldType } from "@/shared/types/form-field-types";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
-import { useToast } from "@/shared/hooks/useToast";
+import { useAuth } from "@/shared/hooks/useAuth";
 import getBookingFormFields from "@/features/restaurant/constants/restaurant-booking-form-field";
-
-interface BookingCardProps {
-	restaurant?: IRestaurant;
-	timeSlots?: string[];
-	onBook?: (values: Partial<Record<string, any>>) => void;
-}
+import { useAvailableTimeSlots } from "@/features/restaurant/hooks/useAvailableTimeSlots";
 
 const DEFAULT_TIME_SLOTS = [
 	"18:00",
@@ -24,12 +18,22 @@ const DEFAULT_TIME_SLOTS = [
 	"20:30",
 ];
 
+interface BookingCardProps {
+	restaurant?: IRestaurant;
+	timeSlots?: string[];
+	onBook?: (values: Partial<Record<string, any>>) => void;
+}
+
 export default function BookingCard({
 	restaurant,
 	timeSlots,
 	onBook,
 }: BookingCardProps) {
-	const { showToast } = useToast();
+	const router = useRouter();
+	const { isAuthenticated, isAuthLoading } = useAuth();
+	const availableTimeSlotsQuery = useAvailableTimeSlots(
+		restaurant?.slug ?? "",
+	);
 
 	const getTodayString = () => {
 		const today = new Date();
@@ -40,57 +44,68 @@ export default function BookingCard({
 	};
 
 	const slots =
-		timeSlots && timeSlots.length > 0 ? timeSlots : DEFAULT_TIME_SLOTS;
+		timeSlots && timeSlots.length > 0
+			? timeSlots
+			: availableTimeSlotsQuery.data?.timeSlots?.length
+				? availableTimeSlotsQuery.data.timeSlots
+				: DEFAULT_TIME_SLOTS;
 
 	const initialValues: Partial<Record<string, any>> = {
-		bookingDate: getTodayString(),
-		time: slots[0] ?? DEFAULT_TIME_SLOTS[0],
-		guests: "2",
+		date: getTodayString(),
+		startTime: slots[0] ?? "",
+		guestCount: "2",
 	};
 
 	const [values, setValues] =
 		useState<Partial<Record<string, any>>>(initialValues);
 
+	useEffect(() => {
+		if (!values.startTime && slots[0]) {
+			setValues((currentValues) => ({
+				...currentValues,
+				startTime: slots[0],
+			}));
+		}
+	}, [slots, values.startTime]);
+
 	const formFields = getBookingFormFields(slots, {
-		date: initialValues.bookingDate,
-		guests: initialValues.guests,
+		date: initialValues.date,
+		guests: initialValues.guestCount,
 	});
 
-	const getGuestLabel = (guestId: string | undefined) => {
-		return (
-			formFields
-				.find((field) => field.name === "guests")
-				?.options?.find((opt) => opt.id === guestId)?.text ?? guestId
-		);
-	};
-
 	const handleSubmit = (formValues: Partial<Record<string, any>>) => {
-		const bookingDate = formValues.bookingDate ?? initialValues.bookingDate;
-		const selectedTime = formValues.time ?? initialValues.time;
-		const guests = formValues.guests ?? initialValues.guests;
-		const guestLabel = getGuestLabel(guests as string);
+		console.log(1);
+		if (isAuthLoading) return;
 
-		let displayDate = bookingDate as string;
-		try {
-			const [y, m, d] = (bookingDate as string).split("-");
-			if (y && m && d) displayDate = `${d}/${m}/${y}`;
-		} catch (err) {}
-
-		showToast(
-			"success",
-			"Đặt bàn thành công!",
-			`Bạn đã đặt bàn ${guestLabel} tại ${restaurant?.restaurantName ?? "nhà hàng"} lúc ${selectedTime} ngày ${displayDate}.`,
+		const bookingDate = String(formValues.date ?? initialValues.date ?? "");
+		const startTime = String(
+			formValues.startTime ?? initialValues.startTime ?? "",
+		);
+		const guestCount = Number(
+			formValues.guestCount ?? initialValues.guestCount ?? 1,
 		);
 
-		onBook?.(formValues);
+		if (!isAuthenticated) {
+			router.push("/login");
+			return;
+		}
+
+		onBook?.({ bookingDate, startTime, guestCount });
 	};
 
 	const footer = (
 		<button
 			type="submit"
+			disabled={
+				isAuthLoading ||
+				availableTimeSlotsQuery.isLoading ||
+				slots.length === 0
+			}
 			className="w-full py-4 bg-[#6f4e37] hover:bg-[#543d31] active:bg-[#3d2a21] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 uppercase tracking-wider mt-4"
 		>
-			Đặt bàn ngay
+			{availableTimeSlotsQuery.isLoading
+				? "Đang tải giờ..."
+				: "Đặt bàn ngay"}
 		</button>
 	);
 

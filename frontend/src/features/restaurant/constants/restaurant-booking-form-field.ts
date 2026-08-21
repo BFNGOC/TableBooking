@@ -6,15 +6,7 @@ export function getBookingFormFields(
 	slots: string[] | undefined,
 	defaults?: { date?: string; guests?: string },
 ): FormField[] {
-	const DEFAULT_TIME_SLOTS = [
-		"18:00",
-		"18:30",
-		"19:00",
-		"19:30",
-		"20:00",
-		"20:30",
-	];
-	const _slots = slots && slots.length > 0 ? slots : DEFAULT_TIME_SLOTS;
+	const _slots = slots && slots.length > 0 ? slots : [];
 
 	const initialDate = defaults?.date;
 	const initialGuests = defaults?.guests ?? "2";

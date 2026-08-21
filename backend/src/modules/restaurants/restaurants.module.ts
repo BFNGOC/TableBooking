@@ -10,6 +10,7 @@ import { CounterModule } from '../counter/counter.module';
 import { TaxModule } from '../tax/tax.module';
 import { UsersModule } from '../users/users.module';
 import { BookingsModule } from '../bookings/bookings.module';
+import { TableAvailabilitiesModule } from '../table-availabilities/table-availabilities.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { BookingsModule } from '../bookings/bookings.module';
     TaxModule,
     UsersModule,
     forwardRef(() => BookingsModule),
+    TableAvailabilitiesModule,
   ],
   controllers: [RestaurantsController],
   providers: [

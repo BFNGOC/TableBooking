@@ -18,6 +18,11 @@ import {
 
 const API_URL_PREFIX = "/restaurants";
 
+export interface AvailableTimeSlotsResponse {
+	restaurantSlug: string;
+	timeSlots: string[];
+}
+
 export const getCuisineTypesApi = async () => {
 	const res = await clientRequest<any>({
 		url: `${API_URL_PREFIX}/cuisine-types`,
@@ -50,11 +55,20 @@ export const getRestaurantMeApi = async () => {
 };
 
 export const getRestaurantBySlugApi = async (slug: string) => {
-    const res = await clientRequest<IRestaurant>({
-        url: `${API_URL_PREFIX}/${slug}`,
-        method: 'GET',
-    });
-    return res.data;
+	const res = await clientRequest<IRestaurant>({
+		url: `${API_URL_PREFIX}/${slug}`,
+		method: "GET",
+	});
+	return res.data;
+};
+
+export const getAvailableTimeSlotsApi = async (slug: string) => {
+	const res = await clientRequest<AvailableTimeSlotsResponse>({
+		url: `${API_URL_PREFIX}/${slug}/available-time-slots`,
+		method: "GET",
+	});
+
+	return res.data;
 };
 
 export const restaurantRoleRestaurantApi = {

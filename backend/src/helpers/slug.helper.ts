@@ -8,7 +8,7 @@ type SlugifyOptions = {
 };
 
 const slugifyText: (value: string, options?: SlugifyOptions) => string =
-  slugify as (value: string, options?: SlugifyOptions) => string;
+  slugify;
 
 export function createSlug(text: string): string {
   return slugifyText(text, {

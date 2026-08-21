@@ -44,6 +44,12 @@ export class RestaurantsController {
     return this.restaurantsService.getRecommendRestaurants();
   }
 
+  @Get('/:slug/available-time-slots')
+  @Public()
+  getAvailableTimeSlots(@Param('slug') slug: string) {
+    return this.restaurantsService.getAvailableTimeSlotsBySlug(slug);
+  }
+
   @Get('/')
   @Public()
   getPublicRestaurants(@Query() query: FindPublicRestaurantDto) {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Spinner } from "@heroui/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { useGetRestaurantBySlug } from "@/features/restaurant/hooks/useGetRestaurant";
 import CustomForm from "@/shared/components/form/CustomForm";
@@ -23,14 +23,23 @@ interface DiscoverTablePageProps {
 function DiscoverTablePage({ slug }: DiscoverTablePageProps) {
 	const { data: restaurant, isPending } = useGetRestaurantBySlug(slug);
 	const router = useRouter();
+	const urlSearchParams = useSearchParams();
 
-	const [filterValues, setFilterValues] = useState<GetAvailableTablesPayload>(
+	const bookingDateFromUrl = urlSearchParams.get("bookingDate") ?? "";
+	const startTimeFromUrl = urlSearchParams.get("startTime") ?? "";
+	const guestCountFromUrl = Number(urlSearchParams.get("guestCount") ?? 1);
+	const initialFilterValues = formatFormValues(
 		{
-			date: "",
-			startTime: "",
-			guestCount: 1,
+			date: bookingDateFromUrl,
+			startTime: startTimeFromUrl,
+			guestCount: guestCountFromUrl,
 		},
-	);
+		availableTableFormField,
+		"toForm",
+	) as GetAvailableTablesPayload;
+
+	const [filterValues, setFilterValues] =
+		useState<GetAvailableTablesPayload>(initialFilterValues);
 	const [searchParams, setSearchParams] =
 		useState<GetAvailableTablesPayload>();
 	const [selectedTables, setSelectedTables] = useState<ITableDetail[]>([]);
@@ -43,6 +52,30 @@ function DiscoverTablePage({ slug }: DiscoverTablePageProps) {
 
 	const availableTables = availableTablesResponse?.data;
 	const tableAreas = availableTables?.areas ?? [];
+
+	useEffect(() => {
+		if (!restaurant?._id) return;
+		if (!bookingDateFromUrl || !startTimeFromUrl || guestCountFromUrl < 1) {
+			return;
+		}
+
+		const parsedValues = formatFormValues(
+			{
+				date: bookingDateFromUrl,
+				startTime: startTimeFromUrl,
+				guestCount: guestCountFromUrl,
+			},
+			availableTableFormField,
+			"toForm",
+		) as GetAvailableTablesPayload;
+
+		setSearchParams(parsedValues);
+	}, [
+		restaurant?._id,
+		bookingDateFromUrl,
+		startTimeFromUrl,
+		guestCountFromUrl,
+	]);
 
 	const formatDateValue = (dateValue: unknown) => {
 		if (
