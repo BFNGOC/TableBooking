@@ -20,10 +20,19 @@ export const findAllNotification = async () => {
     return res;
 };
 
+export const findAllUnread = async () => {
+    const res = await clientRequest<any>({
+        url: `${API_URL_PREFIX}/unread`,
+        method: 'GET',
+    });
+
+    return res;
+};
+
 export const markAsReadNotification = async (notificationId: string) => {
     const res = await clientRequest<any>({
         url: `${API_URL_PREFIX}/mark-as-read/${notificationId}`,
-        method: 'POST',
+        method: 'PATCH',
     });
 
     return res;
@@ -32,7 +41,7 @@ export const markAsReadNotification = async (notificationId: string) => {
 export const markAllAsReadNotification = async () => {
     const res = await clientRequest<any>({
         url: `${API_URL_PREFIX}/mark-all-as-read`,
-        method: 'POST',
+        method: 'PATCH',
     });
 
     return res;

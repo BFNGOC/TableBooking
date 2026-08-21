@@ -38,6 +38,19 @@ export class NotificationService {
     return notifications;
   }
 
+  async findAllUnread(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const notifications = await this.notificationModel.find({
+      userId,
+      isRead: false,
+    });
+
+    return notifications;
+  }
+
   async findOne(id: string) {
     const notification = await this.notificationModel.findById(id);
 
@@ -81,9 +94,13 @@ export class NotificationService {
     return count;
   }
 
-  async markAsRead(id: string) {
-    const notification = await this.notificationModel.findByIdAndUpdate(
-      id,
+  async markAsRead(userId: string, id: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const notification = await this.notificationModel.findOneAndUpdate(
+      { _id: id, userId },
       { isRead: true, readAt: new Date() },
       { new: true },
     );
