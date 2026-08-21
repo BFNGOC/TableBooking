@@ -115,7 +115,6 @@ export default function BookingCard({
 				onValuesChange={setValues}
 				onSubmit={handleSubmit}
 				footer={footer}
-				footerCol={12}
 			/>
 
 			<div className="flex gap-2.5 p-4 bg-[#fff1f0] border border-[#f5c2c7] rounded-2xl text-[#9f3a38] text-xs leading-relaxed text-left">

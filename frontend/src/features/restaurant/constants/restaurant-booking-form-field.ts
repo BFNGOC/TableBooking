@@ -21,7 +21,7 @@ export function getBookingFormFields(
 
 	const fields: FormField[] = [
 		{
-			name: "bookingDate",
+			name: "date",
 			label: "Chọn ngày",
 			type: FormFieldType.DATE_PICKER as any,
 			defaultValue: initialDate as any,
@@ -29,7 +29,7 @@ export function getBookingFormFields(
 			col: 12,
 		},
 		{
-			name: "time",
+			name: "startTime",
 			label: "Giờ đặt bàn",
 			type: FormFieldType.TIME_SLOTS as any,
 			options: _slots.map((t) => ({ id: t, text: t })),
@@ -37,7 +37,7 @@ export function getBookingFormFields(
 			col: 12,
 		},
 		{
-			name: "guests",
+			name: "guestCount",
 			label: "Số khách",
 			type: FormFieldType.SELECT as any,
 			options: GUEST_COUNT_OPTIONS,
