@@ -4,6 +4,8 @@ import './globals.css';
 import NextAuthWrapper from '@/shared/library/next.auth.wrapper';
 import { ReactQueryProvider } from '@/shared/library/react-query';
 import { Toast } from '@heroui/react';
+import NotificationSocketListener from '@/features/notification/components/NotificationSocketListener';
+import SocketConnectionListener from '@/shared/library/socket/SocketConnectionListener';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -30,6 +32,8 @@ export default function RootLayout({
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <ReactQueryProvider>
                     <NextAuthWrapper>
+                        <SocketConnectionListener />
+                        <NotificationSocketListener />
                         {children}
                         <Toast.Provider placement="top end" />
                     </NextAuthWrapper>

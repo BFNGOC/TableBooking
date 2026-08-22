@@ -240,7 +240,7 @@ export class BookingStateService {
       );
 
       await this.notificationService.notifyBookingCreated(
-        userId,
+        restaurant.userId.toString(),
         booking.toObject(),
         'Có đơn đặt bàn mới',
         `Người dùng ${dto.contactName} đã đặt bàn tại nhà hàng của bạn vào ngày ${bookingDate.toLocaleDateString()} lúc ${dto.startTime}.`,

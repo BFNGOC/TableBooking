@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -12,12 +11,15 @@ import {
   NotificationReferenceModel,
   NotificationType,
 } from './schemas/notification.schema';
+import { SocketService } from '../socket/socket.service';
+import { SOCKET_EVENTS } from '../socket/socket.constants';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectModel(Notification.name)
     private notificationModel: Model<Notification>,
+    private readonly socketService: SocketService,
   ) {}
 
   async create(createNotificationDto: CreateNotificationDto) {
@@ -25,11 +27,21 @@ export class NotificationService {
       createNotificationDto,
     );
 
+    this.socketService.emitToUser(
+      createNotificationDto.userId,
+      SOCKET_EVENTS.NOTIFICATION_NEW,
+      notification,
+    );
+
     return notification;
   }
 
-  async findAll() {
-    const notifications = await this.notificationModel.find();
+  async findAll(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const notifications = await this.notificationModel.find({ userId });
 
     if (!notifications || notifications.length === 0) {
       throw new NotFoundException('Không tìm thấy thông báo nào');

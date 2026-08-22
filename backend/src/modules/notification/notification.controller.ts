@@ -19,15 +19,13 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Post()
-  @Public()
   create(@Body() createNotificationDto: CreateNotificationDto) {
     return this.notificationService.create(createNotificationDto);
   }
 
   @Get()
-  @Public()
-  findAll() {
-    return this.notificationService.findAll();
+  findAll(@CurrentUser() user: AuthUser) {
+    return this.notificationService.findAll(user._id);
   }
 
   @Get('unread')

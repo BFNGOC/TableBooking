@@ -25,6 +25,8 @@ import { RedisModule } from './shared/redis/redis.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from './modules/notification/notification.module';
+import { SocketModule } from './modules/socket/socket.module';
+
 @Module({
   imports: [
     UsersModule,
@@ -100,6 +102,8 @@ import { NotificationModule } from './modules/notification/notification.module';
     ScheduleModule.forRoot(),
 
     NotificationModule,
+
+    SocketModule,
   ],
 
   controllers: [AppController],

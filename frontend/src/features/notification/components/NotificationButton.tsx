@@ -13,9 +13,11 @@ import {
 } from '../hook/useNotification';
 import { INotification } from '../types/notification.type';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/shared/hooks/useAuth';
 
-export default function NotificationButton() {
+export default function NotificationButton({ title }: { title?: string }) {
     const router = useRouter();
+    const { role } = useAuth();
 
     const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
@@ -74,13 +76,17 @@ export default function NotificationButton() {
         switch (notification.type) {
             case 'BOOKING':
                 router.push(
-                    `/discover/nha-hang-bbq-bfngoc/booking/success/${notification.referenceId}`
+                    role?.toUpperCase() === 'RESTAURANT'
+                        ? '/restaurant/dashboard/bookings/upcoming'
+                        : `/discover/nha-hang-bbq-bfngoc/booking/success/${notification.referenceId}`
                 );
                 break;
 
             case 'PAYMENT':
                 router.push(
-                    `/discover/nha-hang-bbq-bfngoc/booking/success/${notification.referenceId}`
+                    role?.toUpperCase() === 'RESTAURANT'
+                        ? '/restaurant/dashboard/bookings/upcoming'
+                        : `/discover/nha-hang-bbq-bfngoc/booking/success/${notification.referenceId}`
                 );
                 break;
 
@@ -135,9 +141,13 @@ export default function NotificationButton() {
         <Popover>
             <Popover.Trigger>
                 <Badge.Anchor color="danger">
-                    <Button isIconOnly variant="danger-soft" aria-label="Thông báo">
-                        <Bell size={20} />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button isIconOnly variant="danger-soft" aria-label="Thông báo">
+                            <Bell size={20} />
+                        </Button>
+
+                        {title && <span className="font-medium text-gray-700">{title}</span>}
+                    </div>
 
                     {unreadCount > 0 && (
                         <Badge color="danger" size="sm">

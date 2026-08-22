@@ -7,6 +7,7 @@ import { useToast } from '@/shared/hooks/useToast';
 import DropDownCustom, { DropdownItem } from '../../dropdown/DropdownCustom';
 import { Moon, Palette, Settings, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import NotificationButton from '@/features/notification/components/NotificationButton';
 
 function SidebarFooter() {
     const { showToast } = useToast();
@@ -61,6 +62,9 @@ function SidebarFooter() {
 
     return (
         <div className="space-y-4">
+            <div className="block rounded-lg px-4 py-3 transition hover:bg-[#f5efeb] hover:text-[#6f4e37]">
+                <NotificationButton title="Thông báo" />
+            </div>
             <DropDownCustom
                 items={dropdownItems as any}
                 trigger={<UserAvatar />}

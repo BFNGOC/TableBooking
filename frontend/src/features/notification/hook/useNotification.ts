@@ -8,28 +8,38 @@ import {
     markAsReadNotification,
 } from '../api/notification-api';
 import { notificationKeys } from '../constants/query-key';
+import { useSession } from 'next-auth/react';
 
 export const useNotifications = () => {
+    const { status } = useSession();
+
     return useQuery({
         queryKey: notificationKeys.list(),
         queryFn: findAllNotification,
         staleTime: 30 * 1000,
+        enabled: status === 'authenticated',
     });
 };
 
 export const useUnreadNotifications = () => {
+    const { status } = useSession();
+
     return useQuery({
         queryKey: notificationKeys.unread(),
         queryFn: findAllUnread,
         staleTime: 30 * 1000,
+        enabled: status === 'authenticated',
     });
 };
 
 export const useUnreadNotificationCount = () => {
+    const { status } = useSession();
+
     return useQuery({
         queryKey: notificationKeys.unreadCount(),
         queryFn: getUnreadCountApi,
         staleTime: 30 * 1000,
+        enabled: status === 'authenticated',
     });
 };
 
