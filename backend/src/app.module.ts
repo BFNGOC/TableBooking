@@ -24,6 +24,9 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { RedisModule } from './shared/redis/redis.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationModule } from './modules/notification/notification.module';
+import { SocketModule } from './modules/socket/socket.module';
+
 @Module({
   imports: [
     UsersModule,
@@ -97,6 +100,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     PaymentModule,
 
     ScheduleModule.forRoot(),
+
+    NotificationModule,
+
+    SocketModule,
   ],
 
   controllers: [AppController],

@@ -35,6 +35,7 @@ import { VnpayService } from './vnpay.service';
 import { ConfigService } from '@nestjs/config';
 import { ReturnQueryFromVNPay } from 'vnpay';
 import { RestaurantBookingSearchService } from '../bookings/booking-restaurant-search.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class PaymentService {
@@ -53,6 +54,8 @@ export class PaymentService {
 
     @Inject(forwardRef(() => RestaurantBookingSearchService))
     private readonly restaurantBookingSearchService: RestaurantBookingSearchService,
+
+    private readonly notificationService: NotificationService,
   ) {}
 
   private async validateBookingRedisHold(booking: BookingDocument) {
@@ -531,11 +534,15 @@ export class PaymentService {
   }
 
   private async handleSuccessfulPayment(payment: PaymentDocument) {
-    const booking = await this.bookingModel.findById(payment.bookingId);
+    const booking = await this.bookingModel
+      .findById(payment.bookingId)
+      .populate('restaurantId', 'restaurantName userId');
 
     if (!booking) {
       throw new NotFoundException('Không tìm thấy booking của payment');
     }
+    
+    const restaurantName = (booking.restaurantId as any).restaurantName;
 
     // =====================================================
     // 1. THANH TOÁN TIỀN CỌC
@@ -566,6 +573,30 @@ export class PaymentService {
           }`,
         );
       }
+
+      // Thông báo cho user
+      await this.notificationService.notifyPaymentSuccess(
+        booking.userId.toString(),
+        payment.toObject(),
+        booking.toObject(),
+        restaurantName,
+      );
+
+      // Thông báo booking confirm
+      await this.notificationService.notifyBookingConfirmed(
+        booking.userId.toString(),
+        booking.toObject(),
+        'Đặt bàn đã được xác nhận',
+        `Đặt bàn của bạn tại nhà hàng ${restaurantName} đã được xác nhận.`,
+      );
+
+      // Thông báo cho nhà hàng
+      await this.notificationService.notifyBookingConfirmed(
+        (booking.restaurantId as any).userId.toString(),
+        booking.toObject(),
+        'Có đặt bàn mới được xác nhận',
+        `Một đặt bàn mới tại nhà hàng của bạn đã thanh toán cọc và được xác nhận.`,
+      );
 
       return;
     }
@@ -601,6 +632,30 @@ export class PaymentService {
           }`,
         );
       }
+
+      // Thông báo cho user
+      await this.notificationService.notifyPaymentSuccess(
+        booking.userId.toString(),
+        payment.toObject(),
+        booking.toObject(),
+        restaurantName,
+      );
+
+      // Thông báo booking confirm
+      await this.notificationService.notifyBookingConfirmed(
+        booking.userId.toString(),
+        booking.toObject(),
+        'Thanh toán toàn bộ hoàn tất',
+        `Bạn đã thanh toán toàn bộ cho đặt bàn tại nhà hàng ${restaurantName}.`,
+      );
+
+      // Thông báo cho nhà hàng
+      await this.notificationService.notifyBookingConfirmed(
+        (booking.restaurantId as any).userId.toString(),
+        booking.toObject(),
+        'Thanh toán toàn bộ hoàn tất',
+        `Khách hàng đã thanh toán toàn bộ cho một đặt bàn.`,
+      );
 
       return;
     }

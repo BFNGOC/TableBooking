@@ -15,6 +15,7 @@ import { BookingValidationService } from './services/booking-validation.service'
 import { BookingLockService } from './services/booking-lock.service';
 import { BookingStateService } from './services/booking-state.service';
 import { BookingQueryService } from './services/booking-query.service';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BookingQueryService } from './services/booking-query.service';
     PricingRuleModule,
     SearchModule,
     forwardRef(() => PaymentModule),
+    NotificationModule,
   ],
   controllers: [BookingsController],
   providers: [

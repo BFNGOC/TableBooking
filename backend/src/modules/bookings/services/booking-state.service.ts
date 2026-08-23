@@ -33,6 +33,7 @@ import {
   minutesToTime,
   timeToMinutes,
 } from '../utils/booking-time.util';
+import { NotificationService } from '@app/modules/notification/notification.service';
 
 @Injectable()
 export class BookingStateService {
@@ -50,6 +51,7 @@ export class BookingStateService {
     private readonly restaurantSearchService: RestaurantBookingSearchService,
     private readonly bookingLockService: BookingLockService,
     private readonly bookingValidationService: BookingValidationService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async createBooking(
@@ -230,6 +232,20 @@ export class BookingStateService {
 
       await this.restaurantSearchService.index(booking);
 
+      await this.notificationService.notifyBookingCreated(
+        userId,
+        booking.toObject(),
+        'Đặt bàn thành công',
+        `Bạn đã đặt bàn tại ${restaurant.restaurantName} vào ngày ${bookingDate.toLocaleDateString()} lúc ${dto.startTime}.`,
+      );
+
+      await this.notificationService.notifyBookingCreated(
+        restaurant.userId.toString(),
+        booking.toObject(),
+        'Có đơn đặt bàn mới',
+        `Người dùng ${dto.contactName} đã đặt bàn tại nhà hàng của bạn vào ngày ${bookingDate.toLocaleDateString()} lúc ${dto.startTime}.`,
+      );
+
       return {
         booking,
         payDepositNow: dto.payDepositNow,
@@ -354,6 +370,24 @@ export class BookingStateService {
         await this.bookingLockService.releaseBookingTableLocks([holdKey]);
       }
 
+      try {
+        await result.booking.populate('userId', 'name');
+        await result.booking.populate('restaurantId', 'restaurantName userId');
+
+        const userName = (result.booking.userId as any).name || 'Khách hàng';
+        const restaurantName = (result.booking.restaurantId as any).restaurantName || 'Nhà hàng';
+        const restaurantUserId = (result.booking.restaurantId as any).userId.toString();
+
+        await this.notificationService.notifyBookingCancelledByUser(
+          restaurantUserId,
+          result.booking.toObject(),
+          userName,
+          restaurantName,
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to send cancellation notification: ${error}`);
+      }
+
       return result.booking;
     } finally {
       await session.endSession();
@@ -458,6 +492,19 @@ export class BookingStateService {
         await this.bookingLockService.releaseBookingTableLocks([holdKey]);
       }
 
+      try {
+        await result.booking.populate('restaurantId', 'restaurantName');
+        const restaurantName = (result.booking.restaurantId as any).restaurantName || 'Nhà hàng';
+
+        await this.notificationService.notifyBookingRejected(
+          result.booking.userId.toString(),
+          result.booking.toObject(),
+          restaurantName,
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to send rejection notification: ${error}`);
+      }
+
       return result.booking;
     } finally {
       await session.endSession();
@@ -504,6 +551,12 @@ export class BookingStateService {
 
     await booking.save();
     await this.restaurantSearchService.update(booking);
+
+    await this.notificationService.notifyBookingCheckedIn(
+      booking.userId.toString(),
+      booking.toObject(),
+      restaurant.restaurantName,
+    );
 
     return {
       _id: booking._id,
@@ -564,6 +617,26 @@ export class BookingStateService {
         );
       }
 
+      try {
+        await booking.populate('restaurantId', 'restaurantName userId');
+        const restaurantName = (booking.restaurantId as any).restaurantName || 'Nhà hàng';
+        const restaurantUserId = (booking.restaurantId as any).userId.toString();
+
+        await this.notificationService.notifyBookingExpired(
+          booking.userId.toString(),
+          booking.toObject(),
+          restaurantName,
+        );
+
+        await this.notificationService.notifyBookingExpired(
+          restaurantUserId,
+          booking.toObject(),
+          restaurantName,
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to send expiration notification: ${error}`);
+      }
+
       count++;
     }
 
@@ -614,6 +687,26 @@ export class BookingStateService {
         this.logger.warn(
           `Failed to update restaurant search index for booking : ${err}`,
         );
+      }
+
+      try {
+        await booking.populate('restaurantId', 'restaurantName userId');
+        const restaurantName = (booking.restaurantId as any).restaurantName || 'Nhà hàng';
+        const restaurantUserId = (booking.restaurantId as any).userId.toString();
+
+        await this.notificationService.notifyBookingNoShow(
+          booking.userId.toString(),
+          booking.toObject(),
+          restaurantName,
+        );
+
+        await this.notificationService.notifyBookingNoShow(
+          restaurantUserId,
+          booking.toObject(),
+          restaurantName,
+        );
+      } catch (error) {
+        this.logger.warn(`Failed to send no-show notification: ${error}`);
       }
 
       count++;
