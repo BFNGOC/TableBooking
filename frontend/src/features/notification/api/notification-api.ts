@@ -11,18 +11,26 @@ export const getUnreadCountApi = async () => {
     return res;
 };
 
-export const findAllNotification = async () => {
+export const findAllNotification = async ({
+    pageParam = 1,
+}: {
+    pageParam?: number;
+}) => {
     const res = await clientRequest<any>({
-        url: `${API_URL_PREFIX}`,
+        url: `${API_URL_PREFIX}?page=${pageParam}&limit=5`,
         method: 'GET',
     });
 
     return res;
 };
 
-export const findAllUnread = async () => {
+export const findAllUnread = async ({
+    pageParam = 1,
+}: {
+    pageParam?: number;
+}) => {
     const res = await clientRequest<any>({
-        url: `${API_URL_PREFIX}/unread`,
+        url: `${API_URL_PREFIX}/unread?page=${pageParam}&limit=5`,
         method: 'GET',
     });
 

@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
@@ -23,14 +24,23 @@ export class NotificationController {
     return this.notificationService.create(createNotificationDto);
   }
 
+
   @Get()
-  findAll(@CurrentUser() user: AuthUser) {
-    return this.notificationService.findAll(user._id);
+  findAll(
+    @CurrentUser() user: AuthUser,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '5',
+  ) {
+    return this.notificationService.findAll(user._id, +page, +limit);
   }
 
   @Get('unread')
-  findAllUnread(@CurrentUser() user: AuthUser) {
-    return this.notificationService.findAllUnread(user._id);
+  findAllUnread(
+    @CurrentUser() user: AuthUser,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '5',
+  ) {
+    return this.notificationService.findAllUnread(user._id, +page, +limit);
   }
 
   @Delete()

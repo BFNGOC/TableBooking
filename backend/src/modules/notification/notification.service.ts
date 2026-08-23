@@ -36,31 +36,59 @@ export class NotificationService {
     return notification;
   }
 
-  async findAll(userId: string) {
+  async findAll(userId: string, page = 1, limit = 5) {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
     }
 
-    const notifications = await this.notificationModel.find({ userId });
+    const skip = (page - 1) * limit;
 
-    if (!notifications || notifications.length === 0) {
-      throw new NotFoundException('Không tìm thấy thông báo nào');
-    }
+    const [notifications, total] = await Promise.all([
+      this.notificationModel
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.notificationModel.countDocuments({ userId }),
+    ]);
 
-    return notifications;
+    const hasMore = skip + notifications.length < total;
+
+    return {
+      data: notifications,
+      total,
+      page,
+      limit,
+      hasMore,
+    };
   }
 
-  async findAllUnread(userId: string) {
+  async findAllUnread(userId: string, page = 1, limit = 5) {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
     }
 
-    const notifications = await this.notificationModel.find({
-      userId,
-      isRead: false,
-    });
+    const skip = (page - 1) * limit;
+    const query = { userId, isRead: false };
 
-    return notifications;
+    const [notifications, total] = await Promise.all([
+      this.notificationModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.notificationModel.countDocuments(query),
+    ]);
+
+    const hasMore = skip + notifications.length < total;
+
+    return {
+      data: notifications,
+      total,
+      page,
+      limit,
+      hasMore,
+    };
   }
 
   async findOne(id: string) {

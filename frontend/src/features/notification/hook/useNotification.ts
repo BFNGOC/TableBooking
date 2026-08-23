@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
     findAllNotification,
@@ -13,9 +13,13 @@ import { useSession } from 'next-auth/react';
 export const useNotifications = () => {
     const { status } = useSession();
 
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: notificationKeys.list(),
-        queryFn: findAllNotification,
+        queryFn: ({ pageParam = 1 }) => findAllNotification({ pageParam }),
+        getNextPageParam: (lastPage: any) => {
+            return lastPage?.data?.hasMore ? lastPage.data.page + 1 : undefined;
+        },
+        initialPageParam: 1,
         staleTime: 30 * 1000,
         enabled: status === 'authenticated',
     });
@@ -24,9 +28,13 @@ export const useNotifications = () => {
 export const useUnreadNotifications = () => {
     const { status } = useSession();
 
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: notificationKeys.unread(),
-        queryFn: findAllUnread,
+        queryFn: ({ pageParam = 1 }) => findAllUnread({ pageParam }),
+        getNextPageParam: (lastPage: any) => {
+            return lastPage?.data?.hasMore ? lastPage.data.page + 1 : undefined;
+        },
+        initialPageParam: 1,
         staleTime: 30 * 1000,
         enabled: status === 'authenticated',
     });

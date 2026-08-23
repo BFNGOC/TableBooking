@@ -21,9 +21,20 @@ export default function NotificationButton({ title }: { title?: string }) {
 
     const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-    const { data: notificationResponse, isLoading: isLoadingNotifications } = useNotifications();
+    const {
+        data: notificationResponse,
+        isLoading: isLoadingNotifications,
+        fetchNextPage: fetchNextNotifications,
+        hasNextPage: hasNextNotifications,
+        isFetchingNextPage: isFetchingNextNotifications,
+    } = useNotifications();
 
-    const { data: unreadResponse } = useUnreadNotifications();
+    const {
+        data: unreadResponse,
+        fetchNextPage: fetchNextUnread,
+        hasNextPage: hasNextUnread,
+        isFetchingNextPage: isFetchingNextUnread,
+    } = useUnreadNotifications();
 
     const { data: unreadCountResponse } = useUnreadNotificationCount();
 
@@ -34,17 +45,13 @@ export default function NotificationButton({ title }: { title?: string }) {
     // GET NOTIFICATIONS
     // ============================================
 
-    const notifications: INotification[] =
-        notificationResponse &&
-        typeof notificationResponse === 'object' &&
-        'data' in notificationResponse
-            ? ((notificationResponse as { data: INotification[] }).data ?? [])
-            : [];
+    const notifications: INotification[] = notificationResponse?.pages?.flatMap(
+        (page: any) => page?.data?.data ?? []
+    ) ?? [];
 
-    const unreadNotifications: INotification[] =
-        unreadResponse && typeof unreadResponse === 'object' && 'data' in unreadResponse
-            ? ((unreadResponse as { data: INotification[] }).data ?? [])
-            : [];
+    const unreadNotifications: INotification[] = unreadResponse?.pages?.flatMap(
+        (page: any) => page?.data?.data ?? []
+    ) ?? [];
 
     // ============================================
     // GET UNREAD COUNT
@@ -52,8 +59,8 @@ export default function NotificationButton({ title }: { title?: string }) {
 
     const unreadCount =
         unreadCountResponse &&
-        typeof unreadCountResponse === 'object' &&
-        'data' in unreadCountResponse
+            typeof unreadCountResponse === 'object' &&
+            'data' in unreadCountResponse
             ? Number((unreadCountResponse as { data: number }).data ?? 0)
             : 0;
 
@@ -236,16 +243,14 @@ export default function NotificationButton({ title }: { title?: string }) {
                                         key={notification._id}
                                         type="button"
                                         onClick={() => handleNotificationClick(notification)}
-                                        className={`w-full cursor-pointer text-left transition-colors hover:bg-amber-500/10 ${
-                                            isRead ? 'opacity-70' : 'bg-primary/5'
-                                        }`}
+                                        className={`w-full cursor-pointer text-left transition-colors hover:bg-amber-500/10 ${isRead ? 'opacity-70' : 'bg-primary/5'
+                                            }`}
                                     >
                                         <div className="flex w-full items-start gap-3 px-4 py-3">
                                             {/* UNREAD DOT */}
                                             <span
-                                                className={`mt-1.5 size-2 shrink-0 rounded-full ${
-                                                    isRead ? 'bg-transparent' : 'bg-danger'
-                                                }`}
+                                                className={`mt-1.5 size-2 shrink-0 rounded-full ${isRead ? 'bg-transparent' : 'bg-danger'
+                                                    }`}
                                             />
 
                                             {/* CONTENT */}
@@ -266,6 +271,19 @@ export default function NotificationButton({ title }: { title?: string }) {
                                     </button>
                                 );
                             })}
+
+                            {(filter === 'all' && hasNextNotifications) || (filter === 'unread' && hasNextUnread) ? (
+                                <div className="flex justify-center px-6">
+                                    <Button
+                                        size="sm"
+                                        variant="danger-soft"
+                                        onPress={() => filter === 'all' ? fetchNextNotifications() : fetchNextUnread()}
+                                        isPending={filter === 'all' ? isFetchingNextNotifications : isFetchingNextUnread}
+                                    >
+                                        Xem thêm
+                                    </Button>
+                                </div>
+                            ) : null}
                         </div>
                     )}
                 </Popover.Dialog>
