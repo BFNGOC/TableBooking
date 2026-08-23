@@ -187,12 +187,16 @@ export class NotificationService {
     });
   }
 
-  notifyBookingRejected(userId: string, booking: Record<string, any>) {
+  notifyBookingRejected(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+  ) {
     return this.create({
       userId,
       type: NotificationType.BOOKING,
       title: 'Đặt bàn bị từ chối',
-      message: `Nhà hàng ${booking.restaurantName} đã từ chối yêu cầu đặt bàn của bạn.`,
+      message: `Nhà hàng ${restaurantName} đã từ chối yêu cầu đặt bàn của bạn.`,
       referenceId: booking._id,
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
@@ -202,12 +206,17 @@ export class NotificationService {
     });
   }
 
-  notifyBookingCancelledByUser(userId: string, booking: Record<string, any>) {
+  notifyBookingCancelledByUser(
+    userId: string,
+    booking: Record<string, any>,
+    userName: string,
+    restaurantName: string,
+  ) {
     return this.create({
       userId,
       type: NotificationType.BOOKING,
       title: 'Đặt bàn đã được hủy',
-      message: `Người dùng ${booking.userId.name} đã hủy đặt bàn tại nhà hàng ${booking.restaurantName}.`,
+      message: `Người dùng ${userName} đã hủy đặt bàn tại nhà hàng ${restaurantName}.`,
       referenceId: booking._id,
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
@@ -220,12 +229,13 @@ export class NotificationService {
   notifyBookingCancelledByRestaurant(
     userId: string,
     booking: Record<string, any>,
+    restaurantName: string,
   ) {
     return this.create({
       userId,
       type: NotificationType.BOOKING,
       title: 'Nhà hàng đã hủy đặt bàn',
-      message: `Nhà hàng ${booking.restaurantName} đã hủy đặt bàn của bạn.`,
+      message: `Nhà hàng ${restaurantName} đã hủy đặt bàn của bạn.`,
       referenceId: booking._id,
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
@@ -235,12 +245,16 @@ export class NotificationService {
     });
   }
 
-  notifyBookingExpired(userId: string, booking: Record<string, any>) {
+  notifyBookingExpired(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+  ) {
     return this.create({
       userId,
       type: NotificationType.BOOKING,
       title: 'Đặt bàn đã bị hủy',
-      message: `Đặt bàn tại nhà hàng ${booking.restaurantName} đã bị hủy do quá thời gian thanh toán.`,
+      message: `Đặt bàn tại nhà hàng ${restaurantName} đã bị hủy do quá thời gian thanh toán.`,
       referenceId: booking._id,
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
@@ -250,12 +264,20 @@ export class NotificationService {
     });
   }
 
-  notifyBookingNoShow(userId: string, booking: Record<string, any>) {
+  notifyBookingNoShow(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+  ) {
+    const bookingDateStr =
+      booking.bookingDate instanceof Date
+        ? booking.bookingDate.toLocaleDateString()
+        : booking.bookingDate;
     return this.create({
       userId,
       type: NotificationType.BOOKING,
       title: 'Bạn đã không đến',
-      message: `Bạn đã không check-in cho đặt bàn tại nhà hàng ${booking.restaurantName} vào ngày ${booking.bookingDate}.`,
+      message: `Bạn đã không check-in cho đặt bàn tại nhà hàng ${restaurantName} vào ngày ${bookingDateStr}.`,
       referenceId: booking._id,
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
@@ -264,12 +286,16 @@ export class NotificationService {
     });
   }
 
-  notifyBookingCheckedIn(userId: string, booking: Record<string, any>) {
+  notifyBookingCheckedIn(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+  ) {
     return this.create({
       userId,
       type: NotificationType.BOOKING,
       title: 'Check-in thành công',
-      message: `Bạn đã check-in thành công tại nhà hàng ${booking.restaurantName}. Chúc bạn có một bữa ăn ngon!`,
+      message: `Bạn đã check-in thành công tại nhà hàng ${restaurantName}. Chúc bạn có một bữa ăn ngon!`,
       referenceId: booking._id,
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
@@ -286,12 +312,13 @@ export class NotificationService {
     userId: string,
     payment: Record<string, any>,
     booking: Record<string, any>,
+    restaurantName: string,
   ) {
     return this.create({
       userId,
       type: NotificationType.PAYMENT,
       title: 'Thanh toán thành công',
-      message: `Bạn đã thanh toán thành công cho đặt bàn tại nhà hàng ${booking.restaurantName}.`,
+      message: `Bạn đã thanh toán thành công cho đặt bàn tại nhà hàng ${restaurantName}.`,
       referenceId: payment._id,
       referenceModel: NotificationReferenceModel.PAYMENT,
       data: {
