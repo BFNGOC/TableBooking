@@ -536,13 +536,15 @@ export class PaymentService {
   private async handleSuccessfulPayment(payment: PaymentDocument) {
     const booking = await this.bookingModel
       .findById(payment.bookingId)
-      .populate('restaurantId', 'restaurantName userId');
+      .populate('restaurantId', 'restaurantName userId slug');
 
     if (!booking) {
       throw new NotFoundException('Không tìm thấy booking của payment');
     }
-    
-    const restaurantName = (booking.restaurantId as any).restaurantName;
+
+    const restaurant = booking.restaurantId as any;
+    const restaurantName = restaurant.restaurantName;
+    const restaurantSlug = restaurant.slug;
 
     // =====================================================
     // 1. THANH TOÁN TIỀN CỌC
@@ -580,6 +582,7 @@ export class PaymentService {
         payment.toObject(),
         booking.toObject(),
         restaurantName,
+        restaurantSlug,
       );
 
       // Thông báo booking confirm
@@ -588,14 +591,16 @@ export class PaymentService {
         booking.toObject(),
         'Đặt bàn đã được xác nhận',
         `Đặt bàn của bạn tại nhà hàng ${restaurantName} đã được xác nhận.`,
+        restaurantSlug,
       );
 
       // Thông báo cho nhà hàng
       await this.notificationService.notifyBookingConfirmed(
-        (booking.restaurantId as any).userId.toString(),
+        restaurant.userId.toString(),
         booking.toObject(),
         'Có đặt bàn mới được xác nhận',
         `Một đặt bàn mới tại nhà hàng của bạn đã thanh toán cọc và được xác nhận.`,
+        restaurantSlug,
       );
 
       return;
@@ -639,6 +644,7 @@ export class PaymentService {
         payment.toObject(),
         booking.toObject(),
         restaurantName,
+        restaurantSlug,
       );
 
       // Thông báo booking confirm
@@ -647,14 +653,16 @@ export class PaymentService {
         booking.toObject(),
         'Thanh toán toàn bộ hoàn tất',
         `Bạn đã thanh toán toàn bộ cho đặt bàn tại nhà hàng ${restaurantName}.`,
+        restaurantSlug,
       );
 
       // Thông báo cho nhà hàng
       await this.notificationService.notifyBookingConfirmed(
-        (booking.restaurantId as any).userId.toString(),
+        restaurant.userId.toString(),
         booking.toObject(),
         'Thanh toán toàn bộ hoàn tất',
         `Khách hàng đã thanh toán toàn bộ cho một đặt bàn.`,
+        restaurantSlug,
       );
 
       return;

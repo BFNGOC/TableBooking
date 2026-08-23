@@ -62,7 +62,11 @@ function BookingSuccessPage() {
     const totalAmount = booking?.pricingSnapshot?.finalPrice ?? booking?.depositAmount ?? 0;
     const restaurantName =
         booking?.restaurantId?.restaurantName ?? booking?.restaurantName ?? 'Nhà hàng';
+    const restaurantSlug = booking?.restaurantId?.slug;
 
+    console.log('restaurantSlug', restaurantSlug);
+
+    const isPendingBooking = booking?.status === BookingStatus.PENDING;
     const isCancelled = booking?.status === BookingStatus.CANCELLED;
     const isRejected = booking?.status === BookingStatus.REJECTED;
     const isCheckedIn = booking?.status === BookingStatus.CHECKED_IN;
@@ -93,6 +97,9 @@ function BookingSuccessPage() {
     } else if (isNoShow) {
         pageTitle = 'Vắng mặt (No-show)';
         pageSubtitle = 'Đơn đặt bàn đã quá khung giờ phục vụ nhưng không nhận được check-in.';
+    } else if (isPendingBooking) {
+        pageTitle = 'Đặt bàn đang chờ thanh toán hoặc xử lý';
+        pageSubtitle = 'Đơn đặt bàn của bạn đang chờ thanh toán hoặc xử lý.';
     }
 
     const handleBackToRestaurant = () => {
@@ -101,6 +108,12 @@ function BookingSuccessPage() {
 
     const handleCancelBooking = () => {
         setIsConfirmModalOpen(true);
+    };
+
+    const handlePayment = () => {
+        if (!restaurantSlug || !bookingId) return;
+
+        router.push(`/restaurants/${restaurantSlug}/booking/checkout/${bookingId}`);
     };
 
     const handleConfirmCancelBooking = () => {
@@ -309,7 +322,17 @@ function BookingSuccessPage() {
                     {/* Chỉ hiển thị nút Hủy đặt bàn khi đơn đang ở trạng thái PENDING hoặc CONFIRMED */}
                     {canCancel && (
                         <div className="flex flex-col items-center justify-center gap-3 text-center">
-                            <div>
+                            <div className="flex flex-wrap justify-center gap-3">
+                                {isPendingBooking && (
+                                    <Button
+                                        type="button"
+                                        className="bg-[#8b5e3c] px-6 py-4 text-base font-semibold text-white rounded-full"
+                                        onPress={handlePayment}
+                                        isDisabled={!restaurantSlug}
+                                    >
+                                        Thanh toán ngay
+                                    </Button>
+                                )}
                                 <Button
                                     type="button"
                                     className="bg-[#6f4e37] px-6 py-4 text-base font-semibold text-white rounded-full"

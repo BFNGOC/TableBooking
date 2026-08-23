@@ -24,7 +24,6 @@ export class NotificationController {
     return this.notificationService.create(createNotificationDto);
   }
 
-
   @Get()
   findAll(
     @CurrentUser() user: AuthUser,

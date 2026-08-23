@@ -182,6 +182,7 @@ export class NotificationService {
     booking: Record<string, any>,
     title: string,
     message: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -192,6 +193,7 @@ export class NotificationService {
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
         bookingStatus: 'PENDING',
+        restaurantSlug,
       },
     });
   }
@@ -201,6 +203,7 @@ export class NotificationService {
     booking: Record<string, any>,
     title: string,
     message: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -211,6 +214,7 @@ export class NotificationService {
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
         bookingStatus: 'CONFIRMED',
+        restaurantSlug,
       },
     });
   }
@@ -219,6 +223,7 @@ export class NotificationService {
     userId: string,
     booking: Record<string, any>,
     restaurantName: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -230,6 +235,7 @@ export class NotificationService {
       data: {
         bookingStatus: 'REJECTED',
         rejectionReason: booking.rejectionReason ?? null,
+        restaurantSlug,
       },
     });
   }
@@ -239,6 +245,7 @@ export class NotificationService {
     booking: Record<string, any>,
     userName: string,
     restaurantName: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -250,6 +257,7 @@ export class NotificationService {
       data: {
         bookingStatus: 'CANCELLED',
         cancelReason: booking.cancelReason ?? null,
+        restaurantSlug,
       },
     });
   }
@@ -258,6 +266,7 @@ export class NotificationService {
     userId: string,
     booking: Record<string, any>,
     restaurantName: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -269,6 +278,7 @@ export class NotificationService {
       data: {
         bookingStatus: 'CANCELLED',
         cancelReason: booking.cancelReason ?? null,
+        restaurantSlug,
       },
     });
   }
@@ -277,6 +287,7 @@ export class NotificationService {
     userId: string,
     booking: Record<string, any>,
     restaurantName: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -288,6 +299,7 @@ export class NotificationService {
       data: {
         bookingStatus: 'CANCELLED',
         cancelReason: 'Booking expired',
+        restaurantSlug,
       },
     });
   }
@@ -296,6 +308,7 @@ export class NotificationService {
     userId: string,
     booking: Record<string, any>,
     restaurantName: string,
+    restaurantSlug?: string,
   ) {
     const bookingDateStr =
       booking.bookingDate instanceof Date
@@ -310,6 +323,7 @@ export class NotificationService {
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
         bookingStatus: 'NO_SHOW',
+        restaurantSlug,
       },
     });
   }
@@ -318,6 +332,7 @@ export class NotificationService {
     userId: string,
     booking: Record<string, any>,
     restaurantName: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -328,6 +343,7 @@ export class NotificationService {
       referenceModel: NotificationReferenceModel.BOOKING,
       data: {
         bookingStatus: 'CHECKED_IN',
+        restaurantSlug,
       },
     });
   }
@@ -341,6 +357,7 @@ export class NotificationService {
     payment: Record<string, any>,
     booking: Record<string, any>,
     restaurantName: string,
+    restaurantSlug?: string,
   ) {
     return this.create({
       userId,
@@ -354,6 +371,7 @@ export class NotificationService {
         amount: payment.amount,
         bookingId: booking._id,
         bookingStatus: 'CONFIRMED',
+        restaurantSlug,
       },
     });
   }

@@ -18,6 +18,7 @@ import { useAuth } from '@/shared/hooks/useAuth';
 export default function NotificationButton({ title }: { title?: string }) {
     const router = useRouter();
     const { role } = useAuth();
+    const isRestaurant = role?.toUpperCase() === 'RESTAURANT';
 
     const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
@@ -45,13 +46,11 @@ export default function NotificationButton({ title }: { title?: string }) {
     // GET NOTIFICATIONS
     // ============================================
 
-    const notifications: INotification[] = notificationResponse?.pages?.flatMap(
-        (page: any) => page?.data?.data ?? []
-    ) ?? [];
+    const notifications: INotification[] =
+        notificationResponse?.pages?.flatMap((page: any) => page?.data?.data ?? []) ?? [];
 
-    const unreadNotifications: INotification[] = unreadResponse?.pages?.flatMap(
-        (page: any) => page?.data?.data ?? []
-    ) ?? [];
+    const unreadNotifications: INotification[] =
+        unreadResponse?.pages?.flatMap((page: any) => page?.data?.data ?? []) ?? [];
 
     // ============================================
     // GET UNREAD COUNT
@@ -59,8 +58,8 @@ export default function NotificationButton({ title }: { title?: string }) {
 
     const unreadCount =
         unreadCountResponse &&
-            typeof unreadCountResponse === 'object' &&
-            'data' in unreadCountResponse
+        typeof unreadCountResponse === 'object' &&
+        'data' in unreadCountResponse
             ? Number((unreadCountResponse as { data: number }).data ?? 0)
             : 0;
 
@@ -76,29 +75,34 @@ export default function NotificationButton({ title }: { title?: string }) {
 
     const handleNotificationClick = (notification: INotification) => {
         if (!notification.isRead) {
-            console.log('Marking notification as read:', notification._id);
             markAsReadMutation.mutate(notification._id);
         }
+
+        console.log('notification', notification);
 
         switch (notification.type) {
             case 'BOOKING':
                 router.push(
-                    role?.toUpperCase() === 'RESTAURANT'
+                    isRestaurant
                         ? '/restaurant/dashboard/bookings/upcoming'
-                        : `/discover/nha-hang-bbq-bfngoc/booking/success/${notification.referenceId}`
+                        : notification.referenceId && notification.data?.restaurantSlug
+                          ? `/restaurants/${notification.data.restaurantSlug}/booking/success/${notification.referenceId}`
+                          : '/my-bookings'
                 );
                 break;
 
             case 'PAYMENT':
                 router.push(
-                    role?.toUpperCase() === 'RESTAURANT'
+                    isRestaurant
                         ? '/restaurant/dashboard/bookings/upcoming'
-                        : `/discover/nha-hang-bbq-bfngoc/booking/success/${notification.referenceId}`
+                        : notification.referenceId
+                          ? `/checkout/${notification.referenceId}`
+                          : '/my-bookings'
                 );
                 break;
 
             case 'REVIEW':
-                router.push(`/reviews/${notification.referenceId}`);
+                router.push(isRestaurant ? '/restaurant/dashboard' : '/my-bookings');
                 break;
 
             default:
@@ -243,14 +247,16 @@ export default function NotificationButton({ title }: { title?: string }) {
                                         key={notification._id}
                                         type="button"
                                         onClick={() => handleNotificationClick(notification)}
-                                        className={`w-full cursor-pointer text-left transition-colors hover:bg-amber-500/10 ${isRead ? 'opacity-70' : 'bg-primary/5'
-                                            }`}
+                                        className={`w-full cursor-pointer text-left transition-colors hover:bg-amber-500/10 ${
+                                            isRead ? 'opacity-70' : 'bg-primary/5'
+                                        }`}
                                     >
                                         <div className="flex w-full items-start gap-3 px-4 py-3">
                                             {/* UNREAD DOT */}
                                             <span
-                                                className={`mt-1.5 size-2 shrink-0 rounded-full ${isRead ? 'bg-transparent' : 'bg-danger'
-                                                    }`}
+                                                className={`mt-1.5 size-2 shrink-0 rounded-full ${
+                                                    isRead ? 'bg-transparent' : 'bg-danger'
+                                                }`}
                                             />
 
                                             {/* CONTENT */}
@@ -272,13 +278,22 @@ export default function NotificationButton({ title }: { title?: string }) {
                                 );
                             })}
 
-                            {(filter === 'all' && hasNextNotifications) || (filter === 'unread' && hasNextUnread) ? (
+                            {(filter === 'all' && hasNextNotifications) ||
+                            (filter === 'unread' && hasNextUnread) ? (
                                 <div className="flex justify-center px-6">
                                     <Button
                                         size="sm"
                                         variant="danger-soft"
-                                        onPress={() => filter === 'all' ? fetchNextNotifications() : fetchNextUnread()}
-                                        isPending={filter === 'all' ? isFetchingNextNotifications : isFetchingNextUnread}
+                                        onPress={() =>
+                                            filter === 'all'
+                                                ? fetchNextNotifications()
+                                                : fetchNextUnread()
+                                        }
+                                        isPending={
+                                            filter === 'all'
+                                                ? isFetchingNextNotifications
+                                                : isFetchingNextUnread
+                                        }
                                     >
                                         Xem thêm
                                     </Button>

@@ -15,7 +15,11 @@ import {
   DepositStatus,
   PaymentStatus,
 } from '../schemas/booking.schema';
-import { Table, TableDocument, TableStatus } from '../../tables/schemas/table.schema';
+import {
+  Table,
+  TableDocument,
+  TableStatus,
+} from '../../tables/schemas/table.schema';
 import {
   TableAvailability,
   TableAvailabilityDocument,
@@ -213,13 +217,14 @@ export class BookingQueryService {
       (table) => !bookedTableIds.has(table._id.toString()),
     );
 
-    const redisHeldTableIds = await this.bookingLockService.getRedisHeldTableIds(
-      restaurantId,
-      tables.map((table) => table._id),
-      bookingDate,
-      requestedTime,
-      endTime,
-    );
+    const redisHeldTableIds =
+      await this.bookingLockService.getRedisHeldTableIds(
+        restaurantId,
+        tables.map((table) => table._id),
+        bookingDate,
+        requestedTime,
+        endTime,
+      );
 
     tables = tables.filter(
       (table) => !redisHeldTableIds.has(table._id.toString()),
@@ -271,7 +276,7 @@ export class BookingQueryService {
       })
       .populate({
         path: 'restaurantId',
-        select: 'restaurantName address phone avatar rating',
+        select: 'restaurantName address phone avatar rating slug',
       })
       .populate({
         path: 'tableIds',
@@ -310,7 +315,7 @@ export class BookingQueryService {
       })
       .populate({
         path: 'restaurantId',
-        select: 'restaurantName address phone avatar rating',
+        select: 'restaurantName address phone avatar rating slug',
       })
       .populate({
         path: 'tableIds',
@@ -498,9 +503,7 @@ export class BookingQueryService {
       },
     ]);
 
-    const mapStatusCount = (
-      data: { _id: BookingStatus; count: number }[],
-    ) => {
+    const mapStatusCount = (data: { _id: BookingStatus; count: number }[]) => {
       const result = createEmptyCount();
       data.forEach(({ _id, count }) => {
         result.total += count;

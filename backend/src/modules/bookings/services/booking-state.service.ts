@@ -237,6 +237,7 @@ export class BookingStateService {
         booking.toObject(),
         'Đặt bàn thành công',
         `Bạn đã đặt bàn tại ${restaurant.restaurantName} vào ngày ${bookingDate.toLocaleDateString()} lúc ${dto.startTime}.`,
+        restaurant.slug,
       );
 
       await this.notificationService.notifyBookingCreated(
@@ -244,6 +245,7 @@ export class BookingStateService {
         booking.toObject(),
         'Có đơn đặt bàn mới',
         `Người dùng ${dto.contactName} đã đặt bàn tại nhà hàng của bạn vào ngày ${bookingDate.toLocaleDateString()} lúc ${dto.startTime}.`,
+        restaurant.slug,
       );
 
       return {
@@ -372,17 +374,20 @@ export class BookingStateService {
 
       try {
         await result.booking.populate('userId', 'name');
-        await result.booking.populate('restaurantId', 'restaurantName userId');
+        await result.booking.populate('restaurantId', 'restaurantName userId slug');
 
         const userName = (result.booking.userId as any).name || 'Khách hàng';
-        const restaurantName = (result.booking.restaurantId as any).restaurantName || 'Nhà hàng';
-        const restaurantUserId = (result.booking.restaurantId as any).userId.toString();
+        const restaurant = result.booking.restaurantId as any;
+        const restaurantName = restaurant.restaurantName || 'Nhà hàng';
+        const restaurantUserId = restaurant.userId.toString();
+        const restaurantSlug = restaurant.slug;
 
         await this.notificationService.notifyBookingCancelledByUser(
           restaurantUserId,
           result.booking.toObject(),
           userName,
           restaurantName,
+          restaurantSlug,
         );
       } catch (error) {
         this.logger.warn(`Failed to send cancellation notification: ${error}`);
@@ -493,13 +498,16 @@ export class BookingStateService {
       }
 
       try {
-        await result.booking.populate('restaurantId', 'restaurantName');
-        const restaurantName = (result.booking.restaurantId as any).restaurantName || 'Nhà hàng';
+        await result.booking.populate('restaurantId', 'restaurantName slug');
+        const restaurant = result.booking.restaurantId as any;
+        const restaurantName = restaurant.restaurantName || 'Nhà hàng';
+        const restaurantSlug = restaurant.slug;
 
         await this.notificationService.notifyBookingRejected(
           result.booking.userId.toString(),
           result.booking.toObject(),
           restaurantName,
+          restaurantSlug,
         );
       } catch (error) {
         this.logger.warn(`Failed to send rejection notification: ${error}`);
@@ -556,6 +564,7 @@ export class BookingStateService {
       booking.userId.toString(),
       booking.toObject(),
       restaurant.restaurantName,
+      restaurant.slug,
     );
 
     return {
@@ -618,20 +627,24 @@ export class BookingStateService {
       }
 
       try {
-        await booking.populate('restaurantId', 'restaurantName userId');
-        const restaurantName = (booking.restaurantId as any).restaurantName || 'Nhà hàng';
-        const restaurantUserId = (booking.restaurantId as any).userId.toString();
+        await booking.populate('restaurantId', 'restaurantName userId slug');
+        const restaurant = booking.restaurantId as any;
+        const restaurantName = restaurant.restaurantName || 'Nhà hàng';
+        const restaurantUserId = restaurant.userId.toString();
+        const restaurantSlug = restaurant.slug;
 
         await this.notificationService.notifyBookingExpired(
           booking.userId.toString(),
           booking.toObject(),
           restaurantName,
+          restaurantSlug,
         );
 
         await this.notificationService.notifyBookingExpired(
           restaurantUserId,
           booking.toObject(),
           restaurantName,
+          restaurantSlug,
         );
       } catch (error) {
         this.logger.warn(`Failed to send expiration notification: ${error}`);
@@ -690,20 +703,24 @@ export class BookingStateService {
       }
 
       try {
-        await booking.populate('restaurantId', 'restaurantName userId');
-        const restaurantName = (booking.restaurantId as any).restaurantName || 'Nhà hàng';
-        const restaurantUserId = (booking.restaurantId as any).userId.toString();
+        await booking.populate('restaurantId', 'restaurantName userId slug');
+        const restaurant = booking.restaurantId as any;
+        const restaurantName = restaurant.restaurantName || 'Nhà hàng';
+        const restaurantUserId = restaurant.userId.toString();
+        const restaurantSlug = restaurant.slug;
 
         await this.notificationService.notifyBookingNoShow(
           booking.userId.toString(),
           booking.toObject(),
           restaurantName,
+          restaurantSlug,
         );
 
         await this.notificationService.notifyBookingNoShow(
           restaurantUserId,
           booking.toObject(),
           restaurantName,
+          restaurantSlug,
         );
       } catch (error) {
         this.logger.warn(`Failed to send no-show notification: ${error}`);
