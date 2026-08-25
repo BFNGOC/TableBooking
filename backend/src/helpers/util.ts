@@ -29,3 +29,40 @@ export const comparePasswordHelper = async (
     throw error;
   }
 };
+
+export interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
+export const getMonthRange = (
+  monthOffset = 0,
+  date: Date = new Date(),
+): DateRange => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + monthOffset;
+
+  return {
+    startDate: new Date(year, month, 1),
+    endDate: new Date(year, month + 1, 1),
+  };
+};
+
+export const getWeekRange = (date: Date = new Date()): DateRange => {
+  const day = date.getDay();
+
+  // JS: Sunday = 0, Monday = 1, ..., Saturday = 6
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+
+  const startDate = new Date(date);
+  startDate.setDate(date.getDate() + diffToMonday);
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 7);
+
+  return {
+    startDate,
+    endDate,
+  };
+};

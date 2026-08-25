@@ -26,6 +26,7 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SocketModule } from './modules/socket/socket.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -104,6 +105,8 @@ import { SocketModule } from './modules/socket/socket.module';
     NotificationModule,
 
     SocketModule,
+
+    DashboardModule,
   ],
 
   controllers: [AppController],
