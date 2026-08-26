@@ -44,6 +44,11 @@ export class RestaurantsController {
     return this.restaurantsService.getRecommendRestaurants();
   }
 
+  @Get('/me')
+  getCurrentUserRestaurant(@CurrentUser() user: AuthUser) {
+    return this.restaurantsService.getCurrentUserRestaurant(user._id);
+  }
+
   @Get('/:slug/available-time-slots')
   @Public()
   getAvailableTimeSlots(@Param('slug') slug: string) {
@@ -60,11 +65,6 @@ export class RestaurantsController {
   @Public()
   getPublicRestaurantBySlug(@Param('slug') slug: string) {
     return this.restaurantsService.getRestaurantBySlug(slug);
-  }
-
-  @Get('/me')
-  getCurrentUserRestaurant(@CurrentUser() user: AuthUser) {
-    return this.restaurantsService.getCurrentUserRestaurant(user._id);
   }
 
   @Patch('me/')
