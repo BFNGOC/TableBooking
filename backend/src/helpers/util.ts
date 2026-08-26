@@ -1,3 +1,7 @@
+import {
+  StatisticsPeriod,
+  StatisticsQueryDto,
+} from '@app/modules/dashboard/dto/analytic-query.dto';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
@@ -66,3 +70,125 @@ export const getWeekRange = (date: Date = new Date()): DateRange => {
     endDate,
   };
 };
+
+export function getStatisticsDateRange(query: StatisticsQueryDto): DateRange {
+  const now = new Date();
+
+  switch (query.period) {
+    case StatisticsPeriod.TODAY: {
+      const startDate = new Date(now);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    case StatisticsPeriod.SEVEN_DAYS: {
+      const startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    case StatisticsPeriod.THIRTY_DAYS: {
+      const startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(now);
+      endDate.setHours(23, 59, 59, 999);
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    case StatisticsPeriod.THIS_MONTH: {
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const endDate = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    case StatisticsPeriod.LAST_MONTH: {
+      const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+      const endDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    case StatisticsPeriod.YEAR: {
+      const startDate = new Date(now.getFullYear(), 0, 1);
+
+      const endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    case StatisticsPeriod.CUSTOM: {
+      if (!query.fromDate || !query.toDate) {
+        throw new BadRequestException(
+          'fromDate and toDate are required for custom period',
+        );
+      }
+
+      const startDate = new Date(query.fromDate);
+      const endDate = new Date(query.toDate);
+
+      if (startDate > endDate) {
+        throw new BadRequestException('fromDate must be before toDate');
+      }
+
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    default:
+      throw new BadRequestException('Invalid statistics period');
+  }
+}

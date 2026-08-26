@@ -67,7 +67,7 @@ export function DashboardMetricCards({
                     >
                         <div className="flex items-start justify-between">
                             <div
-                                className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-${tone}-100`}
+                                className={`flex h-11 w-11 items-center justify-center rounded-2xl ${tone}`}
                             >
                                 <Icon size={19} strokeWidth={1.8} className="text-[#765341]" />
                             </div>

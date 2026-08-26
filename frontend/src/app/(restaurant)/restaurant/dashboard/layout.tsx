@@ -48,6 +48,10 @@ function Restaurant({ children }: RestaurantProps) {
             ],
         },
         {
+            label: 'Thống kê',
+            href: '/restaurant/dashboard/analytic',
+        },
+        {
             label: 'Quản lý nhà hàng',
             children: [
                 {
