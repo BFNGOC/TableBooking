@@ -52,7 +52,10 @@ export default function AvailabilityConfigPanel({
 		useState<IWeeklySlotPayload[]>(DEFAULT_WEEKLY);
 	const [exceptions, setExceptions] = useState<IExceptionSlotPayload[]>([]);
 	const [confirmOpen, setConfirmOpen] = useState(false);
-	const [activeAreaId, setActiveAreaId] = useState<string | undefined>(undefined);
+	const [activeAreaId, setActiveAreaId] = useState<string | undefined>(
+		undefined,
+	);
+	const [showSelectedTables, setShowSelectedTables] = useState(false);
 
 	const createMutation = useCreateTableAvailability();
 	const updateMutation = useUpdateTableAvailability();
@@ -104,10 +107,21 @@ export default function AvailabilityConfigPanel({
 		);
 	}, [allSchedules, schedule?._id]);
 
+	const selectedTables = useMemo(
+		() =>
+			allTables.filter((table) =>
+				selectedTableIds.includes(table._id ?? ""),
+			),
+		[allTables, selectedTableIds],
+	);
+
 	// ─── Nhóm bàn theo khu vực ────────────────────────────────────────────────
 	const areaGroups = useMemo(() => {
 		const tables = allTables as ITableWithArea[];
-		const groups: Record<string, { areaName: string; tables: ITableWithArea[] }> = {};
+		const groups: Record<
+			string,
+			{ areaName: string; tables: ITableWithArea[] }
+		> = {};
 
 		for (const table of tables) {
 			const key = table.areaId ?? "__no_area__";
@@ -147,10 +161,14 @@ export default function AvailabilityConfigPanel({
 			.filter((t) => t._id && !takenTableIds.has(t._id))
 			.map((t) => t._id!);
 
-		const allSelected = eligible.every((id) => selectedTableIds.includes(id));
+		const allSelected = eligible.every((id) =>
+			selectedTableIds.includes(id),
+		);
 
 		if (allSelected) {
-			setSelectedTableIds((prev) => prev.filter((id) => !eligible.includes(id)));
+			setSelectedTableIds((prev) =>
+				prev.filter((id) => !eligible.includes(id)),
+			);
 		} else {
 			setSelectedTableIds((prev) => [...new Set([...prev, ...eligible])]);
 		}
@@ -237,12 +255,43 @@ export default function AvailabilityConfigPanel({
 						subtitle="Applied Tables"
 						extra={
 							selectedTableIds.length > 0 ? (
-								<span className="rounded-full bg-[#6f4e37] px-2.5 py-0.5 text-[11px] font-bold text-white">
-									{selectedTableIds.length} đã chọn
-								</span>
+								<button
+									type="button"
+									onClick={() =>
+										setShowSelectedTables(
+											(visible) => !visible,
+										)
+									}
+									aria-expanded={showSelectedTables}
+									className="rounded-full bg-[#6f4e37] px-2.5 py-0.5 text-[11px] font-bold text-white transition-colors hover:bg-[#5a3e2b]"
+								>
+									{selectedTableIds.length} đã chọn{" "}
+								</button>
 							) : undefined
 						}
 					/>
+
+					{showSelectedTables && selectedTables.length > 0 && (
+						<div className="mb-8 flex flex-wrap gap-2 rounded-lg border border-[#e2ccb0] bg-[#fffaf5] p-3">
+							{selectedTables.map((table) => (
+								<button
+									key={table._id}
+									type="button"
+									onClick={() =>
+										table._id && toggleTable(table._id)
+									}
+									title="Bỏ chọn bàn"
+									className="rounded-full border border-[#6f4e37] bg-[#6f4e37] px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[#5a3e2b]"
+								>
+									{table.tableNumber ||
+										`Bàn ${table._id?.slice(-4)}`}
+									<span className="ml-1.5" aria-hidden="true">
+										×
+									</span>
+								</button>
+							))}
+						</div>
+					)}
 
 					{allTables.length === 0 ? (
 						<p className="text-sm italic text-[#b0917a]">
@@ -254,16 +303,20 @@ export default function AvailabilityConfigPanel({
 							<div className="flex flex-wrap items-center gap-2">
 								{orderedAreaIds.map((areaId) => {
 									const g = areaGroups[areaId];
-									const selCount = g.tables.filter((t) => selectedTableIds.includes(t._id ?? '')).length;
+									const selCount = g.tables.filter((t) =>
+										selectedTableIds.includes(t._id ?? ""),
+									).length;
 									return (
 										<button
 											key={areaId}
 											type="button"
-											onClick={() => setActiveAreaId(areaId)}
+											onClick={() =>
+												setActiveAreaId(areaId)
+											}
 											className={`flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
 												resolvedAreaId === areaId
-													? 'border-[#6f4e37] bg-[#6f4e37] text-white'
-													: 'border-slate-300 bg-white text-slate-600 hover:border-[#6f4e37] hover:text-[#6f4e37]'
+													? "border-[#6f4e37] bg-[#6f4e37] text-white"
+													: "border-slate-300 bg-white text-slate-600 hover:border-[#6f4e37] hover:text-[#6f4e37]"
 											}`}
 										>
 											{g.areaName}
@@ -273,55 +326,144 @@ export default function AvailabilityConfigPanel({
 							</div>
 
 							{/* Tables of active area */}
-							{activeGroup && (() => {
-								const eligibleInArea = activeGroup.tables.filter((t) => t._id && !takenTableIds.has(t._id));
-								const allAreaSelected = eligibleInArea.length > 0 && eligibleInArea.every((t) => selectedTableIds.includes(t._id!));
-								return (
-									<div>
-										{eligibleInArea.length > 0 && (
-											<div className="mb-2 flex justify-end">
-												<button type="button" onClick={() => resolvedAreaId && toggleAreaAll(resolvedAreaId)}
-													className="text-[10px] font-medium text-[#9a7a5f] hover:text-[#6f4e37]">
-													{allAreaSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
-												</button>
-											</div>
-										)}
-										<div className="flex flex-wrap gap-2">
-											{activeGroup.tables.map((table) => {
-												const selected = selectedTableIds.includes(table._id ?? '');
-												const isTaken = isNew && takenTableIds.has(table._id ?? '');
-												return (
-													<button key={table._id} type="button"
-														onClick={() => !isTaken && toggleTable(table._id!)}
-														disabled={isTaken}
-														title={isTaken ? 'Bàn này đã được gán vào lịch khác' : undefined}
-														className={[
-															'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all',
-															isTaken ? 'cursor-not-allowed border-[#e8d9c8] bg-[#f5efeb] text-[#c8a882] opacity-60'
-																: selected ? 'border-[#6f4e37] bg-[#6f4e37] text-white shadow-sm'
-																: 'border-[#d4b896] bg-white text-[#4a3728] hover:border-[#6f4e37]',
-														].join(' ')}
+							{activeGroup &&
+								(() => {
+									const eligibleInArea =
+										activeGroup.tables.filter(
+											(t) =>
+												t._id &&
+												!takenTableIds.has(t._id),
+										);
+									const allAreaSelected =
+										eligibleInArea.length > 0 &&
+										eligibleInArea.every((t) =>
+											selectedTableIds.includes(t._id!),
+										);
+									return (
+										<div>
+											{eligibleInArea.length > 0 && (
+												<div className="mb-2 flex justify-end">
+													<button
+														type="button"
+														onClick={() =>
+															resolvedAreaId &&
+															toggleAreaAll(
+																resolvedAreaId,
+															)
+														}
+														className="text-[10px] font-medium text-[#9a7a5f] hover:text-[#6f4e37]"
 													>
-														{selected && !isTaken && <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>}
-														{isTaken && <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
-														{table.tableNumber || `Bàn ${table._id?.slice(-4)}`}
+														{allAreaSelected
+															? "Bỏ chọn tất cả"
+															: "Chọn tất cả"}
 													</button>
-												);
-											})}
+												</div>
+											)}
+											<div className="flex flex-wrap gap-2">
+												{activeGroup.tables.map(
+													(table) => {
+														const selected =
+															selectedTableIds.includes(
+																table._id ?? "",
+															);
+														const isTaken =
+															isNew &&
+															takenTableIds.has(
+																table._id ?? "",
+															);
+														return (
+															<button
+																key={table._id}
+																type="button"
+																onClick={() =>
+																	!isTaken &&
+																	toggleTable(
+																		table._id!,
+																	)
+																}
+																disabled={
+																	isTaken
+																}
+																title={
+																	isTaken
+																		? "Bàn này đã được gán vào lịch khác"
+																		: undefined
+																}
+																className={[
+																	"flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
+																	isTaken
+																		? "cursor-not-allowed border-[#e8d9c8] bg-[#f5efeb] text-[#c8a882] opacity-60"
+																		: selected
+																			? "border-[#6f4e37] bg-[#6f4e37] text-white shadow-sm"
+																			: "border-[#d4b896] bg-white text-[#4a3728] hover:border-[#6f4e37]",
+																].join(" ")}
+															>
+																{selected &&
+																	!isTaken && (
+																		<svg
+																			className="h-3.5 w-3.5"
+																			fill="none"
+																			viewBox="0 0 24 24"
+																			stroke="currentColor"
+																		>
+																			<path
+																				strokeLinecap="round"
+																				strokeLinejoin="round"
+																				strokeWidth={
+																					2.5
+																				}
+																				d="M5 13l4 4L19 7"
+																			/>
+																		</svg>
+																	)}
+																{isTaken && (
+																	<svg
+																		className="h-3 w-3"
+																		fill="none"
+																		viewBox="0 0 24 24"
+																		stroke="currentColor"
+																	>
+																		<path
+																			strokeLinecap="round"
+																			strokeLinejoin="round"
+																			strokeWidth={
+																				2
+																			}
+																			d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+																		/>
+																	</svg>
+																)}
+																{table.tableNumber ||
+																	`Bàn ${table._id?.slice(-4)}`}
+															</button>
+														);
+													},
+												)}
+											</div>
 										</div>
-									</div>
-								);
-							})()}
+									);
+								})()}
 						</div>
 					)}
 
 					{/* Taken table note */}
 					{isNew && takenTableIds.size > 0 && (
 						<p className="mt-3 flex items-center gap-1.5 text-xs text-[#b0917a]">
-							<svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+							<svg
+								className="h-3.5 w-3.5 flex-shrink-0"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+								/>
 							</svg>
-							Bàn bị khoá đã được gán vào lịch khác. Chỉnh sửa lịch đó để thay đổi.
+							Bàn bị khoá đã được gán vào lịch khác. Chỉnh sửa
+							lịch đó để thay đổi.
 						</p>
 					)}
 				</section>

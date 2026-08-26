@@ -165,11 +165,77 @@ export class PricingRuleService {
   ) {
     const pricingRule = await this.findOwnedPricingRule(pricingRuleId, userId);
 
-    if (updatePricingRuleDto.name) {
+    // ==========================================
+    // BUILD NEXT STATE
+    // ==========================================
+
+    const nextRule = {
+      ...pricingRule.toObject(),
+      ...updatePricingRuleDto,
+
+      name:
+        updatePricingRuleDto.name !== undefined
+          ? updatePricingRuleDto.name.trim()
+          : pricingRule.name,
+
+      applyType: updatePricingRuleDto.applyType ?? pricingRule.applyType,
+
+      tableIds:
+        updatePricingRuleDto.tableIds !== undefined
+          ? updatePricingRuleDto.tableIds.map((id) => id.toString())
+          : (pricingRule.tableIds?.map((id) => id.toString()) ?? []),
+
+      areaIds:
+        updatePricingRuleDto.areaIds !== undefined
+          ? updatePricingRuleDto.areaIds.map((id) => id.toString())
+          : (pricingRule.areaIds?.map((id) => id.toString()) ?? []),
+
+      startDate:
+        updatePricingRuleDto.startDate !== undefined
+          ? updatePricingRuleDto.startDate
+          : pricingRule.startDate,
+
+      endDate:
+        updatePricingRuleDto.endDate !== undefined
+          ? updatePricingRuleDto.endDate
+          : pricingRule.endDate,
+
+      startTime:
+        updatePricingRuleDto.startTime !== undefined
+          ? updatePricingRuleDto.startTime
+          : pricingRule.startTime,
+
+      endTime:
+        updatePricingRuleDto.endTime !== undefined
+          ? updatePricingRuleDto.endTime
+          : pricingRule.endTime,
+
+      daysOfWeek:
+        updatePricingRuleDto.daysOfWeek !== undefined
+          ? updatePricingRuleDto.daysOfWeek
+          : pricingRule.daysOfWeek,
+    };
+
+    // ==========================================
+    // VALIDATE COMPLETE NEXT STATE
+    // ==========================================
+
+    await this.validateRuleScope(nextRule, pricingRule.restaurantId.toString());
+
+    // ==========================================
+    // CHECK UNIQUE NAME
+    // ==========================================
+
+    if (
+      updatePricingRuleDto.name !== undefined &&
+      nextRule.name !== pricingRule.name
+    ) {
       const existed = await this.pricingRuleModel.exists({
         restaurantId: pricingRule.restaurantId,
-        name: updatePricingRuleDto.name.trim(),
-        _id: { $ne: pricingRule._id },
+        name: nextRule.name,
+        _id: {
+          $ne: pricingRule._id,
+        },
       });
 
       if (existed) {
@@ -177,45 +243,44 @@ export class PricingRuleService {
       }
     }
 
-    if (
-      updatePricingRuleDto.applyType ||
-      updatePricingRuleDto.tableIds ||
-      updatePricingRuleDto.areaIds
-    ) {
-      const nextDto: Parameters<PricingRuleService['validateRuleScope']>[0] = {
-        ...pricingRule.toObject(),
-        ...updatePricingRuleDto,
-        tableIds: updatePricingRuleDto.tableIds
-          ? updatePricingRuleDto.tableIds.map((id) => id.toString())
-          : pricingRule.tableIds?.map((id) => id.toString()),
-        areaIds: updatePricingRuleDto.areaIds
-          ? updatePricingRuleDto.areaIds.map((id) => id.toString())
-          : pricingRule.areaIds?.map((id) => id.toString()),
-      };
+    // ==========================================
+    // NORMALIZE SCOPE
+    // ==========================================
 
-      await this.validateRuleScope(
-        nextDto,
-        pricingRule.restaurantId.toString(),
-      );
-    }
+    const tableIds =
+      nextRule.applyType === PricingApplyType.TABLE
+        ? nextRule.tableIds.map((id) => new Types.ObjectId(id))
+        : [];
+
+    const areaIds =
+      nextRule.applyType === PricingApplyType.AREA
+        ? nextRule.areaIds.map((id) => new Types.ObjectId(id))
+        : [];
+
+    // ==========================================
+    // APPLY UPDATE
+    // ==========================================
 
     Object.assign(pricingRule, {
       ...updatePricingRuleDto,
-      name: updatePricingRuleDto.name?.trim() ?? pricingRule.name,
-      tableIds: updatePricingRuleDto.tableIds
-        ? updatePricingRuleDto.tableIds.map((id) => new Types.ObjectId(id))
-        : pricingRule.tableIds,
-      areaIds: updatePricingRuleDto.areaIds
-        ? updatePricingRuleDto.areaIds.map((id) => new Types.ObjectId(id))
-        : pricingRule.areaIds,
-      startDate: updatePricingRuleDto.startDate
-        ? new Date(updatePricingRuleDto.startDate)
-        : pricingRule.startDate,
-      endDate: updatePricingRuleDto.endDate
-        ? new Date(updatePricingRuleDto.endDate)
-        : pricingRule.endDate,
-      daysOfWeek: updatePricingRuleDto.daysOfWeek ?? pricingRule.daysOfWeek,
-      isActive: updatePricingRuleDto.isActive ?? pricingRule.isActive,
+
+      name: nextRule.name,
+
+      applyType: nextRule.applyType,
+
+      tableIds,
+
+      areaIds,
+
+      startDate: nextRule.startDate ? new Date(nextRule.startDate) : undefined,
+
+      endDate: nextRule.endDate ? new Date(nextRule.endDate) : undefined,
+
+      startTime: nextRule.startTime,
+
+      endTime: nextRule.endTime,
+
+      daysOfWeek: nextRule.daysOfWeek,
     });
 
     return pricingRule.save();
@@ -293,11 +358,6 @@ export class PricingRuleService {
       for (const areaId of dto.areaIds) {
         await this.areasService.findByRestaurant(areaId, restaurantId);
       }
-    }
-
-    if (applyType === PricingApplyType.ALL_TABLES) {
-      dto.tableIds = [];
-      dto.areaIds = [];
     }
 
     if (dto.startTime && dto.endTime && dto.startTime >= dto.endTime) {

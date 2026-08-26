@@ -5,6 +5,7 @@ import {
 	FindTablesParams,
 	UpdateTablePayload,
 	UpdateTablePositionPayload,
+	BulkUpdatePositionsPayload,
 } from "../types/table-payload";
 
 const API_URL_PREFIX = "/tables";
@@ -55,6 +56,16 @@ export const tableApi = {
 	) => {
 		const res = await clientRequest<ITable>({
 			url: `${API_URL_PREFIX}/${tableId}/position`,
+			method: "PATCH",
+			body: payload,
+		});
+
+		return res.data;
+	},
+
+	bulkUpdatePositions: async (payload: BulkUpdatePositionsPayload) => {
+		const res = await clientRequest<{ updated: number }>({
+			url: `${API_URL_PREFIX}/positions/bulk`,
 			method: "PATCH",
 			body: payload,
 		});

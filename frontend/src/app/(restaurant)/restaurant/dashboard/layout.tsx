@@ -26,18 +26,13 @@ function Restaurant({ children }: RestaurantProps) {
 			],
 		},
 		{
-			label: "Quản lý giờ đặt bàn",
+			label: "Quản lý nhà hàng",
 			children: [
 				{
 					label: "Danh sách giờ đặt bàn",
 					href: "/restaurant/dashboard/availabilities",
 					exact: true,
 				},
-			],
-		},
-		{
-			label: "Quản lý giá",
-			children: [
 				{
 					label: "Quy tắc giá",
 					href: "/restaurant/dashboard/pricing-rules",

@@ -7,6 +7,7 @@ import {
 	FindTablesParams,
 	UpdateTablePayload,
 	UpdateTablePositionPayload,
+	BulkUpdatePositionsPayload,
 } from "../types/table-payload";
 
 export function useGetTables(params: FindTablesParams) {
@@ -118,6 +119,38 @@ export function useUpdateTablePosition() {
 			showToast(
 				"error",
 				"Cập nhật vị trí bàn thất bại",
+				error?.response?.data?.message ??
+					error?.message ??
+					"Đã có lỗi xảy ra",
+			);
+		},
+	});
+}
+
+export function useBulkUpdatePositions() {
+	const queryClient = useQueryClient();
+	const { showToast } = useToast();
+
+	return useMutation({
+		mutationFn: (payload: BulkUpdatePositionsPayload) =>
+			tableApi.bulkUpdatePositions(payload),
+
+		onSuccess: (data) => {
+			queryClient.invalidateQueries({
+				queryKey: tableQueryKeys.ALL,
+			});
+
+			showToast(
+				"success",
+				"Lưu layout thành công",
+				`Đã cập nhật vị trí ${data.updated} bàn.`,
+			);
+		},
+
+		onError: (error: any) => {
+			showToast(
+				"error",
+				"Lưu layout thất bại",
 				error?.response?.data?.message ??
 					error?.message ??
 					"Đã có lỗi xảy ra",

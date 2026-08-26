@@ -22,6 +22,10 @@ export type UpdateTablePositionPayload = {
 	y: number;
 };
 
+export type BulkUpdatePositionsPayload = {
+	positions: Array<{ tableId: string; x: number; y: number }>;
+};
+
 export type FindTablesParams = {
 	areaId: string;
 };

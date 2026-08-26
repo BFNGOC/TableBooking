@@ -16,6 +16,7 @@ import { RestaurantsService } from '../restaurants/restaurants.service';
 import { Model, Types } from 'mongoose';
 import { FindTablesDto } from './dto/find-table.dto';
 import { UpdateTablePositionDto } from './dto/update-table-position.dto';
+import { BulkUpdatePositionsDto } from './dto/bulk-update-positions.dto';
 import { AreasService } from '../areas/areas.service';
 
 @Injectable()
@@ -114,6 +115,40 @@ export class TablesService {
     table.y = updateTablePositionDto.y;
 
     return table.save();
+  }
+
+  async bulkUpdatePositions(dto: BulkUpdatePositionsDto, user: AuthUser) {
+    if (!dto.positions?.length) return { updated: 0 };
+
+    const restaurant = await this.restaurantsService.getCurrentUserRestaurant(
+      user._id,
+    );
+
+    const tableIds = dto.positions.map((p) => p.tableId);
+
+    // Verify tất cả bàn thuộc nhà hàng này
+    const count = await this.tableModel.countDocuments({
+      _id: { $in: tableIds.map((id) => new Types.ObjectId(id)) },
+      restaurantId: restaurant._id,
+    });
+
+    if (count !== tableIds.length) {
+      throw new NotFoundException(
+        'Một hoặc nhiều bàn không thuộc nhà hàng của bạn',
+      );
+    }
+
+    // Batch update 1 lần duy nhất
+    await this.tableModel.bulkWrite(
+      dto.positions.map(({ tableId, x, y }) => ({
+        updateOne: {
+          filter: { _id: new Types.ObjectId(tableId) },
+          update: { $set: { x, y } },
+        },
+      })),
+    );
+
+    return { updated: dto.positions.length };
   }
 
   async remove(tableId: string, user: AuthUser) {

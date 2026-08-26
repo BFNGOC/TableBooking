@@ -324,7 +324,9 @@ export class TableAvailabilitiesService {
         const end = this.parseTimeToMinutes(timeSlot.endTime);
 
         if (start >= end) {
-          throw new BadRequestException('startTime phải nhỏ hơn endTime');
+          throw new BadRequestException(
+            'Giờ bắt đầu phải nhỏ hơn giờ kết thúc',
+          );
         }
 
         return {

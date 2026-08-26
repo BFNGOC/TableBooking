@@ -18,6 +18,7 @@ import { Roles } from '@app/decorator/roles.decorator';
 import { FindTablesDto } from './dto/find-table.dto';
 import { TableParamDto } from './dto/table-param.dto';
 import { UpdateTablePositionDto } from './dto/update-table-position.dto';
+import { BulkUpdatePositionsDto } from './dto/bulk-update-positions.dto';
 @Controller('tables')
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
@@ -63,6 +64,15 @@ export class TablesController {
       updateTablePositionDto,
       user,
     );
+  }
+
+  @Patch('positions/bulk')
+  @Roles(UserRole.RESTAURANT)
+  bulkUpdatePositions(
+    @Body() bulkUpdatePositionsDto: BulkUpdatePositionsDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.tablesService.bulkUpdatePositions(bulkUpdatePositionsDto, user);
   }
 
   @Delete(':tableId')
