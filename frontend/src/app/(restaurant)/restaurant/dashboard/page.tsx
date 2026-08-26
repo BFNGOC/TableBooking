@@ -1,5 +1,7 @@
-function DashBoardOwnerPage() {
-    return <div>DashBoardOwnerPage</div>;
+import DashboardRestaurantPage from '@/features/dashboard/pages/DashboardRestaurantPage';
+
+function DashBoardRestaurant() {
+    return <DashboardRestaurantPage />;
 }
 
-export default DashBoardOwnerPage;
+export default DashBoardRestaurant;
