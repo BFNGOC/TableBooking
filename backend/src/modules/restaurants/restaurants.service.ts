@@ -734,6 +734,10 @@ export class RestaurantsService {
     return restaurant;
   }
 
+  async updateRating(restaurantId: string, rating: number): Promise<void> {
+    await this.restaurantModel.findByIdAndUpdate(restaurantId, { rating });
+  }
+
   async remove(id: number) {
     const restaurant = await this.restaurantModel.findByIdAndDelete(id);
 

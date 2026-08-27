@@ -27,6 +27,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SocketModule } from './modules/socket/socket.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -107,6 +108,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     SocketModule,
 
     DashboardModule,
+
+    ReviewsModule,
   ],
 
   controllers: [AppController],
