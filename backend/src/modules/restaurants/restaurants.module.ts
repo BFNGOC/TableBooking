@@ -21,8 +21,8 @@ import { TableAvailabilitiesModule } from '../table-availabilities/table-availab
     CounterModule,
     TaxModule,
     UsersModule,
-    forwardRef(() => BookingsModule),
-    TableAvailabilitiesModule,
+    //forwardRef(() => BookingsModule),
+    forwardRef(() => TableAvailabilitiesModule),
   ],
   controllers: [RestaurantsController],
   providers: [

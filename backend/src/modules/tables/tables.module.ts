@@ -9,7 +9,7 @@ import { AreasModule } from '../areas/areas.module';
   imports: [
     MongooseModule.forFeature([{ name: Table.name, schema: TableSchema }]),
     forwardRef(() => AreasModule),
-    RestaurantsModule,
+    forwardRef(() => RestaurantsModule),
   ],
   controllers: [TablesController],
   providers: [TablesService],

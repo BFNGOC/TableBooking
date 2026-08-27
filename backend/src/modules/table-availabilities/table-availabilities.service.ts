@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -24,6 +26,7 @@ export class TableAvailabilitiesService {
     private readonly tableAvailabilityModel: Model<TableAvailabilityDocument>,
     @InjectModel(Table.name)
     private readonly tableModel: Model<TableDocument>,
+    @Inject(forwardRef(() => RestaurantsService))
     private readonly restaurantsService: RestaurantsService,
     private readonly tablesService: TablesService,
   ) {}

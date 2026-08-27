@@ -22,6 +22,7 @@ export class AreasService {
     @InjectModel(Area.name)
     private readonly areaModel: Model<AreaDocument>,
 
+    @Inject(forwardRef(() => RestaurantsService))
     private readonly restaurantsService: RestaurantsService,
     @Inject(forwardRef(() => TablesService))
     private readonly tablesService: TablesService,

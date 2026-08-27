@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TableAvailabilitiesService } from './table-availabilities.service';
 import { TableAvailabilitiesController } from './table-availabilities.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -14,8 +14,9 @@ import { TablesModule } from '../tables/tables.module';
     MongooseModule.forFeature([
       { name: TableAvailability.name, schema: TableAvailabilitySchema },
     ]),
-    RestaurantsModule,
-    TablesModule,
+    forwardRef(() => RestaurantsModule),
+
+    forwardRef(() => TablesModule),
   ],
   controllers: [TableAvailabilitiesController],
   providers: [TableAvailabilitiesService],

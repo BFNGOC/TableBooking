@@ -28,6 +28,7 @@ export class TablesService {
     @Inject(forwardRef(() => AreasService))
     private readonly areasService: AreasService,
 
+    @Inject(forwardRef(() => RestaurantsService))
     private readonly restaurantsService: RestaurantsService,
   ) {}
 

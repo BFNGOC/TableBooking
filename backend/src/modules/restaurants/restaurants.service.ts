@@ -3,6 +3,8 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { RestaurantOnboardingDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantProfileDto } from './dto/update-restaurant.dto';
@@ -50,14 +52,16 @@ export class RestaurantsService {
     private readonly userSearchService: UserSearchService,
     private readonly restaurantCustomerSearchService: RestaurantCustomerSearchService,
     private readonly elasticsearchService: ElasticsearchService,
+    @Inject(forwardRef(() => TableAvailabilitiesService))
     private readonly tableAvailabilitiesService: TableAvailabilitiesService,
   ) {}
 
   async getAvailableTimeSlotsBySlug(slug: string) {
     const restaurant = await this.getRestaurantBySlug(slug);
-    const timeSlots = await this.tableAvailabilitiesService.getAvailableTimeSlots(
-      restaurant._id.toString(),
-    );
+    const timeSlots =
+      await this.tableAvailabilitiesService.getAvailableTimeSlots(
+        restaurant._id.toString(),
+      );
 
     return {
       restaurantSlug: slug,
@@ -142,23 +146,23 @@ export class RestaurantsService {
     return restaurant;
   }
 
-  async getRestaurantByUserId(userId: string) {
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
-    }
+  // async getRestaurantByUserId(userId: string) {
+  //   if (!Types.ObjectId.isValid(userId)) {
+  //     throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+  //   }
 
-    const restaurant = await this.restaurantModel
-      .findOne({
-        userId,
-      })
-      .lean();
+  //   const restaurant = await this.restaurantModel
+  //     .findOne({
+  //       userId,
+  //     })
+  //     .lean();
 
-    if (!restaurant) {
-      throw new NotFoundException('Không tìm thấy nhà hàng của người dùng');
-    }
+  //   if (!restaurant) {
+  //     throw new NotFoundException('Không tìm thấy nhà hàng của người dùng');
+  //   }
 
-    return restaurant;
-  }
+  //   return restaurant;
+  // }
 
   /***********************************
    *  PUBLIC

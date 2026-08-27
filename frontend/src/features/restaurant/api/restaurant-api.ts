@@ -44,6 +44,20 @@ export const restaurantPublicApi = {
 		});
 		return res.data;
 	},
+	getRestaurantBySlug: async (slug: string) => {
+		const res = await clientRequest<IRestaurant>({
+			url: `${API_URL_PREFIX}/${slug}`,
+			method: "GET",
+		});
+		return res.data;
+	},
+	getAvailableTimeSlots: async (slug: string) => {
+		const res = await clientRequest<AvailableTimeSlotsResponse>({
+			url: `${API_URL_PREFIX}/${slug}/available-time-slots`,
+			method: "GET",
+		});
+		return res.data;
+	},
 };
 
 export const getRestaurantMeApi = async () => {
@@ -51,23 +65,6 @@ export const getRestaurantMeApi = async () => {
 		url: `${API_URL_PREFIX}/me`,
 		method: "GET",
 	});
-	return res.data;
-};
-
-export const getRestaurantBySlugApi = async (slug: string) => {
-	const res = await clientRequest<IRestaurant>({
-		url: `${API_URL_PREFIX}/${slug}`,
-		method: "GET",
-	});
-	return res.data;
-};
-
-export const getAvailableTimeSlotsApi = async (slug: string) => {
-	const res = await clientRequest<AvailableTimeSlotsResponse>({
-		url: `${API_URL_PREFIX}/${slug}/available-time-slots`,
-		method: "GET",
-	});
-
 	return res.data;
 };
 

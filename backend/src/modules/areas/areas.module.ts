@@ -17,7 +17,7 @@ import { TablesModule } from '../tables/tables.module';
       { name: Restaurant.name, schema: RestaurantSchema },
     ]),
     forwardRef(() => TablesModule),
-    RestaurantsModule,
+    forwardRef(() => RestaurantsModule),
   ],
   controllers: [AreasController],
   providers: [AreasService],
