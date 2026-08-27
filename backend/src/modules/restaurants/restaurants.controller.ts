@@ -61,11 +61,11 @@ export class RestaurantsController {
     return this.restaurantsService.getRestaurants(query);
   }
 
-  @Get('/:slug')
-  @Public()
-  getPublicRestaurantBySlug(@Param('slug') slug: string) {
-    return this.restaurantsService.getRestaurantBySlug(slug);
-  }
+  // @Get('/:slug')
+  // @Public()
+  // getPublicRestaurantBySlug(@Param('slug') slug: string) {
+  //   return this.restaurantsService.getRestaurantBySlug(slug);
+  // }
 
   @Patch('me/')
   async updateRestaurantMe(
@@ -165,5 +165,11 @@ export class RestaurantsController {
   @Roles(UserRole.CUSTOMER)
   verifyEmail(@Body() data: CheckCodeDto) {
     return this.restaurantsService.handleverifyEmail(data);
+  }
+
+  @Get('/:slug')
+  @Public()
+  getPublicRestaurantBySlug(@Param('slug') slug: string) {
+    return this.restaurantsService.getRestaurantBySlug(slug);
   }
 }

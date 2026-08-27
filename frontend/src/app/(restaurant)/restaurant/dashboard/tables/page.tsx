@@ -1,5 +1,5 @@
-function TablesRestaurant() {
-    return <div>TablesRestaurant</div>;
-}
+import TableManagementRestaurantPage from "@/features/table/pages/TableManagementRestaurantPage";
 
-export default TablesRestaurant;
+export default function TablesRestaurant() {
+	return <TableManagementRestaurantPage />;
+}
