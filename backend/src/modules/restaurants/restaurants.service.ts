@@ -104,7 +104,7 @@ export class RestaurantsService {
 
   async getRestaurantByUserId(userId: string): Promise<RestaurantDocument> {
     const restaurant = await this.restaurantModel.findOne({
-      userId: new Types.ObjectId(userId),
+      userId: userId,
     });
 
     if (!restaurant) {
