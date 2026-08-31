@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays, History, ChevronRight, Heart } from 'lucide-react';
 import { useGetBookingRecentMe, useGetBookingUpcomingMe } from '../../hook/useBookingMe';
@@ -8,8 +9,29 @@ import BookingEmpty from '@/features/booking/components/BookingEmpty';
 import { UpcomingSkeleton, RecentSkeleton } from '@/features/booking/components/BookingSkeletons';
 import UpcomingBookingCard from '../../components/my-booking/UpcomingBookingCard';
 import RecentBookingCard from '../../components/my-booking/RecentBookingCard';
+import ReviewFormModal from '@/features/review/components/ReviewFormModal';
+import { useCreateReview } from '@/features/review/hooks/useReview';
+import { IReview } from '@/features/review/types/review.type';
+import { CreateReviewPayload } from '@/features/review/types/review.dto';
 
 function MyBookingsPage() {
+    const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+    const [reviewValues, setReviewValues] = useState<Partial<IReview> | null>(null);
+    const createReviewMutation = useCreateReview();
+
+    const handleWriteReview = (bookingId: string) => {
+        setSelectedBookingId(bookingId);
+        setReviewValues(null);
+    };
+
+    const handleReviewSubmit = (values: Partial<IReview>) => {
+        createReviewMutation.mutate(values as CreateReviewPayload, {
+            onSuccess: () => {
+                setSelectedBookingId(null);
+                setReviewValues(null);
+            },
+        });
+    };
     const {
         data: upcomingData,
         isPending: isUpcomingPending,
@@ -26,6 +48,7 @@ function MyBookingsPage() {
     const recentBookings = recentData ?? [];
 
     return (
+        <>
         <main className="min-h-screen mb-4 sm:px-6 lg:px-8">
             <div className="mx-auto">
                 {/* Header */}
@@ -102,7 +125,11 @@ function MyBookingsPage() {
                             ) : (
                                 <div className="space-y-3">
                                     {recentBookings.map((booking) => (
-                                        <RecentBookingCard key={booking._id} booking={booking} />
+                                        <RecentBookingCard
+                                            key={booking._id}
+                                            booking={booking}
+                                            onWriteReview={handleWriteReview}
+                                        />
                                     ))}
                                 </div>
                             )}
@@ -175,6 +202,22 @@ function MyBookingsPage() {
                 </div>
             </div>
         </main>
+
+        {/* Review Form Modal — triggered from RecentBookingCard */}
+        <ReviewFormModal
+            isOpen={!!selectedBookingId}
+            mode="create"
+            values={reviewValues}
+            onValuesChange={setReviewValues as any}
+            onSubmit={handleReviewSubmit}
+            onClose={() => {
+                setSelectedBookingId(null);
+                setReviewValues(null);
+            }}
+            isPending={createReviewMutation.isPending}
+            bookingId={selectedBookingId ?? undefined}
+        />
+        </>  
     );
 }
 

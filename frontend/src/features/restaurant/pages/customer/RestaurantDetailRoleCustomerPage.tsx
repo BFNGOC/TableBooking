@@ -8,6 +8,7 @@ import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import { useToast } from "@/shared/hooks/useToast";
 import BookingCard from "@/features/restaurant/components/BookingCard";
 import { formatPriceRange } from "@/features/restaurant/utils/price.utils";
+import RestaurantDetailReviewSection from "@/features/review/pages/RestaurantDetailReviewSection";
 import {
 	Star,
 	Share2,
@@ -21,6 +22,9 @@ import {
 interface RestaurantDetailRoleCustomerPageProps {
 	restaurant: IRestaurant;
 }
+
+const FALLBACK_RESTAURANT_IMAGE =
+	"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80";
 
 function RestaurantDetailRoleCustomerPage({
 	restaurant,
@@ -55,8 +59,24 @@ function RestaurantDetailRoleCustomerPage({
 			}
 		});
 
+		if (list.length === 0) {
+			list.push(FALLBACK_RESTAURANT_IMAGE);
+		}
+
 		return list;
 	}, [avatar, images]);
+
+	const hasSecondaryGallery = galleryImages.length > 1;
+
+	const handleImageError = (
+		e: React.SyntheticEvent<HTMLImageElement>,
+		fallback = FALLBACK_RESTAURANT_IMAGE,
+	) => {
+		const img = e.currentTarget;
+		if (img.dataset.fallbackApplied === "true") return;
+		img.dataset.fallbackApplied = "true";
+		img.src = fallback;
+	};
 
 	const handleShare = () => {
 		if (navigator.share) {
@@ -80,39 +100,51 @@ function RestaurantDetailRoleCustomerPage({
 				{/* Image Grid Section (Airbnb-style) */}
 				<div className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-[24px] overflow-hidden shadow-sm">
 					{/* Left Column: Big Image */}
-					<div className="md:col-span-2 aspect-[4/3] md:aspect-auto md:h-[450px] relative overflow-hidden group">
+					<div
+						className={`relative overflow-hidden group ${
+							hasSecondaryGallery
+								? "md:col-span-2 aspect-[4/3] md:aspect-auto md:h-[450px]"
+								: "md:col-span-4 aspect-[4/3] md:aspect-auto md:h-[450px]"
+						}`}
+					>
 						<img
-							src={galleryImages[0]}
+							src={galleryImages[0] ?? FALLBACK_RESTAURANT_IMAGE}
 							alt={`${restaurantName} main`}
+							onError={(e) => handleImageError(e)}
 							className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
 						/>
 					</div>
 
 					{/* Right Column: 4 Small Images in Subgrid */}
-					<div className="grid grid-cols-2 gap-3 md:col-span-2">
-						{galleryImages.slice(1, 5).map((img, idx) => {
-							const isLast = idx === 3;
-							return (
-								<div
-									key={idx}
-									className="aspect-[4/3] md:h-[218px] relative overflow-hidden group"
-								>
-									<img
-										src={img}
-										alt={`${restaurantName} details ${idx + 1}`}
-										className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-									/>
-									{isLast && (
-										<div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center flex-col gap-1 cursor-pointer">
-											<span className="text-white text-base font-extrabold">
-												+{images.length - 3} ảnh
-											</span>
-										</div>
-									)}
-								</div>
-							);
-						})}
-					</div>
+					{hasSecondaryGallery && (
+						<div className="grid grid-cols-2 gap-3 md:col-span-2">
+							{galleryImages.slice(1, 5).map((img, idx) => {
+								const isLast = idx === 3;
+								return (
+									<div
+										key={idx}
+										className="aspect-[4/3] md:h-[218px] relative overflow-hidden group"
+									>
+										<img
+											src={
+												img ?? FALLBACK_RESTAURANT_IMAGE
+											}
+											alt={`${restaurantName} details ${idx + 1}`}
+											onError={(e) => handleImageError(e)}
+											className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+										/>
+										{isLast && (
+											<div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center flex-col gap-1 cursor-pointer">
+												<span className="text-white text-base font-extrabold">
+													+{images.length - 3} ảnh
+												</span>
+											</div>
+										)}
+									</div>
+								);
+							})}
+						</div>
+					)}
 				</div>
 
 				{/* Two Column Layout: Details on Left, Booking CTA on Right */}
@@ -262,6 +294,17 @@ function RestaurantDetailRoleCustomerPage({
 						/>
 					</div>
 				</div>
+
+				{/* Divider */}
+				<div className="border-t border-[#e6d8c9]/40" />
+
+				{/* Reviews */}
+				{restaurant._id && (
+					<RestaurantDetailReviewSection
+						restaurantId={String(restaurant._id)}
+						avgRating={rating ?? 0}
+					/>
+				)}
 			</div>
 		</div>
 	);

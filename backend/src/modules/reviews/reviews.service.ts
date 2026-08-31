@@ -57,6 +57,10 @@ export class ReviewsService {
       );
     }
 
+    const restaurantObjectId = this.normalizeObjectId(
+      (booking.restaurantId as any)?._id ?? booking.restaurantId,
+    );
+
     // Kiểm tra booking chưa được review (tránh duplicate trước khi hit unique index)
     const existingReview = await this.reviewModel.findOne({
       bookingId: new Types.ObjectId(dto.bookingId),
@@ -70,17 +74,14 @@ export class ReviewsService {
     const review = await this.reviewModel.create({
       bookingId: new Types.ObjectId(dto.bookingId),
       userId: new Types.ObjectId(userId),
-      restaurantId: booking.restaurantId,
+      restaurantId: restaurantObjectId,
       rating: dto.rating,
       comment: dto.comment,
       images: dto.images ?? [],
     });
 
     // Cập nhật lại rating trung bình của nhà hàng
-    await this.recalculateRestaurantRating(
-      (booking.restaurantId as any)?._id?.toString() ??
-        booking.restaurantId.toString(),
-    );
+    await this.recalculateRestaurantRating(restaurantObjectId.toString());
 
     return review;
   }
@@ -318,9 +319,7 @@ export class ReviewsService {
       await this.restaurantsService.getRestaurantByUserId(restaurantUserId);
 
     if (review.restaurantId.toString() !== restaurant._id.toString()) {
-      throw new ForbiddenException(
-        'Bạn không có quyền phản hồi đánh giá này',
-      );
+      throw new ForbiddenException('Bạn không có quyền phản hồi đánh giá này');
     }
 
     review.restaurantReply = {
@@ -354,7 +353,9 @@ export class ReviewsService {
     }
 
     if (!review.restaurantReply) {
-      throw new BadRequestException('Đánh giá này chưa có phản hồi từ nhà hàng');
+      throw new BadRequestException(
+        'Đánh giá này chưa có phản hồi từ nhà hàng',
+      );
     }
 
     review.restaurantReply = null;
@@ -367,6 +368,29 @@ export class ReviewsService {
   // ===========================================================
   // PRIVATE HELPER
   // ===========================================================
+
+  private normalizeObjectId(value: unknown): Types.ObjectId {
+    if (value instanceof Types.ObjectId) {
+      return value;
+    }
+
+    if (typeof value === 'string' && Types.ObjectId.isValid(value)) {
+      return new Types.ObjectId(value);
+    }
+
+    if (value && typeof value === 'object' && '_id' in value) {
+      const nestedId = (value as any)._id;
+      if (nestedId instanceof Types.ObjectId) {
+        return nestedId;
+      }
+
+      if (typeof nestedId === 'string' && Types.ObjectId.isValid(nestedId)) {
+        return new Types.ObjectId(nestedId);
+      }
+    }
+
+    throw new BadRequestException('ID nhà hàng không hợp lệ');
+  }
 
   private async recalculateRestaurantRating(restaurantId: string) {
     const result = await this.reviewModel.aggregate<{

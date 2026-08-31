@@ -68,6 +68,11 @@ function Restaurant({ children }: RestaurantProps) {
 					href: "/restaurant/dashboard/pricing-rules",
 					exact: true,
 				},
+				{
+					label: "Đánh giá",
+					href: "/restaurant/dashboard/reviews",
+					exact: true,
+				},
 			],
 		},
 	];
