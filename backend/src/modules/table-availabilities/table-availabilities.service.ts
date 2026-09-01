@@ -18,6 +18,7 @@ import { Table, TableDocument } from '../tables/schemas/table.schema';
 import { CreateTableAvailabilityDto } from './dto/create-table-availability.dto';
 import { FindTableAvailabilityDto } from './dto/find-table-availability.dto';
 import { UpdateTableAvailabilityDto } from './dto/update-table-availability.dto';
+import { UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
 export class TableAvailabilitiesService {
@@ -155,7 +156,7 @@ export class TableAvailabilitiesService {
       throw new NotFoundException('Không tìm thấy bảng availability');
     }
 
-    if (user.role === 'RESTAURANT') {
+    if (user.role === UserRole.RESTAURANT) {
       const restaurant = await this.restaurantsService.getCurrentUserRestaurant(
         user._id,
       );
