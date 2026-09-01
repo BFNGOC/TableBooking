@@ -27,10 +27,7 @@ export class ReviewsController {
 
   @Post()
   @ResponseMessage('Đánh giá thành công')
-  createReview(
-    @CurrentUser() user: AuthUser,
-    @Body() dto: CreateReviewDto,
-  ) {
+  createReview(@CurrentUser() user: AuthUser, @Body() dto: CreateReviewDto) {
     return this.reviewsService.createReview(user._id, dto);
   }
 
@@ -38,17 +35,12 @@ export class ReviewsController {
 
   @Get()
   @Public()
-  getReviews(
-    @Query() query: QueryReviewDto,
-  ) {
+  getReviews(@Query() query: QueryReviewDto) {
     return this.reviewsService.getReviews(query);
   }
 
   @Get('me')
-  getMyReviews(
-    @CurrentUser() user: AuthUser,
-    @Query() query: QueryReviewDto,
-  ) {
+  getMyReviews(@CurrentUser() user: AuthUser, @Query() query: QueryReviewDto) {
     return this.reviewsService.getMyReviews(user._id, query);
   }
 
@@ -72,11 +64,8 @@ export class ReviewsController {
   // ─── DELETE ────────────────────────────────────────────────
 
   @Delete(':id')
-  @Roles(UserRole.CUSTOMER, UserRole.ADMIN)
-  deleteReview(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthUser,
-  ) {
+  @Roles(UserRole.CUSTOMER, UserRole.ADMIN, UserRole.RESTAURANT)
+  deleteReview(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.reviewsService.deleteReview(id, user._id, user.role);
   }
 
@@ -96,10 +85,7 @@ export class ReviewsController {
   @Delete(':id/reply')
   @Roles(UserRole.RESTAURANT)
   @ResponseMessage('Xóa phản hồi thành công')
-  deleteReply(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthUser,
-  ) {
+  deleteReply(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.reviewsService.deleteReply(id, user._id);
   }
 }

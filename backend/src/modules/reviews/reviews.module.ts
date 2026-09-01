@@ -6,13 +6,15 @@ import { Review, ReviewSchema } from './schemas/review.schema';
 import { BookingsModule } from '../bookings/bookings.module';
 import { RestaurantsModule } from '../restaurants/restaurants.module';
 import { UploadModule } from '../upload/upload.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Review.name, schema: ReviewSchema }]),
-    BookingsModule,      // Cung cấp BookingsService
-    RestaurantsModule,   // Cung cấp RestaurantsService
-    UploadModule,        // Cung cấp UploadService để xóa ảnh Cloudinary
+    BookingsModule,
+    RestaurantsModule,
+    UploadModule,
+    NotificationModule,
   ],
   controllers: [ReviewsController],
   providers: [ReviewsService],

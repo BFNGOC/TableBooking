@@ -349,6 +349,53 @@ export class NotificationService {
   }
 
   // --------------------------------------
+  // Review notifications
+  // --------------------------------------
+
+  notifyReviewCreated(
+    userId: string,
+    review: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.REVIEW,
+      title: 'Có đánh giá mới',
+      message: `Khách hàng đã để lại đánh giá cho nhà hàng ${restaurantName}.`,
+      referenceId: review._id,
+      referenceModel: NotificationReferenceModel.REVIEW,
+      data: {
+        reviewId: review._id,
+        rating: review.rating,
+        comment: review.comment ?? null,
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyReviewReplied(
+    userId: string,
+    review: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.REVIEW,
+      title: 'Nhà hàng đã phản hồi đánh giá',
+      message: `Nhà hàng ${restaurantName} đã phản hồi đánh giá của bạn.`,
+      referenceId: review._id,
+      referenceModel: NotificationReferenceModel.REVIEW,
+      data: {
+        reviewId: review._id,
+        restaurantSlug,
+        reply: review.restaurantReply?.content ?? null,
+      },
+    });
+  }
+
+  // --------------------------------------
   // Payment notifications
   // --------------------------------------
 

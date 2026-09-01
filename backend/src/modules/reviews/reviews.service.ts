@@ -19,6 +19,7 @@ import { UploadService } from '../upload/upload.service';
 import { BookingStatus } from '../bookings/schemas/booking.schema';
 import { buildPagination } from '@app/helpers/pagination.helper';
 import { UserRole } from '../users/schemas/user.schema';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class ReviewsService {
@@ -32,6 +33,7 @@ export class ReviewsService {
     private readonly bookingsService: BookingsService,
     private readonly restaurantsService: RestaurantsService,
     private readonly uploadService: UploadService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   // ===========================================================
@@ -79,6 +81,17 @@ export class ReviewsService {
       comment: dto.comment,
       images: dto.images ?? [],
     });
+
+    const restaurant = await this.restaurantsService.getRestaurantById(
+      restaurantObjectId.toString(),
+    );
+
+    await this.notificationService.notifyReviewCreated(
+      restaurant.userId.toString(),
+      review.toObject ? review.toObject() : review,
+      restaurant.restaurantName,
+      restaurant.slug,
+    );
 
     // Cập nhật lại rating trung bình của nhà hàng
     await this.recalculateRestaurantRating(restaurantObjectId.toString());
@@ -267,8 +280,9 @@ export class ReviewsService {
       throw new NotFoundException('Không tìm thấy đánh giá');
     }
 
-    // Kiểm tra quyền: ADMIN bypass, CUSTOMER phải là chủ sở hữu
-    if (role !== UserRole.ADMIN && review.userId.toString() !== userId) {
+    // Chỉ kiểm tra đơn giản: user hiện tại phải là chủ sở hữu review.
+    // Restaurant role không được xóa review của customer, cũng không được xóa review của nhà hàng khác.
+    if (review.userId.toString() !== userId) {
       throw new ForbiddenException('Bạn không có quyền xóa đánh giá này');
     }
 
@@ -328,6 +342,13 @@ export class ReviewsService {
     };
 
     await review.save();
+
+    await this.notificationService.notifyReviewReplied(
+      review.userId.toString(),
+      review.toObject ? review.toObject() : review,
+      restaurant.restaurantName,
+      restaurant.slug,
+    );
 
     return review;
   }

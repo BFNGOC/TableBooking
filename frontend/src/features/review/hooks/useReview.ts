@@ -83,6 +83,31 @@ export function useUpdateReview(restaurantId?: string) {
     });
 }
 
+export function useDeleteReview(restaurantId?: string) {
+    const queryClient = useQueryClient();
+    const { showToast } = useToast();
+
+    return useMutation({
+        mutationFn: (id: string) => reviewApi.deleteReview(id),
+        onSuccess: () => {
+            if (restaurantId) {
+                queryClient.invalidateQueries({
+                    queryKey: reviewQueryKeys.BY_RESTAURANT(restaurantId),
+                });
+            }
+            queryClient.invalidateQueries({ queryKey: reviewQueryKeys.MY });
+            showToast('success', 'Thành công', 'Đánh giá đã được xóa.');
+        },
+        onError: (error: any) => {
+            showToast(
+                'error',
+                'Xóa đánh giá thất bại',
+                error?.response?.data?.message ?? 'Đã có lỗi xảy ra, vui lòng thử lại.',
+            );
+        },
+    });
+}
+
 // ── Restaurant mutations ───────────────────────────────────────────────────────
 
 export function useReplyReview(restaurantId?: string) {
