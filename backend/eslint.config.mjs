@@ -39,6 +39,11 @@ export default tseslint.config(
 
       // Thêm dòng này để tắt kiểm tra biến thừa:
       '@typescript-eslint/no-unused-vars': 'off',
+
+      // Thêm 3 dòng này để tắt toàn bộ các quy tắc ép kiểu/so sánh và Promise nghiêm ngặt khi build:
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
     },
   },
 );

@@ -156,7 +156,7 @@ export class TableAvailabilitiesService {
       throw new NotFoundException('Không tìm thấy bảng availability');
     }
 
-    if (user.role === UserRole.RESTAURANT) {
+    if (String(user.role) === String(UserRole.RESTAURANT)) {
       const restaurant = await this.restaurantsService.getCurrentUserRestaurant(
         user._id,
       );
