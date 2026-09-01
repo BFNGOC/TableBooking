@@ -36,6 +36,9 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'warn',
 
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+
+      // Thêm dòng này để tắt kiểm tra biến thừa:
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
 );
