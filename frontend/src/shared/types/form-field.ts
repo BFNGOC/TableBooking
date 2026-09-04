@@ -1,71 +1,88 @@
-import { DateValue, TimeValue } from "@heroui/react";
-import { FormFieldType } from "./form-field-types";
-import { FormModalModeType } from "./form-modal-mode-type";
-import { ReactNode } from "react";
+import { DateValue, TimeValue } from '@heroui/react';
+import { FormFieldType } from './form-field-types';
+import { FormModalModeType } from './form-modal-mode-type';
+import { ReactNode } from 'react';
 
 export interface FieldContext<T = Record<string, any>> {
-	mode: FormModalModeType;
-	dataForm: Partial<T>;
+    mode: FormModalModeType;
+    dataForm: Partial<T>;
 }
 
 export interface options {
-	id: any;
-	text: string;
-	description?: string;
+    id: any;
+    text: string;
+    description?: string;
 }
 
 export interface FormField {
-	label?: string;
-	name: string;
+    label?: string;
+    name: string;
 
-	type?: FormFieldType;
+    type?: FormFieldType;
 
-	className?: string;
+    className?: string;
 
-	placeholder?: string;
+    placeholder?: string;
 
-	description?: string;
+    description?: string;
 
-	col?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+    col?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
-	options?: options[];
+    options?: options[];
 
-	isDisabled?: boolean | ((context: FieldContext) => boolean);
+    isDisabled?: boolean | ((context: FieldContext) => boolean);
 
-	isReadOnly?: boolean | ((context: FieldContext) => boolean);
+    isReadOnly?: boolean | ((context: FieldContext) => boolean);
 
-	hidden?: boolean | ((context: FieldContext) => boolean);
+    hidden?: boolean | ((context: FieldContext) => boolean);
 
-	isRequired?: boolean | ((context: FieldContext) => boolean);
+    isRequired?: boolean | ((context: FieldContext) => boolean);
 
-	validate?: (value: any, values?: Record<string, any>) => string | null;
+    validate?: (value: any, values?: Record<string, any>) => string | null;
 
-	defaultValue?: string;
+    defaultValue?: string;
 
-	value?: any;
+    value?: any;
 
-	onChange?: (value: any) => void;
+    onChange?: (value: any) => void;
 
-	defaultDate?: DateValue;
+    defaultDate?: DateValue;
 
-	minValue?: DateValue | number;
+    minValue?: DateValue | number;
 
-	maxValue?: DateValue | number;
+    maxValue?: DateValue | number;
 
-	defaultTime?: TimeValue;
+    defaultTime?: TimeValue;
 
-	//image
-	multiple?: boolean;
+    //image
+    multiple?: boolean;
 
-	maxFiles?: number;
+    maxFiles?: number;
 
-	onLoadingChange?: (isLoading: boolean) => void;
+    onLoadingChange?: (isLoading: boolean) => void;
 
-	selectionMode?: "single" | "multiple";
+    selectionMode?: 'single' | 'multiple';
 
-	render?: (props: {
-		value: any;
-		field: FormField;
-		onChange: (value: any) => void;
-	}) => ReactNode;
+    render?: (props: { value: any; field: FormField; onChange: (value: any) => void }) => ReactNode;
 }
+
+export type ResolvedFormField = Omit<
+    FormField,
+    'isDisabled' | 'isReadOnly' | 'isRequired' | 'hidden'
+> & {
+    isDisabled?: boolean;
+    isReadOnly?: boolean;
+    isRequired?: boolean;
+    hidden?: boolean;
+};
+
+export type NumberFormField = Omit<ResolvedFormField, 'defaultValue' | 'minValue' | 'maxValue'> & {
+    defaultValue?: number;
+    minValue?: number;
+    maxValue?: number;
+};
+
+export type DateFormField = Omit<ResolvedFormField, 'minValue' | 'maxValue'> & {
+    minValue?: DateValue;
+    maxValue?: DateValue;
+};

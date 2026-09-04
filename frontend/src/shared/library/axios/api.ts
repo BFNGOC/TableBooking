@@ -46,11 +46,13 @@ export const sendRequest = async <T>({
     headers,
     useCredentials = true,
     accessToken,
+    baseURL,
 }: IRequest): Promise<IBackendRes<T>> => {
     try {
         const preparedQueryParams = sanitizeQueryParams(queryParams);
 
         const response = await api.request<IBackendRes<T>>({
+            baseURL,
             url,
             method,
             data: body,

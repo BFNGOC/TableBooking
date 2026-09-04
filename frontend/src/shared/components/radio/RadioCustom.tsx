@@ -1,5 +1,5 @@
 import { Label, Radio, RadioGroup, Description } from '@heroui/react';
-import { FormField } from '@/shared/types/form-field';
+import { ResolvedFormField } from '@/shared/types/form-field';
 
 export function RadioCustom({
     label,
@@ -11,7 +11,7 @@ export function RadioCustom({
     isDisabled,
     hidden,
     className,
-}: FormField) {
+}: ResolvedFormField) {
     if (hidden) return null;
 
     const selectedValue = value == null || value === '' ? undefined : String(value);

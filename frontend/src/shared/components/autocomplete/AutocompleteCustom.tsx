@@ -12,7 +12,7 @@ import {
     useFilter,
 } from '@heroui/react';
 import { useEffect, useMemo, useState } from 'react';
-import { FormField } from '@/shared/types/form-field';
+import { ResolvedFormField } from '@/shared/types/form-field';
 
 function AutocompleteCustom({
     label,
@@ -26,7 +26,7 @@ function AutocompleteCustom({
     options = [],
     selectionMode = 'single',
     className,
-}: FormField) {
+}: ResolvedFormField) {
     const { contains } = useFilter({ sensitivity: 'base' });
     const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
 

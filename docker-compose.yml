@@ -1,0 +1,88 @@
+services:
+    frontend:
+        image: tablebooking-frontend:test
+        container_name: tablebooking-frontend
+
+        ports:
+            - '3000:3000'
+
+        env_file:
+            - ./frontend/.env
+
+        depends_on:
+            - backend
+
+        restart: unless-stopped
+
+    backend:
+        image: ${GHCR_IMAGE}:latest
+        container_name: tablebooking-backend
+
+        ports:
+            - '8080:8080'
+
+        env_file:
+            - ./backend/.env
+
+        environment:
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+            ELASTICSEARCH_NODE: http://elasticsearch:9200
+
+        depends_on:
+            redis:
+                condition: service_started
+            elasticsearch:
+                condition: service_healthy
+
+        restart: unless-stopped
+
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.18.2
+        container_name: elasticsearch
+
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
+            - ES_JAVA_OPTS=-Xms512m -Xmx512m
+
+        volumes:
+            - elasticsearch_data:/usr/share/elasticsearch/data
+
+        healthcheck:
+            test: ['CMD-SHELL', 'curl -f http://localhost:9200/_cluster/health || exit 1']
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 30s
+
+        restart: unless-stopped
+
+    redis:
+        image: redis:7-alpine
+
+        container_name: tablebooking-redis
+
+        volumes:
+            - redis_data:/data
+
+        command: redis-server --appendonly yes
+
+        restart: unless-stopped
+
+    kibana:
+        image: docker.elastic.co/kibana/kibana:8.18.2
+        container_name: tablebooking-kibana
+
+        depends_on:
+            elasticsearch:
+                condition: service_healthy
+
+        environment:
+            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+
+        restart: unless-stopped
+
+volumes:
+    elasticsearch_data:
+    redis_data:

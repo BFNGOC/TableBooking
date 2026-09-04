@@ -91,6 +91,7 @@ export interface BookingStatusCountItem {
     pending: number;
     confirmed: number;
     completed: number;
+    checkedIn: number;
     cancelled: number;
     rejected: number;
     noShow: number;
