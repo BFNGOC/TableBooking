@@ -20,6 +20,10 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
+            - name: Convert repository owner to lowercase
+              run: |
+                  echo "OWNER_LC=${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]' >> $GITHUB_ENV
+
             - name: Log in to GHCR
               uses: docker/login-action@v3
               with:
@@ -35,4 +39,4 @@ jobs:
               with:
                   context: ./backend
                   push: true
-                  tags: ghcr.io/${{ github.repository_owner }}/tablebooking-backend:latest
+                  tags: ghcr.io/${{ env.OWNER_LC }}/tablebooking-backend:latest
