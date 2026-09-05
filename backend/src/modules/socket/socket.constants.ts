@@ -11,5 +11,9 @@ export const SOCKET_EVENTS = {
 
   BOOKING_UPDATED: 'booking:updated',
 
+  CHAT_JOIN: 'chat:join',
+  CHAT_LEAVE: 'chat:leave',
+  CHAT_SEND: 'chat:send',
   CHAT_MESSAGE: 'chat:message',
+  CHAT_ERROR: 'chat:error',
 } as const;

@@ -28,6 +28,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { SocketModule } from './modules/socket/socket.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -110,6 +111,8 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
     DashboardModule,
 
     ReviewsModule,
+
+    ChatModule,
   ],
 
   controllers: [AppController],
