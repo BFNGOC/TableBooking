@@ -52,7 +52,7 @@ export const sendRequest = async <T>({
         const preparedQueryParams = sanitizeQueryParams(queryParams);
 
         const response = await api.request<IBackendRes<T>>({
-            baseURL,
+            ...(baseURL && { baseURL }),
             url,
             method,
             data: body,
