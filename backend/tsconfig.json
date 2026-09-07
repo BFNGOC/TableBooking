@@ -23,6 +23,10 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+
+    // Thêm 2 dòng này để bỏ qua lỗi biến/import thừa khi build:
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   }
 }

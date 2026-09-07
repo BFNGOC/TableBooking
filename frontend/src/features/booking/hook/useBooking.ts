@@ -62,7 +62,7 @@ export const useBookingDetail = (bookingId?: string) => {
         },
         enabled: Boolean(bookingId),
         refetchInterval: (query) => {
-            const booking = query.state.data?.data;
+            const booking = query.state.data;
             const status = booking?.status;
             if (status === 'PENDING' || status === 'CONFIRMED') {
                 return 8000;

@@ -12,6 +12,7 @@ declare global {
         headers?: any;
         nextOption?: any;
         accessToken?: string;
+        baseURL?: string;
     }
 
     interface IBackendRes<T> {

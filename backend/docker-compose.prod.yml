@@ -1,16 +1,37 @@
 services:
+  backend:
+    image: ${GHCR_IMAGE}:latest
+
+    container_name: tablebooking-backend
+
+    ports:
+      - '8080:8080'
+
+    env_file:
+      - .env
+
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ELASTICSEARCH_NODE: http://elasticsearch:9200
+
+    depends_on:
+      redis:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+
+    restart: unless-stopped
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.18.2
+
     container_name: elasticsearch
 
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-
-    ports:
-      - '9200:9200'
-      - '9300:9300'
 
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
@@ -25,8 +46,21 @@ services:
 
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+
+    container_name: redis
+
+    volumes:
+      - redis_data:/data
+
+    command: redis-server --appendonly yes
+
+    restart: unless-stopped
+
   kibana:
     image: docker.elastic.co/kibana/kibana:8.18.2
+
     container_name: kibana
 
     depends_on:
@@ -35,23 +69,6 @@ services:
 
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-
-    ports:
-      - '5601:5601'
-
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-
-    ports:
-      - '6379:6379'
-
-    volumes:
-      - redis_data:/data
-
-    command: redis-server --appendonly yes
 
     restart: unless-stopped
 

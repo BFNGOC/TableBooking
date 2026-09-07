@@ -1,6 +1,6 @@
 'use client';
 
-import { FormField } from '@/shared/types/form-field';
+import { NumberFormField } from '@/shared/types/form-field';
 import { NumberField as HeroNumberField, Label, FieldError } from '@heroui/react';
 
 export default function NumberFieldCustom({
@@ -16,7 +16,7 @@ export default function NumberFieldCustom({
     validate,
     className,
     minValue,
-}: FormField) {
+}: NumberFormField) {
     return (
         <HeroNumberField
             name={name}
