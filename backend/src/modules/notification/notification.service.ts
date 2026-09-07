@@ -36,6 +36,24 @@ export class NotificationService {
     return notification;
   }
 
+  notifyChatMessage(
+    userId: string,
+    conversationId: string,
+    messageId: string,
+    message: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.CHAT,
+      title: 'Tin nhắn mới',
+      message,
+      data: {
+        conversationId,
+        messageId,
+      },
+    });
+  }
+
   async findAll(userId: string, page = 1, limit = 5) {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Định dạng ID người dùng không hợp lệ');

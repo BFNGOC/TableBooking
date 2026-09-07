@@ -7,12 +7,15 @@ import GoogleMapEmbed from "@/features/restaurant/components/GoogleMapEmbed";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import { useToast } from "@/shared/hooks/useToast";
 import BookingCard from "@/features/restaurant/components/BookingCard";
+import ChatPanel from "@/features/chat/components/ChatPanel";
 import { formatPriceRange } from "@/features/restaurant/utils/price.utils";
+import { useAuth } from "@/shared/hooks/useAuth";
 import RestaurantDetailReviewSection from "@/features/review/pages/RestaurantDetailReviewSection";
 import {
 	Star,
 	Share2,
 	Heart,
+	MessageCircle,
 	MapPin,
 	CalendarDays,
 	Map,
@@ -31,8 +34,10 @@ function RestaurantDetailRoleCustomerPage({
 }: RestaurantDetailRoleCustomerPageProps) {
 	const router = useRouter();
 	const { showToast } = useToast();
+	const { user, isAuthenticated } = useAuth();
 	const [isBookingOpen, setIsBookingOpen] = useState(false);
 	const [isLiked, setIsLiked] = useState(false);
+	const [isChatOpen, setIsChatOpen] = useState(false);
 
 	const {
 		restaurantName,
@@ -67,6 +72,9 @@ function RestaurantDetailRoleCustomerPage({
 	}, [avatar, images]);
 
 	const hasSecondaryGallery = galleryImages.length > 1;
+	const isRestaurantOwner = Boolean(
+		user?._id && restaurant.userId && user._id === restaurant.userId,
+	);
 
 	const handleImageError = (
 		e: React.SyntheticEvent<HTMLImageElement>,
@@ -275,6 +283,26 @@ function RestaurantDetailRoleCustomerPage({
 
 					{/* Right Section (Booking Single Button Replacement Card) */}
 					<div className="lg:col-span-4">
+						{!isRestaurantOwner && restaurant._id && (
+							<button
+								type="button"
+								onClick={() => {
+									if (!isAuthenticated) {
+										showToast(
+											"info",
+											"Cần đăng nhập",
+											"Vui lòng đăng nhập để chat với nhà hàng.",
+										);
+										return;
+									}
+									setIsChatOpen(true);
+								}}
+								className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-[#e6d8c9] bg-white px-4 py-3 text-sm font-bold text-[#6f4e37] shadow-xs transition hover:bg-[#fff8f5]"
+							>
+								<MessageCircle size={17} />
+								Chat với nhà hàng
+							</button>
+						)}
 						<BookingCard
 							restaurant={restaurant}
 							onBook={(values) => {
@@ -306,6 +334,16 @@ function RestaurantDetailRoleCustomerPage({
 					/>
 				)}
 			</div>
+
+			{restaurant._id && !isRestaurantOwner && (
+				<ChatPanel
+					isOpen={isChatOpen}
+					restaurantId={String(restaurant._id)}
+					restaurantName={restaurantName}
+					currentUserId={user?._id}
+					onClose={() => setIsChatOpen(false)}
+				/>
+			)}
 		</div>
 	);
 }

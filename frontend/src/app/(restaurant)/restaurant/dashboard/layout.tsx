@@ -3,6 +3,7 @@
 import SidebarLayout from "@/shared/components/layouts/sidebar/Sidebar";
 import { NavItem } from "@/shared/types/navigation";
 import { type ReactNode } from "react";
+import RestaurantChatLauncher from "@/features/chat/components/RestaurantChatLauncher";
 
 interface RestaurantProps {
 	children: ReactNode;
@@ -86,6 +87,7 @@ function Restaurant({ children }: RestaurantProps) {
 			<main className="min-w-0 flex-1 overflow-y-auto p-6">
 				{children}
 			</main>
+			<RestaurantChatLauncher />
 		</div>
 	);
 }

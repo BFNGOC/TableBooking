@@ -1,8 +1,10 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -15,6 +17,7 @@ import {
 import { Message, MessageDocument } from './schemas/message.schema';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
+import { NotificationService } from '@app/modules/notification/notification.service';
 
 @Injectable()
 export class ChatService {
@@ -24,6 +27,8 @@ export class ChatService {
     @InjectModel(Message.name)
     private readonly messageModel: Model<MessageDocument>,
     private readonly restaurantsService: RestaurantsService,
+    @Inject(forwardRef(() => NotificationService))
+    private readonly notificationService: NotificationService,
   ) {}
 
   async createOrGetConversation(userId: string, dto: CreateConversationDto) {
@@ -34,6 +39,16 @@ export class ChatService {
     const restaurant = await this.restaurantsService.getRestaurantById(
       dto.restaurantId,
     );
+    const restaurantOwnerId = this.toObjectId(
+      restaurant.userId.toString(),
+      'Định dạng ID chủ nhà hàng không hợp lệ',
+    );
+
+    if (restaurantOwnerId.equals(userObjectId)) {
+      throw new ForbiddenException(
+        'Bạn không thể chat với chính nhà hàng của mình',
+      );
+    }
 
     const existing = await this.conversationModel
       .findOne({ userId: userObjectId, restaurantId: restaurant._id })
@@ -46,7 +61,7 @@ export class ChatService {
     return this.conversationModel.create({
       userId: userObjectId,
       restaurantId: restaurant._id,
-      restaurantOwnerId: restaurant.userId,
+      restaurantOwnerId,
     });
   }
 
@@ -57,14 +72,20 @@ export class ChatService {
       userId,
       'Định dạng ID người dùng không hợp lệ',
     );
+    const userIdString = userObjectId.toString();
     const query = {
-      $or: [{ userId: userObjectId }, { restaurantOwnerId: userObjectId }],
+      $or: [
+        { userId: userObjectId },
+        { restaurantOwnerId: userObjectId },
+        { restaurantOwnerId: userIdString },
+      ],
     };
     const skip = (normalizedPage - 1) * normalizedLimit;
 
     const [data, total] = await Promise.all([
       this.conversationModel
         .find(query)
+        .populate('userId', 'name email')
         .sort({ lastMessageAt: -1, updatedAt: -1 })
         .skip(skip)
         .limit(normalizedLimit)
@@ -164,10 +185,42 @@ export class ChatService {
 
     await this.conversationModel.updateOne(
       { _id: conversation._id },
-      { $set: { lastMessageId: message._id, lastMessageAt: createdAt } },
+      {
+        $set: {
+          lastMessageId: message._id,
+          lastMessageAt: createdAt,
+          unreadForUser: conversation.userId.toString() !== user._id,
+          unreadForRestaurant: conversation.restaurantOwnerId.toString() !== user._id,
+        },
+      },
+    );
+
+    const recipientId =
+      conversation.userId.toString() === user._id
+        ? conversation.restaurantOwnerId.toString()
+        : conversation.userId.toString();
+
+    await this.notificationService.notifyChatMessage(
+      recipientId,
+      conversation._id.toString(),
+      message._id.toString(),
+      content,
     );
 
     return message.toObject();
+  }
+
+  async markConversationAsRead(userId: string, conversationId: string) {
+    const conversation = await this.findConversation(conversationId);
+    this.assertMember(conversation, userId);
+
+    const isUser = conversation.userId.toString() === userId;
+    await this.conversationModel.updateOne(
+      { _id: conversation._id },
+      { $set: isUser ? { unreadForUser: false } : { unreadForRestaurant: false } },
+    );
+
+    return { success: true };
   }
 
   private async findConversation(conversationId: string) {

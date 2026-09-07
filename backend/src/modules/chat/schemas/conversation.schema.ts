@@ -24,6 +24,12 @@ export class Conversation {
 
   @Prop()
   lastMessageAt?: Date;
+
+  @Prop({ default: false })
+  unreadForUser!: boolean;
+
+  @Prop({ default: false })
+  unreadForRestaurant!: boolean;
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);

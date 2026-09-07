@@ -135,7 +135,7 @@ export class RestaurantsService {
         verifyStatus: RestaurantVerifyStatus.APPROVED,
       })
       .select(
-        'slug avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+        'slug avatar images restaurantName address priceFrom priceTo description cuisineTypes rating userId',
       )
       .lean();
 

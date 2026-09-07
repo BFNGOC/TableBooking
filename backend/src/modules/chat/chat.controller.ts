@@ -49,6 +49,14 @@ export class ChatController {
     );
   }
 
+  @Post('conversations/:conversationId/read')
+  markConversationAsRead(
+    @CurrentUser() user: AuthUser,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.chatService.markConversationAsRead(user._id, conversationId);
+  }
+
   @Post('conversations/:conversationId/messages')
   createMessage(
     @CurrentUser() user: AuthUser,

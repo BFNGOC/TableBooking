@@ -7,6 +7,7 @@ export enum NotificationType {
   BOOKING = 'BOOKING',
   PAYMENT = 'PAYMENT',
   REVIEW = 'REVIEW',
+  CHAT = 'CHAT',
   SYSTEM = 'SYSTEM',
   GENERAL = 'GENERAL',
 }
