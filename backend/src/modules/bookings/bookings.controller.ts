@@ -20,6 +20,7 @@ import { UserRole } from '../users/schemas/user.schema';
 import { Roles } from '@app/decorator/roles.decorator';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { CheckInBookingDto } from './dto/check-in.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('bookings')
 export class BookingsController {
@@ -32,6 +33,7 @@ export class BookingsController {
   }
 
   @Post(':restaurantId')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   createBooking(
     @Param('restaurantId') restaurantId: string,
     @CurrentUser() user: AuthUser,

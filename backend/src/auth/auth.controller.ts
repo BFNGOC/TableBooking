@@ -15,6 +15,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { CheckCodeDto } from './dto/check-code.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -25,6 +26,7 @@ export class AuthController {
 
   @Post('login')
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @UseGuards(LocalAuthGuard)
   @ResponseMessage('Đăng nhập thành công')
   handleLogin(@Request() req: { user: UserDocument }) {
@@ -33,6 +35,7 @@ export class AuthController {
 
   @Post('register')
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ResponseMessage('Đăng ký thành công')
   register(@Body() registerDto: CreateAuthDto) {
     return this.authService.register(registerDto);
@@ -40,6 +43,7 @@ export class AuthController {
 
   @Post('google')
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ResponseMessage('Đăng nhập Google thành công')
   loginWithGoogle(@Body() googleLoginDto: GoogleLoginDto) {
     return this.authService.loginWithGoogle(googleLoginDto);
@@ -60,12 +64,14 @@ export class AuthController {
 
   @Post('retry-password')
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   retryPassword(@Body('email') email: string) {
     return this.authService.retryPassword(email);
   }
 
   @Post('change-password')
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   changePassword(@Body() changePasswordDto: ChangePasswordDto) {
     return this.authService.changePassword(changePasswordDto);
   }
