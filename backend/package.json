@@ -46,6 +46,7 @@
     "dayjs": "1.11.20",
     "google-auth-library": "^10.9.0",
     "handlebars": "4.7.9",
+    "helmet": "^8.3.0",
     "ioredis": "^5.11.1",
     "mongoose": "^9.6.2",
     "multer": "^2.2.0",
