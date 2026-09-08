@@ -9,6 +9,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 
 import { UploadService } from './upload.service';
 import { ResponseMessage } from '@app/decorator/customize';
@@ -25,6 +26,7 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('image')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @UseInterceptors(FileInterceptor('image'))
   @ResponseMessage('Thêm hình ảnh thành công')
   uploadImage(@UploadedFile() image: UploadFile) {
@@ -36,6 +38,7 @@ export class UploadController {
   }
 
   @Post('images')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @UseInterceptors(FilesInterceptor('images', 10))
   @ResponseMessage('Thêm các hình ảnh thành công')
   uploadImages(@UploadedFiles() images: UploadFile[]) {

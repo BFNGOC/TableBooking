@@ -51,6 +51,7 @@ export class AuthController {
 
   @Post('verify')
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ResponseMessage('Xác thực thành công')
   checkCode(@Body() checkCodeDto: CheckCodeDto) {
     return this.authService.checkCode(checkCodeDto);
@@ -58,6 +59,7 @@ export class AuthController {
 
   @Post('retry-active')
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   retryActive(@Body('email') email: string) {
     return this.authService.retryActive(email);
   }

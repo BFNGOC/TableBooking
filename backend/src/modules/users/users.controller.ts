@@ -19,6 +19,7 @@ import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserRoleAdminDto } from './dto/update-user-role-admin.dto';
 import { Roles } from '@app/decorator/roles.decorator';
 import { UserRole } from './schemas/user.schema';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('users')
 export class UsersController {
@@ -53,11 +54,6 @@ export class UsersController {
   }
 
   //check
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
-  }
-
   @Get('email/:email')
   findByEmail(@Param('email') email: string) {
     return this.usersService.findByEmail(email);
@@ -94,12 +90,18 @@ export class UsersController {
 
   @Get('search')
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async search(@Query('keyword') keyword: string) {
     return this.usersService.search(keyword);
   }
 
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
   @Post('reindex')
-  @Public()
+  @Roles(UserRole.ADMIN)
   async reindex() {
     return this.userReindexService.reindex();
   }

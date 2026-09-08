@@ -13,7 +13,6 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
-import { Public } from '@app/decorator/customize';
 import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 import { UserRole } from '../users/schemas/user.schema';
@@ -27,7 +26,7 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Get('restaurant/reindex')
-  @Public()
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   async reindex() {
     return this.bookingsService.reindexAll();
   }

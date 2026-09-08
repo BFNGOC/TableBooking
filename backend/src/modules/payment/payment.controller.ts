@@ -17,6 +17,7 @@ import { Public } from '@app/decorator/customize';
 import type { ReturnQueryFromVNPay } from 'vnpay';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('payment')
 export class PaymentController {
@@ -31,6 +32,7 @@ export class PaymentController {
   }
 
   @Post()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async createPayment(
     @Req() req: Request,
     @CurrentUser() user: AuthUser,
