@@ -12,7 +12,7 @@ import { UsersService } from './users.service';
 import { UserReindexService } from './user-reindex.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Public, ResponseMessage } from '@app/decorator/customize';
+import { ResponseMessage } from '@app/decorator/customize';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 import { FindUserDto } from './dto/find-user.dto';
@@ -43,18 +43,17 @@ export class UsersController {
   @Post()
   @Roles(UserRole.ADMIN)
   create(@Body() createUserDto: CreateUserDto) {
-    console.log('CreateUserDto:', createUserDto);
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @Public()
+  @Roles(UserRole.ADMIN)
   async findAll(@Query() query: FindUserDto) {
     return this.usersService.findAll(query);
   }
 
-  //check
   @Get('email/:email')
+  @Roles(UserRole.ADMIN)
   findByEmail(@Param('email') email: string) {
     return this.usersService.findByEmail(email);
   }
@@ -78,24 +77,26 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 
   @Get('test-search/:id')
-  @Public()
+  @Roles(UserRole.ADMIN)
   async test(@Param('id') id: string) {
     return this.usersService.test(id);
   }
 
   @Get('search')
-  @Public()
+  @Roles(UserRole.ADMIN)
   @Throttle({ default: { limit: 30, ttl: 60000 } })
   async search(@Query('keyword') keyword: string) {
     return this.usersService.search(keyword);
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }

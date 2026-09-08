@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  HttpException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -732,9 +733,7 @@ export class PaymentService {
 
         await payment.save();
 
-        throw new BadRequestException(
-          `VNPAY refund thất bại: ${result.message ?? 'Không xác định'}`,
-        );
+        throw new BadRequestException('Không thể hoàn tiền qua VNPAY');
       }
 
       // ============================================
@@ -772,7 +771,17 @@ export class PaymentService {
         await payment.save();
       }
 
-      throw error;
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      this.logger.error(
+        'VNPay refund processing failed',
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException(
+        'Không thể hoàn tất yêu cầu hoàn tiền',
+      );
     }
   }
 }

@@ -78,10 +78,14 @@ export class User {
   isActive!: boolean;
 
   // OTP
-  @Prop()
+  @Prop({
+    select: false,
+  })
   verificationCodeId?: string;
 
-  @Prop()
+  @Prop({
+    select: false,
+  })
   verificationCodeExpires?: Date;
 
   // Địa chỉ

@@ -440,10 +440,12 @@ export class UsersService {
   }
 
   async handleActive(data: CheckCodeDto) {
-    const user = await this.userModel.findOne({
-      _id: data._id,
-      verificationCodeId: data.code,
-    });
+    const user = await this.userModel
+      .findOne({
+        _id: data._id,
+        verificationCodeId: data.code,
+      })
+      .select('+verificationCodeId +verificationCodeExpires');
 
     if (!user) {
       throw new NotFoundException('Mã xác thực không hợp lệ');
@@ -533,10 +535,12 @@ export class UsersService {
       throw new BadRequestException('Mật khẩu/xác nhận mật khẩu không hợp lệ');
     }
 
-    const user = await this.userModel.findOne({
-      email: data.email,
-      verificationCodeId: data.code,
-    });
+    const user = await this.userModel
+      .findOne({
+        email: data.email,
+        verificationCodeId: data.code,
+      })
+      .select('+verificationCodeId +verificationCodeExpires');
 
     if (!user) {
       throw new BadRequestException('Mã xác thực không hợp lệ');
