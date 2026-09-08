@@ -1,10 +1,12 @@
 export interface ChatConversation {
 	_id: string;
-	userId: string | {
-		_id: string;
-		name?: string;
-		email?: string;
-	};
+	userId:
+		| string
+		| {
+				_id: string;
+				name?: string;
+				email?: string;
+		  };
 	restaurantId: string;
 	restaurantOwnerId: string;
 	lastMessageAt?: string;
@@ -24,5 +26,7 @@ export interface ChatMessage {
 export interface ChatMessagesResponse {
 	data: ChatMessage[];
 	total: number;
+	page: number;
+	limit: number;
 	hasMore: boolean;
 }

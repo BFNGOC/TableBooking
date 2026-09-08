@@ -6,9 +6,11 @@ import { MessageCircle } from "lucide-react";
 import { useRestaurantMe } from "@/features/restaurant/hooks/useRestaurantMe";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { useToast } from "@/shared/hooks/useToast";
-import { chatApi } from "../api/chat-api";
+import { SOCKET_EVENTS } from "@/shared/constants/socket-constants";
+import { socket } from "@/shared/library/socket/socket";
 import ChatPanel from "./ChatPanel";
 import { ChatConversation } from "../types/chat.types";
+import { useChatConversations } from "../hooks/useChat";
 
 export default function RestaurantChatLauncher() {
 	const { data: restaurant } = useRestaurantMe();
@@ -18,16 +20,19 @@ export default function RestaurantChatLauncher() {
 	const [conversationId, setConversationId] = useState<string>();
 	const [isLoading, setIsLoading] = useState(false);
 	const [conversations, setConversations] = useState<ChatConversation[]>([]);
+	const { refetch: refetchConversations } = useChatConversations();
 
 	const openLatestConversation = useCallback(
 		async (requestedConversationId?: string) => {
 			setIsLoading(true);
 			try {
-				const conversations = await chatApi.getConversations();
-				setConversations(conversations);
-				const conversation = conversations.find(
-					(item) => item._id === requestedConversationId,
-				) ?? conversations[0];
+				const result = await refetchConversations();
+				const loadedConversations = result.data ?? [];
+				setConversations(loadedConversations);
+				const conversation =
+					loadedConversations.find(
+						(item) => item._id === requestedConversationId,
+					) ?? loadedConversations[0];
 
 				if (!conversation) {
 					showToast(
@@ -50,7 +55,7 @@ export default function RestaurantChatLauncher() {
 				setIsLoading(false);
 			}
 		},
-		[showToast],
+		[refetchConversations, showToast],
 	);
 
 	const handleConversationSelect = (selectedId: string) => {
@@ -63,6 +68,42 @@ export default function RestaurantChatLauncher() {
 			),
 		);
 	};
+
+	useEffect(() => {
+		const handleNewNotification = async (notification: {
+			type?: string;
+			data?: { conversationId?: string };
+		}) => {
+			const incomingConversationId = notification.data?.conversationId;
+			if (notification.type !== "CHAT" || !incomingConversationId) return;
+
+			if (
+				!conversations.some(
+					(item) => item._id === incomingConversationId,
+				)
+			) {
+				await openLatestConversation(incomingConversationId);
+				return;
+			}
+
+			setConversations((current) =>
+				current.map((conversation) =>
+					conversation._id === incomingConversationId
+						? {
+								...conversation,
+								unreadForRestaurant:
+									conversation._id !== conversationId,
+							}
+						: conversation,
+				),
+			);
+		};
+
+		socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification);
+		return () => {
+			socket.off(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification);
+		};
+	}, [conversationId, conversations, openLatestConversation]);
 
 	useEffect(() => {
 		const handleNotification = (event: Event) => {

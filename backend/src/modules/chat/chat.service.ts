@@ -112,7 +112,7 @@ export class ChatService {
     userId: string,
     conversationId: string,
     page = 1,
-    limit = 30,
+    limit = 10,
   ) {
     const conversation = await this.findConversation(conversationId);
     this.assertMember(conversation, userId);
@@ -190,7 +190,8 @@ export class ChatService {
           lastMessageId: message._id,
           lastMessageAt: createdAt,
           unreadForUser: conversation.userId.toString() !== user._id,
-          unreadForRestaurant: conversation.restaurantOwnerId.toString() !== user._id,
+          unreadForRestaurant:
+            conversation.restaurantOwnerId.toString() !== user._id,
         },
       },
     );
@@ -217,7 +218,11 @@ export class ChatService {
     const isUser = conversation.userId.toString() === userId;
     await this.conversationModel.updateOne(
       { _id: conversation._id },
-      { $set: isUser ? { unreadForUser: false } : { unreadForRestaurant: false } },
+      {
+        $set: isUser
+          ? { unreadForUser: false }
+          : { unreadForRestaurant: false },
+      },
     );
 
     return { success: true };

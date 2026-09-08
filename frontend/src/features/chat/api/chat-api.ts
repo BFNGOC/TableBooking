@@ -18,11 +18,11 @@ export const chatApi = {
 		});
 		return response.data.data;
 	},
-	getMessages: async (conversationId: string) => {
+	getMessages: async (conversationId: string, page = 1, limit = 10) => {
 		const response = await clientRequest<ChatMessagesResponse>({
 			url: `/chat/conversations/${conversationId}/messages`,
 			method: "GET",
-			queryParams: { page: 1, limit: 50 },
+			queryParams: { page, limit },
 		});
 		return response.data;
 	},

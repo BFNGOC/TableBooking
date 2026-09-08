@@ -34,7 +34,7 @@ function RestaurantDetailRoleCustomerPage({
 }: RestaurantDetailRoleCustomerPageProps) {
 	const router = useRouter();
 	const { showToast } = useToast();
-	const { user, isAuthenticated } = useAuth();
+	const { user, isAuthenticated, isAuthLoading } = useAuth();
 	const [isBookingOpen, setIsBookingOpen] = useState(false);
 	const [isLiked, setIsLiked] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
@@ -72,9 +72,9 @@ function RestaurantDetailRoleCustomerPage({
 	}, [avatar, images]);
 
 	const hasSecondaryGallery = galleryImages.length > 1;
-	const isRestaurantOwner = Boolean(
-		user?._id && restaurant.userId && user._id === restaurant.userId,
-	);
+	const isRestaurantOwner =
+		!isAuthLoading &&
+		Boolean(user?._id && restaurant.userId && user._id === restaurant.userId);
 
 	const handleImageError = (
 		e: React.SyntheticEvent<HTMLImageElement>,
@@ -283,7 +283,11 @@ function RestaurantDetailRoleCustomerPage({
 
 					{/* Right Section (Booking Single Button Replacement Card) */}
 					<div className="lg:col-span-4">
-						{!isRestaurantOwner && restaurant._id && (
+						{isAuthLoading ? (
+							<div className="mb-3 h-12 w-full animate-pulse rounded-xl bg-[#f5e8df]" />
+						) : (
+							!isRestaurantOwner &&
+							restaurant._id && (
 							<button
 								type="button"
 								onClick={() => {
@@ -302,6 +306,7 @@ function RestaurantDetailRoleCustomerPage({
 								<MessageCircle size={17} />
 								Chat với nhà hàng
 							</button>
+							)
 						)}
 						<BookingCard
 							restaurant={restaurant}
@@ -335,7 +340,7 @@ function RestaurantDetailRoleCustomerPage({
 				)}
 			</div>
 
-			{restaurant._id && !isRestaurantOwner && (
+			{restaurant._id && !isAuthLoading && !isRestaurantOwner && (
 				<ChatPanel
 					isOpen={isChatOpen}
 					restaurantId={String(restaurant._id)}

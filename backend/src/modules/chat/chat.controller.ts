@@ -39,7 +39,7 @@ export class ChatController {
     @CurrentUser() user: AuthUser,
     @Param('conversationId') conversationId: string,
     @Query('page') page = '1',
-    @Query('limit') limit = '30',
+    @Query('limit') limit = '10',
   ) {
     return this.chatService.listMessages(
       user._id,
