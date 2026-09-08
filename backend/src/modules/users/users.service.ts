@@ -294,8 +294,14 @@ export class UsersService {
   }
 
   async update(_id: string, dto: UpdateUserRoleAdminDto) {
+    const updateData = { ...dto };
+
+    if (dto.password) {
+      updateData.password = await hashPasswordHelper(dto.password);
+    }
+
     const updatedUser = await this.userModel
-      .findByIdAndUpdate(_id, dto, {
+      .findByIdAndUpdate(_id, updateData, {
         new: true,
         runValidators: true,
       })
@@ -522,45 +528,38 @@ export class UsersService {
     return { _id: user?._id, email: user?.email };
   }
 
-  async changePassword(data: ChangePasswordDto) {
+  async changePassword(data) {
     if (data.password !== data.confirmPassword) {
       throw new BadRequestException('Mật khẩu/xác nhận mật khẩu không hợp lệ');
     }
 
-    const user = await this.userModel.findOne({ email: data.email });
+    const user = await this.userModel.findOne({
+      email: data.email,
+      verificationCodeId: data.code,
+    });
 
     if (!user) {
-      throw new NotFoundException('Tài khoản không tồn tại');
+      throw new BadRequestException('Mã xác thực không hợp lệ');
     }
 
-    if (dayjs().isAfter(user.verificationCodeExpires)) {
+    if (
+      !user.verificationCodeExpires ||
+      dayjs().isAfter(user.verificationCodeExpires)
+    ) {
       throw new BadRequestException('Mã xác thực đã hết hạn');
     }
 
     user.password = await hashPasswordHelper(data.password);
 
+    user.verificationCodeId = undefined;
+    user.verificationCodeExpires = undefined;
+
     await user.save();
 
-    //update user
-    const codeId = uuidv4();
-
-    await user.updateOne({
-      verificationCodeId: codeId,
-      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
-    });
-
-    //send email
-    await this.mailerService.sendMail({
-      to: user.email,
-      subject: 'Change your password account at TableBooking',
-      template: 'register',
-      context: {
-        name: user?.name ?? user.email,
-        activationCode: codeId,
-      },
-    });
-
-    return { _id: user?._id, email: user?.email };
+    return {
+      _id: user._id,
+      email: user.email,
+    };
   }
 
   async test(id: string) {
