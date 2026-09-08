@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import CustomerHomePage from "@/features/(customer)/pages/HomeRoleCustomerPage";
 import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
-import restaurantsData from "../../../data/restaurants-mock-data.json";
 import { getRecommendedRestaurants } from "@/features/restaurant/api/restaurant-server-api";
 
 export const metadata: Metadata = {

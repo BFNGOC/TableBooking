@@ -1,6 +1,6 @@
 'use client';
 
-import { IExceptionSlotPayload, ITimeSlotPayload } from '../types/table-availability.type';
+import { IExceptionSlotPayload } from '../types/table-availability.type';
 
 interface ExceptionSlotsEditorProps {
     exceptions: IExceptionSlotPayload[];
