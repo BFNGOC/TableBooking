@@ -12,7 +12,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') ?? 8080;
-  const portFE = configService.get<string>('FRONTEND_API_URL');
+  const frontendOrigin = configService.get<string>('FRONTEND_URL');
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -25,23 +25,24 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1', { exclude: [''] });
 
   app.enableCors({
-    origin: { portFE },
+    origin: frontendOrigin ?? false,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  /* Config swagger api */
-  const config = new DocumentBuilder()
-    .setTitle('Table booking API')
-    .setDescription('API docs')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  if (configService.get<string>('NODE_ENV') !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Table booking API')
+      .setDescription('API docs')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+    const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('api', app, document);
+    SwaggerModule.setup('api', app, document);
+  }
 
   await app.listen(port);
 
