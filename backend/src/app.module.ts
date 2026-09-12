@@ -44,7 +44,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 100,
+        limit: 1000000,
       },
     ]),
 
@@ -53,8 +53,19 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
 
+        maxPoolSize: 200,
+        minPoolSize: 0,
+        maxConnecting: 10,
+
         onConnectionCreate: (connection) => {
           console.log('MongoDB connected successfully');
+
+          console.log('MongoDB pool config:', {
+            maxPoolSize: connection.getClient().options.maxPoolSize,
+            minPoolSize: connection.getClient().options.minPoolSize,
+            maxConnecting: connection.getClient().options.maxConnecting,
+          });
+
           return connection;
         },
       }),

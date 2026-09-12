@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
+import { Roles } from '@app/decorator/roles.decorator';
+import { UserRole } from '../users/schemas/user.schema';
 
 import { UploadService } from './upload.service';
 import { ResponseMessage } from '@app/decorator/customize';
@@ -82,12 +84,14 @@ export class UploadController {
   }
 
   @Delete('image')
+  @Roles(UserRole.ADMIN)
   @ResponseMessage('Xóa hình ảnh thành công')
   deleteImage(@Body('publicId') publicId: string) {
     return this.uploadService.deleteImage(publicId);
   }
 
   @Delete('images')
+  @Roles(UserRole.ADMIN)
   @ResponseMessage('Xóa các hình ảnh thành công')
   deleteImages(@Body('publicIds') publicIds: string[]) {
     return this.uploadService.deleteImages(publicIds);

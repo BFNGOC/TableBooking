@@ -2,3 +2,9 @@
 .env
 .env.*
 !.env.example
+
+# Load testing
+k6/
+
+# Documentation
+docs/

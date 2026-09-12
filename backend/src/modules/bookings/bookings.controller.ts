@@ -93,8 +93,8 @@ export class BookingsController {
 
   @Get('/restaurant/:id')
   @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
-  findBookingDetail(@Param('id') id: string) {
-    return this.bookingsService.findBookingDetail(id);
+  findBookingDetail(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.bookingsService.findBookingDetail(id, user);
   }
 
   @Patch(':bookingId/cancel')
