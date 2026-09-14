@@ -28,6 +28,8 @@ import { Area } from '../../areas/schemas/area.schema';
 import { RestaurantsService } from '../../restaurants/restaurants.service';
 import { RestaurantBookingSearchService } from '../booking-restaurant-search.service';
 import { BookingLockService } from './booking-lock.service';
+import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
+import { UserRole } from '../../users/schemas/user.schema';
 import { GetAvailableTablesDto } from '../dto/get-available-tables.dto';
 import { FindRestaurantBookingDto } from '../dto/find-restaurant.dto';
 import { CheckInBookingDto } from '../dto/check-in.dto';
@@ -263,13 +265,24 @@ export class BookingQueryService {
     };
   }
 
-  async findBookingDetail(id: string) {
+  async findBookingDetail(id: string, user: AuthUser) {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Định dạng ID đặt bàn không hợp lệ');
     }
 
+    const query: { _id: Types.ObjectId; restaurantId?: Types.ObjectId } = {
+      _id: new Types.ObjectId(id),
+    };
+
+    if (user.role === UserRole.RESTAURANT) {
+      const restaurant = await this.restaurantsService.getRestaurantByUserId(
+        user._id,
+      );
+      query.restaurantId = restaurant._id;
+    }
+
     const booking = await this.bookingModel
-      .findOne({ _id: new Types.ObjectId(id) })
+      .findOne(query)
       .populate({
         path: 'userId',
         select: 'name email phone avatar role',

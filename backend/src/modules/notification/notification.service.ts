@@ -91,8 +91,15 @@ export class NotificationService {
     };
   }
 
-  async findOne(id: string) {
-    const notification = await this.notificationModel.findById(id);
+  async findOne(id: string, userId: string) {
+    if (!Types.ObjectId.isValid(id) || !Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('Thông báo không tồn tại');
+    }
+
+    const notification = await this.notificationModel.findOne({
+      _id: new Types.ObjectId(id),
+      userId: new Types.ObjectId(userId),
+    });
 
     if (!notification) {
       throw new NotFoundException('Thông báo không tồn tại');
@@ -101,24 +108,21 @@ export class NotificationService {
     return notification;
   }
 
-  async remove(id: string) {
-    const notification = await this.notificationModel.findByIdAndDelete(id);
+  async remove(id: string, userId: string) {
+    if (!Types.ObjectId.isValid(id) || !Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('Thông báo không tồn tại');
+    }
+
+    const notification = await this.notificationModel.findOneAndDelete({
+      _id: new Types.ObjectId(id),
+      userId: new Types.ObjectId(userId),
+    });
 
     if (!notification) {
       throw new NotFoundException('Thông báo không tồn tại');
     }
 
     return notification;
-  }
-
-  async removeAll() {
-    const result = await this.notificationModel.deleteMany({});
-
-    if (result.deletedCount === 0) {
-      throw new NotFoundException('Không có thông báo nào để xóa');
-    }
-
-    return result;
   }
 
   async getUnreadCount(userId: string) {

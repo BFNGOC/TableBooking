@@ -7,6 +7,7 @@ import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { CheckInBookingDto } from './dto/check-in.dto';
 import { BookingStateService } from './services/booking-state.service';
 import { BookingQueryService } from './services/booking-query.service';
+import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 
 @Injectable()
 export class BookingsService {
@@ -57,8 +58,8 @@ export class BookingsService {
     return this.bookingQueryService.bookingStatusCount(userId);
   }
 
-  findBookingDetail(id: string) {
-    return this.bookingQueryService.findBookingDetail(id);
+  findBookingDetail(id: string, user: AuthUser) {
+    return this.bookingQueryService.findBookingDetail(id, user);
   }
 
   findOneBookingMe(id: string, userId: string) {

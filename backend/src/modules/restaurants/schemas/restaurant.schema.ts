@@ -303,6 +303,14 @@ export class Restaurant {
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
 
+RestaurantSchema.index({
+  status: 1,
+  isAcceptingBookings: 1,
+  verifyStatus: 1,
+  rating: -1,
+  createdAt: -1,
+});
+
 RestaurantSchema.plugin(AutoSlugPlugin, {
   slug: ['restaurantName'],
 });
