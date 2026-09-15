@@ -102,10 +102,10 @@ export class RestaurantsService {
     }));
   }
 
-  async getRestaurantByUserId(userId: string): Promise<RestaurantDocument> {
-    const restaurant = await this.restaurantModel.findOne({
-      userId: userId,
-    });
+  // async getRestaurantByUserId(userId: string): Promise<RestaurantDocument> {
+  //   const restaurant = await this.restaurantModel.findOne({
+  //     userId: userId,
+  //   });
 
   //   if (!restaurant) {
   //     throw new NotFoundException('Restaurant not found.');
