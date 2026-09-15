@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -19,6 +20,8 @@ type UploadFile = {
 
 @Injectable()
 export class UploadService {
+  private readonly logger = new Logger(UploadService.name);
+
   constructor(private readonly configService: ConfigService) {
     const cloudName =
       this.configService.get<string>('CLOUDINARY_CLOUD_NAME') ??
@@ -53,7 +56,7 @@ export class UploadService {
             },
             (error, result) => {
               if (error) {
-                return reject(new Error(error.message || 'Upload thất bại'));
+                return reject(error);
               }
 
               if (!result) {
@@ -75,9 +78,11 @@ export class UploadService {
         resourceType: result.resource_type,
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Upload thất bại';
-      throw new InternalServerErrorException(message);
+      this.logger.error(
+        'Cloudinary upload failed',
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Không thể upload hình ảnh');
     }
   }
 
@@ -94,7 +99,15 @@ export class UploadService {
   }
 
   async deleteImage(publicId: string) {
-    await cloudinary.uploader.destroy(publicId);
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+      this.logger.error(
+        'Cloudinary image deletion failed',
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Không thể xóa hình ảnh');
+    }
 
     return true;
   }
@@ -104,11 +117,23 @@ export class UploadService {
       throw new BadRequestException('Thiếu danh sách publicId');
     }
 
-    const result = (await cloudinary.api.delete_resources(
-      publicIds,
-    )) as DeleteApiResponse & {
+    let result: DeleteApiResponse & {
       deleted?: Record<string, unknown>;
     };
+
+    try {
+      result = (await cloudinary.api.delete_resources(
+        publicIds,
+      )) as DeleteApiResponse & {
+        deleted?: Record<string, unknown>;
+      };
+    } catch (error) {
+      this.logger.error(
+        'Cloudinary image deletion failed',
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException('Không thể xóa hình ảnh');
+    }
 
     return {
       message: 'Xóa ảnh thành công',

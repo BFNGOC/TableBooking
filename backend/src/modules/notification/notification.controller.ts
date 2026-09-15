@@ -1,28 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Patch,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Delete, Patch, Query } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { Public, ResponseMessage } from '@app/decorator/customize';
+import { ResponseMessage } from '@app/decorator/customize';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
-import { find } from 'rxjs';
 
 @Controller('notification')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
-
-  @Post()
-  create(@Body() createNotificationDto: CreateNotificationDto) {
-    return this.notificationService.create(createNotificationDto);
-  }
 
   @Get()
   findAll(
@@ -42,12 +26,6 @@ export class NotificationController {
     return this.notificationService.findAllUnread(user._id, +page, +limit);
   }
 
-  @Delete()
-  @Public()
-  removeAll() {
-    return this.notificationService.removeAll();
-  }
-
   @Get('unread-count')
   getUnreadCount(@CurrentUser() user: AuthUser) {
     return this.notificationService.getUnreadCount(user._id);
@@ -65,14 +43,12 @@ export class NotificationController {
   }
 
   @Get(':id')
-  @Public()
-  findOne(@Param('id') id: string) {
-    return this.notificationService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.notificationService.findOne(id, user._id);
   }
 
   @Delete(':id')
-  @Public()
-  remove(@Param('id') id: string) {
-    return this.notificationService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.notificationService.remove(id, user._id);
   }
 }

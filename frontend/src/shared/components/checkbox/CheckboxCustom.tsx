@@ -1,4 +1,4 @@
-import { FormField } from '@/shared/types/form-field';
+import { ResolvedFormField } from '@/shared/types/form-field';
 import { Checkbox, CheckboxGroup, Description, Label } from '@heroui/react';
 
 export function CheckboxCustom({
@@ -12,7 +12,7 @@ export function CheckboxCustom({
     onChange,
     options = [],
     className,
-}: FormField) {
+}: ResolvedFormField) {
     // Normalize incoming value to an array of strings for CheckboxGroup
     const selectedValues: string[] = Array.isArray(value)
         ? value.map((v) => String(v))

@@ -8,6 +8,7 @@ async function RestaurantOnboarding() {
     if (restaurant) {
         redirectToCorrectPage(restaurant);
     }
+    //
 
     return <RestaurantOnboardingPage />;
 }

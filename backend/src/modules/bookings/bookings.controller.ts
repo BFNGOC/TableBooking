@@ -13,25 +13,26 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { CurrentUser } from '@app/decorator/current-user.decorator';
 import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
-import { Public } from '@app/decorator/customize';
 import { GetAvailableTablesDto } from './dto/get-available-tables.dto';
 import { FindRestaurantBookingDto } from './dto/find-restaurant.dto';
 import { UserRole } from '../users/schemas/user.schema';
 import { Roles } from '@app/decorator/roles.decorator';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { CheckInBookingDto } from './dto/check-in.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('bookings')
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Get('restaurant/reindex')
-  @Public()
+  @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
   async reindex() {
     return this.bookingsService.reindexAll();
   }
 
   @Post(':restaurantId')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   createBooking(
     @Param('restaurantId') restaurantId: string,
     @CurrentUser() user: AuthUser,
@@ -92,8 +93,8 @@ export class BookingsController {
 
   @Get('/restaurant/:id')
   @Roles(UserRole.ADMIN, UserRole.RESTAURANT)
-  findBookingDetail(@Param('id') id: string) {
-    return this.bookingsService.findBookingDetail(id);
+  findBookingDetail(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.bookingsService.findBookingDetail(id, user);
   }
 
   @Patch(':bookingId/cancel')

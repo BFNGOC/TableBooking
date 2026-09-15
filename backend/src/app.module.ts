@@ -29,6 +29,7 @@ import { SocketModule } from './modules/socket/socket.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -42,13 +43,31 @@ import { ChatModule } from './modules/chat/chat.module';
       isGlobal: true,
     }),
 
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 1000000,
+      },
+    ]),
+
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
 
+        maxPoolSize: 200,
+        minPoolSize: 0,
+        maxConnecting: 10,
+
         onConnectionCreate: (connection) => {
           console.log('MongoDB connected successfully');
+
+          console.log('MongoDB pool config:', {
+            maxPoolSize: connection.getClient().options.maxPoolSize,
+            minPoolSize: connection.getClient().options.minPoolSize,
+            maxConnecting: connection.getClient().options.maxConnecting,
+          });
+
           return connection;
         },
       }),
@@ -129,6 +148,10 @@ import { ChatModule } from './modules/chat/chat.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

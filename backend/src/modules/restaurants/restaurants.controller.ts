@@ -21,13 +21,14 @@ import { FindRestaurantAdminDto } from './dto/find-restaurant.dto';
 import { FindPublicRestaurantDto } from './dto/find-public-restaurant.dto';
 import { UpdateRestaurantOnboardingDto } from './dto/update-restaurant-onboarding.dto';
 import { GetAvailableTablesDto } from '../bookings/dto/get-available-tables.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
   @Get('admin/reindex')
-  @Public()
+  @Roles(UserRole.ADMIN)
   async reindex() {
     return this.restaurantsService.reindexAll();
   }
@@ -88,6 +89,7 @@ export class RestaurantsController {
   }
 
   @Post('resend-email')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   resendEmail(@CurrentUser() user: AuthUser) {
     return this.restaurantsService.resendEmail(user.email);
   }
@@ -163,6 +165,7 @@ export class RestaurantsController {
 
   @Post('verify-email')
   @Roles(UserRole.CUSTOMER)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   verifyEmail(@Body() data: CheckCodeDto) {
     return this.restaurantsService.handleverifyEmail(data);
   }

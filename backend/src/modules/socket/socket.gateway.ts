@@ -17,7 +17,12 @@ import type { AuthUser } from '@app/auth/types/auth-jwt-user.type';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: (origin, callback) => {
+      const allowedOrigin = process.env.FRONTEND_URL;
+
+      callback(null, Boolean(allowedOrigin && origin === allowedOrigin));
+    },
+    credentials: true,
   },
 })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {

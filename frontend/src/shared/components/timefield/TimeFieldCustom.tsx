@@ -1,64 +1,56 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { FormField } from "@/shared/types/form-field";
-import { Label, FieldError, TimeField } from "@heroui/react";
+import { useState, useEffect } from 'react';
+import { ResolvedFormField } from '@/shared/types/form-field';
+import { Label, FieldError, TimeField } from '@heroui/react';
 
 export default function TimeFieldCustom({
-	label,
-	name,
-	isRequired,
-	isDisabled,
-	isReadOnly,
-	defaultTime,
-	value,
-	onChange,
-	className,
-}: FormField) {
-	const [isMounted, setIsMounted] = useState(false);
+    label,
+    name,
+    isRequired,
+    isDisabled,
+    isReadOnly,
+    defaultTime,
+    value,
+    onChange,
+    className,
+}: ResolvedFormField) {
+    const [isMounted, setIsMounted] = useState(false);
 
-	useEffect(() => {
-		setIsMounted(true);
-	}, []);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
-	if (!isMounted) {
-		return (
-			<div className="w-[256px]">
-				{label && (
-					<div className="mb-2 text-sm font-medium text-gray-700">
-						{label}
-					</div>
-				)}
-				<div
-					className={`h-10 bg-gray-100 animate-pulse rounded-lg ${className}`}
-				/>
-			</div>
-		);
-	}
+    if (!isMounted) {
+        return (
+            <div className="w-[256px]">
+                {label && <div className="mb-2 text-sm font-medium text-gray-700">{label}</div>}
+                <div className={`h-10 bg-gray-100 animate-pulse rounded-lg ${className}`} />
+            </div>
+        );
+    }
 
-	return (
-		<TimeField
-			className="w-[256px]"
-			name={name}
-			isRequired={isRequired}
-			isDisabled={isDisabled}
-			isReadOnly={isReadOnly}
-			defaultValue={defaultTime}
-			value={value ?? defaultTime}
-			onChange={onChange}
-		>
-			{label ? (
-				<Label className="mb-2 text-sm font-medium text-gray-700">
-					{label}
-				</Label>
-			) : null}
-			<TimeField.Group className={className}>
-				<TimeField.Input>
-					{(segment) => <TimeField.Segment segment={segment} />}
-				</TimeField.Input>
-			</TimeField.Group>
+    return (
+        <TimeField
+            className="w-[256px]"
+            name={name}
+            isRequired={isRequired}
+            isDisabled={isDisabled}
+            isReadOnly={isReadOnly}
+            defaultValue={defaultTime}
+            value={value ?? defaultTime}
+            onChange={onChange}
+        >
+            {label ? (
+                <Label className="mb-2 text-sm font-medium text-gray-700">{label}</Label>
+            ) : null}
+            <TimeField.Group className={className}>
+                <TimeField.Input>
+                    {(segment) => <TimeField.Segment segment={segment} />}
+                </TimeField.Input>
+            </TimeField.Group>
 
-			<FieldError />
-		</TimeField>
-	);
+            <FieldError />
+        </TimeField>
+    );
 }
