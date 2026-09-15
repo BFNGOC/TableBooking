@@ -36,6 +36,24 @@ export class NotificationService {
     return notification;
   }
 
+  notifyChatMessage(
+    userId: string,
+    conversationId: string,
+    messageId: string,
+    message: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.CHAT,
+      title: 'Tin nhắn mới',
+      message,
+      data: {
+        conversationId,
+        messageId,
+      },
+    });
+  }
+
   async findAll(userId: string, page = 1, limit = 5) {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
@@ -348,6 +366,53 @@ export class NotificationService {
       data: {
         bookingStatus: 'CHECKED_IN',
         restaurantSlug,
+      },
+    });
+  }
+
+  // --------------------------------------
+  // Review notifications
+  // --------------------------------------
+
+  notifyReviewCreated(
+    userId: string,
+    review: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.REVIEW,
+      title: 'Có đánh giá mới',
+      message: `Khách hàng đã để lại đánh giá cho nhà hàng ${restaurantName}.`,
+      referenceId: review._id,
+      referenceModel: NotificationReferenceModel.REVIEW,
+      data: {
+        reviewId: review._id,
+        rating: review.rating,
+        comment: review.comment ?? null,
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyReviewReplied(
+    userId: string,
+    review: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.REVIEW,
+      title: 'Nhà hàng đã phản hồi đánh giá',
+      message: `Nhà hàng ${restaurantName} đã phản hồi đánh giá của bạn.`,
+      referenceId: review._id,
+      referenceModel: NotificationReferenceModel.REVIEW,
+      data: {
+        reviewId: review._id,
+        restaurantSlug,
+        reply: review.restaurantReply?.content ?? null,
       },
     });
   }

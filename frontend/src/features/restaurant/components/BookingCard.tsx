@@ -9,15 +9,6 @@ import { useAuth } from "@/shared/hooks/useAuth";
 import getBookingFormFields from "@/features/restaurant/constants/restaurant-booking-form-field";
 import { useAvailableTimeSlots } from "@/features/restaurant/hooks/useAvailableTimeSlots";
 
-const DEFAULT_TIME_SLOTS = [
-	"18:00",
-	"18:30",
-	"19:00",
-	"19:30",
-	"20:00",
-	"20:30",
-];
-
 interface BookingCardProps {
 	restaurant?: IRestaurant;
 	timeSlots?: string[];
@@ -46,9 +37,7 @@ export default function BookingCard({
 	const slots =
 		timeSlots && timeSlots.length > 0
 			? timeSlots
-			: availableTimeSlotsQuery.data?.timeSlots?.length
-				? availableTimeSlotsQuery.data.timeSlots
-				: DEFAULT_TIME_SLOTS;
+			: (availableTimeSlotsQuery.data?.timeSlots ?? []);
 
 	const initialValues: Partial<Record<string, any>> = {
 		date: getTodayString(),
@@ -105,6 +94,8 @@ export default function BookingCard({
 		>
 			{availableTimeSlotsQuery.isLoading
 				? "Đang tải giờ..."
+				: availableTimeSlotsQuery.isError
+					? "Không thể tải giờ"
 				: "Đặt bàn ngay"}
 		</button>
 	);

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import RestaurantDetailRoleCustomerPage from "@/features/restaurant/pages/customer/RestaurantDetailRoleCustomerPage";
-import { IRestaurant } from "@/features/restaurant/types/restaurant.type";
 import { getDetailRestaurant } from "@/features/restaurant/api/restaurant-server-api";
 interface PageProps {
 	params: Promise<{ slug: string }>;

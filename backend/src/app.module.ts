@@ -27,6 +27,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SocketModule } from './modules/socket/socket.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
@@ -126,6 +128,10 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     SocketModule,
 
     DashboardModule,
+
+    ReviewsModule,
+
+    ChatModule,
   ],
 
   controllers: [AppController],

@@ -16,17 +16,6 @@ interface AvailabilityGroupSidebarProps {
     isLoading?: boolean;
 }
 
-function formatWeeklySummary(schedule: ITableAvailability): string {
-    const active = (schedule.weeklySlots ?? []).filter((s) => s.isActive !== false);
-    if (active.length === 0) return 'Chưa cấu hình';
-    const days = active
-        .map((s) => DAY_LABELS[s.dayOfWeek])
-        .join(', ');
-    const first = active[0]?.slots?.[0];
-    const timeStr = first ? `${first.startTime}–${first.endTime}` : '';
-    return `${days}${timeStr ? ` · ${timeStr}` : ''}`;
-}
-
 export default function AvailabilityGroupSidebar({
     schedules,
     allTables,

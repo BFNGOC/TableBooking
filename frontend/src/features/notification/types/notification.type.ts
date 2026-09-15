@@ -1,27 +1,37 @@
-export type NotificationType = 'BOOKING' | 'PAYMENT' | 'REVIEW' | 'SYSTEM' | 'GENERAL';
+export type NotificationType =
+	| "BOOKING"
+	| "PAYMENT"
+	| "REVIEW"
+	| "CHAT"
+	| "SYSTEM"
+	| "GENERAL";
 
-export type NotificationReferenceModel = 'Booking' | 'Payment' | 'Restaurant' | 'Review';
+export type NotificationReferenceModel =
+	| "Booking"
+	| "Payment"
+	| "Restaurant"
+	| "Review";
 
 export interface INotification {
-    _id: string;
+	_id: string;
 
-    type: NotificationType;
+	type: NotificationType;
 
-    title: string;
+	title: string;
 
-    message: string;
+	message: string;
 
-    referenceId?: string;
+	referenceId?: string;
 
-    referenceModel?: NotificationReferenceModel;
+	referenceModel?: NotificationReferenceModel;
 
-    data?: Record<string, unknown>;
+	data?: Record<string, unknown>;
 
-    isRead: boolean;
+	isRead: boolean;
 
-    readAt?: string;
+	readAt?: string;
 
-    createdAt: string;
+	createdAt: string;
 
-    updatedAt: string;
+	updatedAt: string;
 }

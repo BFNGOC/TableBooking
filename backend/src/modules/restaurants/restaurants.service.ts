@@ -102,17 +102,17 @@ export class RestaurantsService {
     }));
   }
 
-  async getRestaurantByUserId(userId: string): Promise<RestaurantDocument> {
-    const restaurant = await this.restaurantModel.findOne({
-      userId: userId,
-    });
+  // async getRestaurantByUserId(userId: string): Promise<RestaurantDocument> {
+  //   const restaurant = await this.restaurantModel.findOne({
+  //     userId: userId,
+  //   });
 
-    if (!restaurant) {
-      throw new NotFoundException('Restaurant not found.');
-    }
+  //   if (!restaurant) {
+  //     throw new NotFoundException('Restaurant not found.');
+  //   }
 
-    return restaurant;
-  }
+  //   return restaurant;
+  // }
 
   async getRestaurantById(restaurantId: string) {
     if (!Types.ObjectId.isValid(restaurantId)) {
@@ -135,7 +135,7 @@ export class RestaurantsService {
         verifyStatus: RestaurantVerifyStatus.APPROVED,
       })
       .select(
-        'slug avatar images restaurantName address priceFrom priceTo description cuisineTypes rating',
+        'slug avatar images restaurantName address priceFrom priceTo description cuisineTypes rating userId',
       )
       .lean();
 
@@ -146,23 +146,23 @@ export class RestaurantsService {
     return restaurant;
   }
 
-  // async getRestaurantByUserId(userId: string) {
-  //   if (!Types.ObjectId.isValid(userId)) {
-  //     throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
-  //   }
+  async getRestaurantByUserId(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
 
-  //   const restaurant = await this.restaurantModel
-  //     .findOne({
-  //       userId,
-  //     })
-  //     .lean();
+    const restaurant = await this.restaurantModel
+      .findOne({
+        userId,
+      })
+      .lean();
 
-  //   if (!restaurant) {
-  //     throw new NotFoundException('Không tìm thấy nhà hàng của người dùng');
-  //   }
+    if (!restaurant) {
+      throw new NotFoundException('Không tìm thấy nhà hàng của người dùng');
+    }
 
-  //   return restaurant;
-  // }
+    return restaurant;
+  }
 
   /***********************************
    *  PUBLIC
@@ -732,6 +732,10 @@ export class RestaurantsService {
     }
 
     return restaurant;
+  }
+
+  async updateRating(restaurantId: string, rating: number): Promise<void> {
+    await this.restaurantModel.findByIdAndUpdate(restaurantId, { rating });
   }
 
   async remove(id: number) {
