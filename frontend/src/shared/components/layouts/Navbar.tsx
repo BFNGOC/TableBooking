@@ -42,16 +42,10 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
             onAction: () => router.push('/my-bookings'),
         },
         {
-            id: 'profile',
-            label: 'Thông tin cá nhân',
-            icon: <User size={16} />,
-            onAction: () => router.push('/settings'),
-        },
-        {
             id: 'change-password',
             label: 'Cài đặt',
             icon: <Settings size={16} />,
-            onAction: () => router.push('/settings?tab=security'),
+            onAction: () => router.push('/settings'),
         },
         {
             id: 'restaurant',

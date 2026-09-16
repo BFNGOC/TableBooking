@@ -22,7 +22,7 @@ export default function RecentBookingCard({ booking, onWriteReview }: RecentBook
             }`}
         >
             <Link
-                href={`/my-bookings/${booking._id}`}
+                href={`/restaurants/${booking.restaurantId?.slug}/booking/success/${booking._id}`}
                 className="min-w-0 flex-1"
             >
                 <h3 className="truncate font-semibold text-[#211b18]">

@@ -3,8 +3,8 @@ name: CI/CD
 on:
     push:
         branches:
-            - docker
             - dev
+            - main
         paths:
             - 'frontend/**'
             - 'backend/**'
@@ -12,16 +12,14 @@ on:
 
     pull_request:
         branches:
-            - docker
             - dev
-        paths:
-            - 'frontend/**'
-            - 'backend/**'
+            - main
 
 jobs:
     frontend-ci:
         name: Frontend CI
         runs-on: ubuntu-latest
+
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -44,6 +42,7 @@ jobs:
     backend-ci:
         name: Backend CI
         runs-on: ubuntu-latest
+
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -66,9 +65,11 @@ jobs:
     docker:
         name: Build & Push Docker Images
         runs-on: ubuntu-latest
+
         needs:
             - frontend-ci
             - backend-ci
+
         if: github.event_name == 'push'
 
         permissions:
