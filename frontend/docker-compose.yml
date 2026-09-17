@@ -1,0 +1,17 @@
+services:
+    frontend:
+        image: tablebooking-frontend:test
+
+        container_name: tablebooking-frontend
+
+        ports:
+            - '3000:3000'
+
+        env_file:
+            - .env
+
+        environment:
+            NODE_ENV: development
+            AUTH_TRUST_HOST: 'true'
+
+        restart: unless-stopped

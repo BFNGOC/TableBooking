@@ -1,34 +1,612 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose/dist/common/mongoose.decorators';
-import { User } from './schemas/user.schema';
-import { Model } from 'mongoose';
+import {
+  AccountType,
+  User,
+  UserDocument,
+  UserRole,
+} from './schemas/user.schema';
+import { ClientSession, Model } from 'mongoose';
+import { hashPasswordHelper, validateMongoId } from '@app/helpers/util';
+import { CreateAuthDto } from '@app/auth/dto/create-auth.dto';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
+import { MailerService } from '@nestjs-modules/mailer';
+import { CheckCodeDto } from '@app/auth/dto/check-code.dto';
+import { ChangePasswordDto } from '@app/auth/dto/change-password.dto';
+import { FindUserDto } from './dto/find-user.dto';
+import { buildPagination } from '@app/helpers/pagination.helper';
+import { buildSort } from '@app/helpers/sort.helper';
+
+import { UpdateUserRoleAdminDto } from './dto/update-user-role-admin.dto';
+import { GoogleUserInfo } from '@app/auth/types/google-user-info.type';
+import { UserSearchService } from './user-search.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
+    private readonly mailerService: MailerService,
+    private readonly userSearchService: UserSearchService,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  /*************************************************************
+   * HELPERS
+   *************************************************************/
+  async getUserByIdOrThrow(
+    userId: string,
+    isSelectFull = false,
+  ): Promise<UserDocument> {
+    const query = this.userModel.findById(userId);
+
+    if (isSelectFull) {
+      query.select('+password +refreshToken');
+    }
+
+    const user = await query.exec();
+
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+
+    return user;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async isEmailExist(email: string, userId?: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      return false;
+    }
+
+    if (userId && user._id.toString() === userId) {
+      return false;
+    }
+
+    return true;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  /*************************************************************
+   * USER
+   *************************************************************/
+  async getMe(userId: string) {
+    const user = this.getUserByIdOrThrow(userId);
+
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateMe(userId: string, dto: UpdateUserDto) {
+    await this.getUserByIdOrThrow(userId);
+
+    if (dto.email) {
+      await this.isEmailExist(dto.email, userId);
+    }
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          name: dto.name,
+          email: dto.email,
+          phone: dto.phone,
+          address: dto.address,
+          avatar: dto.avatar,
+          gender: dto.gender,
+          dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+        },
+      },
+      {
+        new: true,
+      },
+    );
+
+    return {
+      updatedUser,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  /*************************************************************
+   * ADMIN
+   *************************************************************/
+  async create(createUserDto: CreateUserDto) {
+    const isEmailExist = await this.isEmailExist(createUserDto.email);
+
+    if (isEmailExist) {
+      throw new ConflictException(`Email đã tồn tại: ${createUserDto.email}`);
+    }
+
+    const hashedPassword = await hashPasswordHelper(createUserDto.password);
+
+    const createdUser = await this.userModel.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
+
+    await this.userSearchService.index(createdUser);
+
+    return {
+      user: {
+        _id: createdUser._id,
+      },
+    };
+  }
+
+  async findAll(query: FindUserDto) {
+    const filter: Record<string, any> = {};
+
+    if (query.role) {
+      filter.role = query.role;
+    }
+
+    if (query.isActive !== undefined) {
+      filter.isActive = query.isActive;
+    }
+
+    const keyword = query.keySearch?.trim();
+
+    const { currentPage, pageSize, skip } = buildPagination({
+      currentPage: query.currentPage,
+      pageSize: query.pageSize,
+    });
+
+    const sort = buildSort(query.sort);
+
+    /**
+     * Có keyword
+     * => Elasticsearch
+     */
+    if (keyword) {
+      const searchResult = await this.userSearchService.search(keyword, {
+        currentPage,
+        pageSize,
+        filter,
+      });
+
+      return {
+        data: searchResult.data,
+
+        meta: {
+          currentPage,
+          pageSize,
+
+          totalItems: searchResult.totalItems,
+
+          totalPages: Math.ceil(searchResult.totalItems / pageSize),
+        },
+      };
+    }
+
+    /**
+     * Không keyword
+     * => MongoDB
+     */
+    const totalItems = await this.userModel.countDocuments(filter);
+
+    const users = await this.userModel
+      .find(filter)
+      .collation({
+        locale: 'vi',
+        strength: 1,
+      })
+      .sort(sort)
+      .skip(skip)
+      .limit(pageSize);
+
+    return {
+      data: users,
+
+      meta: {
+        currentPage,
+        pageSize,
+
+        totalItems,
+
+        totalPages: Math.ceil(totalItems / pageSize),
+      },
+    };
+  }
+
+  async findOne(_id: string) {
+    validateMongoId(_id);
+
+    const user = await this.userModel.findById(_id);
+
+    if (!user) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    return {
+      user,
+    };
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    return user;
+  }
+
+  async findByEmailWithPassword(email: string) {
+    return this.userModel.findOne({ email }).select('+password');
+  }
+
+  async findByEmailOptional(email: string) {
+    return this.userModel.findOne({ email });
+  }
+
+  async findOrCreateGoogleUser(data: GoogleUserInfo) {
+    const existingUser = await this.findByEmailOptional(data.email);
+
+    if (existingUser) {
+      if (!existingUser.googleId) {
+        existingUser.googleId = data.googleId;
+        existingUser.isActive = true;
+
+        if (data.avatar && !existingUser.avatar) {
+          existingUser.avatar = {
+            url: data.avatar,
+            publicId: data.avatar,
+          };
+        }
+
+        await existingUser.save();
+      }
+
+      if (existingUser.googleId !== data.googleId) {
+        throw new ConflictException(
+          'Email này đã được liên kết với tài khoản Google khác',
+        );
+      }
+
+      return existingUser;
+    }
+
+    const createdUser = await this.userModel.create({
+      name: data.name,
+      email: data.email,
+      googleId: data.googleId,
+      accountType: AccountType.GOOGLE,
+      role: UserRole.CUSTOMER,
+      isActive: true,
+      avatar: data.avatar
+        ? {
+            url: data.avatar,
+            publicId: data.avatar,
+          }
+        : undefined,
+    });
+
+    await this.userSearchService.index(createdUser);
+
+    return createdUser;
+  }
+
+  async update(_id: string, dto: UpdateUserRoleAdminDto) {
+    const updateData = { ...dto };
+
+    if (dto.password) {
+      updateData.password = await hashPasswordHelper(dto.password);
+    }
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(_id, updateData, {
+        new: true,
+        runValidators: true,
+      })
+      .select('-password');
+
+    if (!updatedUser) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    await this.userSearchService.update(updatedUser);
+
+    return {
+      message: 'Cập nhật user thành công',
+      data: updatedUser,
+    };
+  }
+
+  async activateUser(_id: string) {
+    validateMongoId(_id);
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(
+        _id,
+        {
+          isActive: true,
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .select('-password');
+
+    if (!updatedUser) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    await this.userSearchService.update(updatedUser);
+
+    return {
+      updatedUser,
+    };
+  }
+
+  async inactiveUser(_id: string) {
+    validateMongoId(_id);
+
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(
+        _id,
+        {
+          isActive: false,
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .select('-password');
+
+    if (!updatedUser) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    await this.userSearchService.update(updatedUser);
+
+    return updatedUser;
+  }
+
+  async remove(_id: string) {
+    validateMongoId(_id);
+
+    const deletedUser = await this.userModel.findByIdAndDelete(_id);
+
+    if (!deletedUser) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    await this.userSearchService.delete(_id);
+
+    return {
+      message: 'Xóa user thành công',
+      data: deletedUser,
+    };
+  }
+
+  async updateLastLogin(id: string) {
+    await this.userModel.findByIdAndUpdate(id, {
+      lastLoginAt: new Date(),
+    });
+  }
+
+  async handleRegister(registerDto: CreateAuthDto) {
+    const { email, name, password } = registerDto;
+
+    //check email
+    const isEmailExist = await this.isEmailExist(email);
+
+    if (isEmailExist) {
+      throw new ConflictException(`Email đã tồn tại: ${email}`);
+    }
+
+    if (!password) {
+      throw new BadRequestException('Password không được để trống');
+    }
+
+    //hash password
+    const hashedPassword = await hashPasswordHelper(password);
+
+    const codeId = uuidv4();
+
+    const user = await this.userModel.create({
+      email,
+      name,
+      password: hashedPassword,
+      isActive: false,
+      verificationCodeId: codeId,
+      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
+    });
+
+    //send email
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Activate your account at TableBooking',
+      template: 'register',
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId,
+      },
+    });
+    return {
+      user: {
+        _id: user._id,
+      },
+    };
+  }
+
+  async handleActive(data: CheckCodeDto) {
+    const user = await this.userModel
+      .findOne({
+        _id: data._id,
+        verificationCodeId: data.code,
+      })
+      .select('+verificationCodeId +verificationCodeExpires');
+
+    if (!user) {
+      throw new NotFoundException('Mã xác thực không hợp lệ');
+    }
+
+    if (user.isActive) {
+      throw new BadRequestException('Tài khoản đã được kích hoạt');
+    }
+
+    if (dayjs().isAfter(user.verificationCodeExpires)) {
+      throw new BadRequestException('Mã xác thực đã hết hạn');
+    }
+
+    user.isActive = true;
+
+    await user.save();
+
+    return {
+      message: 'Kích hoạt tài khoản thành công',
+    };
+  }
+
+  async retryActive(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundException('Tài khoản không tồn tại');
+    }
+
+    if (user.isActive) {
+      throw new BadRequestException('Tài khoản đã được kích hoạt');
+    }
+
+    //update user
+    const codeId = uuidv4();
+
+    await user.updateOne({
+      verificationCodeId: codeId,
+      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
+    });
+
+    //send email
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Activate your account at TableBooking',
+      template: 'register',
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId,
+      },
+    });
+
+    return { _id: user?._id };
+  }
+
+  async retryPassword(email: string) {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundException('Tài khoản không tồn tại');
+    }
+
+    //update user
+    const codeId = uuidv4();
+
+    await user.updateOne({
+      verificationCodeId: codeId,
+      verificationCodeExpires: dayjs().add(5, 'minute').toDate(),
+    });
+
+    //send email
+    await this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Change your password account at TableBooking',
+      template: 'register',
+      context: {
+        name: user?.name ?? user.email,
+        activationCode: codeId,
+      },
+    });
+
+    return { _id: user?._id, email: user?.email };
+  }
+
+  async changePassword(data) {
+    if (data.password !== data.confirmPassword) {
+      throw new BadRequestException('Mật khẩu/xác nhận mật khẩu không hợp lệ');
+    }
+
+    const user = await this.userModel
+      .findOne({
+        email: data.email,
+        verificationCodeId: data.code,
+      })
+      .select('+verificationCodeId +verificationCodeExpires');
+
+    if (!user) {
+      throw new BadRequestException('Mã xác thực không hợp lệ');
+    }
+
+    if (
+      !user.verificationCodeExpires ||
+      dayjs().isAfter(user.verificationCodeExpires)
+    ) {
+      throw new BadRequestException('Mã xác thực đã hết hạn');
+    }
+
+    user.password = await hashPasswordHelper(data.password);
+
+    user.verificationCodeId = undefined;
+    user.verificationCodeExpires = undefined;
+
+    await user.save();
+
+    return {
+      _id: user._id,
+      email: user.email,
+    };
+  }
+
+  async test(id: string) {
+    const user = await this.userModel.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    return this.userSearchService.index(user);
+  }
+
+  async search(keyword: string) {
+    return this.userSearchService.search(keyword);
+  }
+
+  async changeRole(
+    userId: string,
+    role: UserRole,
+    session: ClientSession,
+  ): Promise<UserDocument> {
+    const user = await this.userModel
+      .findByIdAndUpdate(
+        {
+          _id: userId,
+          role: UserRole.CUSTOMER,
+        },
+        {
+          $set: {
+            role,
+          },
+        },
+        {
+          new: true,
+          session,
+        },
+      )
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy người dùng');
+    }
+
+    return user;
   }
 }

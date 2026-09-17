@@ -1,0 +1,17 @@
+export const CUISINE_TYPES = [
+  'Việt Nam',
+  'Hải sản',
+  'BBQ',
+  'Lẩu',
+  'Buffet',
+  'Nhật Bản',
+  'Hàn Quốc',
+  'Trung Hoa',
+  'Thái Lan',
+  'Pizza',
+  'Steak',
+  'Cafe',
+  'Trà sữa',
+  'Món chay',
+  'Fast Food',
+];

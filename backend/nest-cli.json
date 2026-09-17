@@ -5,7 +5,9 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "tsconfig.json"
+    "tsConfigPath": "tsconfig.json",
+    "assets": ["mail/templates/**/*"],
+    "watchAssets": true
   },
   "projects": {
     "table-booking": {

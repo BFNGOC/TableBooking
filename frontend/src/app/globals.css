@@ -1,7 +1,8 @@
 @import 'tailwindcss';
+@import '@heroui/styles';
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+:root {
+    --primary: #6f4e37;
+    --sidebar: #e3d9d3;
+    --background: #f5efeb;
 }

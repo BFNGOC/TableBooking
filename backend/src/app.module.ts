@@ -4,30 +4,155 @@ import { AppService } from '@app/app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from '@app/modules/users/users.module';
+import { AuthModule } from '@app/auth/auth.module';
+import { JwtAuthGuard } from './auth/passport/jwt-auth.guard';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
+import { TransformInterceptor } from './core/transform.interceptor';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { RolesGuard } from './guards/role.guard';
+import { UploadModule } from './modules/upload/upload.module';
+import { RestaurantsModule } from './modules/restaurants/restaurants.module';
+import { SearchModule } from './modules/search/elasticsearch.module';
+import { CounterModule } from './modules/counter/counter.module';
+import { TaxModule } from './modules/tax/tax.module';
+import { PricingRuleModule } from './modules/pricing-rule/pricing-rule.module';
+import { TablesModule } from './modules/tables/tables.module';
+import { TableAvailabilitiesModule } from './modules/table-availabilities/table-availabilities.module';
+import { AreasModule } from './modules/areas/areas.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
+import { RedisModule } from './shared/redis/redis.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationModule } from './modules/notification/notification.module';
+import { SocketModule } from './modules/socket/socket.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    UsersModule,
+    AuthModule,
+    UploadModule,
+    RestaurantsModule,
+    SearchModule,
+
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 1000000,
+      },
+    ]),
 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
 
+        maxPoolSize: 200,
+        minPoolSize: 0,
+        maxConnecting: 10,
+
         onConnectionCreate: (connection) => {
           console.log('MongoDB connected successfully');
+
+          console.log('MongoDB pool config:', {
+            maxPoolSize: connection.getClient().options.maxPoolSize,
+            minPoolSize: connection.getClient().options.minPoolSize,
+            maxConnecting: connection.getClient().options.maxConnecting,
+          });
+
           return connection;
         },
       }),
       inject: [ConfigService],
     }),
 
-    UsersModule,
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('MAIL_HOST'),
+          port: configService.get<number>('MAIL_PORT'),
+          //   secure: false,
+          auth: {
+            user: configService.get<string>('MAIL_USER'),
+            pass: configService.get<string>('MAIL_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: '"No Reply" <noreply@example.com>',
+        },
+        //   preview: true,
+        template: {
+          dir: __dirname + '/mail/templates',
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
+      inject: [ConfigService],
+    }),
+
+    UploadModule,
+
+    CounterModule,
+
+    TaxModule,
+
+    TablesModule,
+
+    TableAvailabilitiesModule,
+
+    AreasModule,
+
+    PricingRuleModule,
+
+    BookingsModule,
+
+    RedisModule,
+
+    PaymentModule,
+
+    ScheduleModule.forRoot(),
+
+    NotificationModule,
+
+    SocketModule,
+
+    DashboardModule,
+
+    ReviewsModule,
+
+    ChatModule,
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

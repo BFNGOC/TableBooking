@@ -1,0 +1,447 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateNotificationDto } from './dto/create-notification.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import {
+  Notification,
+  NotificationReferenceModel,
+  NotificationType,
+} from './schemas/notification.schema';
+import { SocketService } from '../socket/socket.service';
+import { SOCKET_EVENTS } from '../socket/socket.constants';
+
+@Injectable()
+export class NotificationService {
+  constructor(
+    @InjectModel(Notification.name)
+    private notificationModel: Model<Notification>,
+    private readonly socketService: SocketService,
+  ) {}
+
+  async create(createNotificationDto: CreateNotificationDto) {
+    const notification = await this.notificationModel.create(
+      createNotificationDto,
+    );
+
+    this.socketService.emitToUser(
+      createNotificationDto.userId,
+      SOCKET_EVENTS.NOTIFICATION_NEW,
+      notification,
+    );
+
+    return notification;
+  }
+
+  notifyChatMessage(
+    userId: string,
+    conversationId: string,
+    messageId: string,
+    message: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.CHAT,
+      title: 'Tin nhắn mới',
+      message,
+      data: {
+        conversationId,
+        messageId,
+      },
+    });
+  }
+
+  async findAll(userId: string, page = 1, limit = 5) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [notifications, total] = await Promise.all([
+      this.notificationModel
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.notificationModel.countDocuments({ userId }),
+    ]);
+
+    const hasMore = skip + notifications.length < total;
+
+    return {
+      data: notifications,
+      total,
+      page,
+      limit,
+      hasMore,
+    };
+  }
+
+  async findAllUnread(userId: string, page = 1, limit = 5) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const skip = (page - 1) * limit;
+    const query = { userId, isRead: false };
+
+    const [notifications, total] = await Promise.all([
+      this.notificationModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.notificationModel.countDocuments(query),
+    ]);
+
+    const hasMore = skip + notifications.length < total;
+
+    return {
+      data: notifications,
+      total,
+      page,
+      limit,
+      hasMore,
+    };
+  }
+
+  async findOne(id: string, userId: string) {
+    if (!Types.ObjectId.isValid(id) || !Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('Thông báo không tồn tại');
+    }
+
+    const notification = await this.notificationModel.findOne({
+      _id: new Types.ObjectId(id),
+      userId: new Types.ObjectId(userId),
+    });
+
+    if (!notification) {
+      throw new NotFoundException('Thông báo không tồn tại');
+    }
+
+    return notification;
+  }
+
+  async remove(id: string, userId: string) {
+    if (!Types.ObjectId.isValid(id) || !Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('Thông báo không tồn tại');
+    }
+
+    const notification = await this.notificationModel.findOneAndDelete({
+      _id: new Types.ObjectId(id),
+      userId: new Types.ObjectId(userId),
+    });
+
+    if (!notification) {
+      throw new NotFoundException('Thông báo không tồn tại');
+    }
+
+    return notification;
+  }
+
+  async getUnreadCount(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const count = await this.notificationModel.countDocuments({
+      userId,
+      isRead: false,
+    });
+
+    return count;
+  }
+
+  async markAsRead(userId: string, id: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const notification = await this.notificationModel.findOneAndUpdate(
+      { _id: id, userId },
+      { isRead: true, readAt: new Date() },
+      { new: true },
+    );
+
+    if (!notification) {
+      throw new NotFoundException('Thông báo không tồn tại');
+    }
+
+    return notification;
+  }
+
+  async markAllAsRead(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Định dạng ID người dùng không hợp lệ');
+    }
+
+    const result = await this.notificationModel.updateMany(
+      { userId, isRead: false },
+      { isRead: true, readAt: new Date() },
+    );
+
+    if (result.modifiedCount === 0) {
+      throw new NotFoundException('Không có thông báo chưa đọc để đánh dấu');
+    }
+
+    return result;
+  }
+
+  // --------------------------------------
+  // Booking notifications
+  // --------------------------------------
+
+  // --------------------------------------
+  // Booking notifications
+  // --------------------------------------
+
+  notifyBookingCreated(
+    userId: string,
+    booking: Record<string, any>,
+    title: string,
+    message: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title,
+      message,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'PENDING',
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyBookingConfirmed(
+    userId: string,
+    booking: Record<string, any>,
+    title: string,
+    message: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title,
+      message,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'CONFIRMED',
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyBookingRejected(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title: 'Đặt bàn bị từ chối',
+      message: `Nhà hàng ${restaurantName} đã từ chối yêu cầu đặt bàn của bạn.`,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'REJECTED',
+        rejectionReason: booking.rejectionReason ?? null,
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyBookingCancelledByUser(
+    userId: string,
+    booking: Record<string, any>,
+    userName: string,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title: 'Đặt bàn đã được hủy',
+      message: `Người dùng ${userName} đã hủy đặt bàn tại nhà hàng ${restaurantName}.`,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'CANCELLED',
+        cancelReason: booking.cancelReason ?? null,
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyBookingCancelledByRestaurant(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title: 'Nhà hàng đã hủy đặt bàn',
+      message: `Nhà hàng ${restaurantName} đã hủy đặt bàn của bạn.`,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'CANCELLED',
+        cancelReason: booking.cancelReason ?? null,
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyBookingExpired(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title: 'Đặt bàn đã bị hủy',
+      message: `Đặt bàn tại nhà hàng ${restaurantName} đã bị hủy do quá thời gian thanh toán.`,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'CANCELLED',
+        cancelReason: 'Booking expired',
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyBookingNoShow(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    const bookingDateStr =
+      booking.bookingDate instanceof Date
+        ? booking.bookingDate.toLocaleDateString()
+        : booking.bookingDate;
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title: 'Bạn đã không đến',
+      message: `Bạn đã không check-in cho đặt bàn tại nhà hàng ${restaurantName} vào ngày ${bookingDateStr}.`,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'NO_SHOW',
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyBookingCheckedIn(
+    userId: string,
+    booking: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.BOOKING,
+      title: 'Check-in thành công',
+      message: `Bạn đã check-in thành công tại nhà hàng ${restaurantName}. Chúc bạn có một bữa ăn ngon!`,
+      referenceId: booking._id,
+      referenceModel: NotificationReferenceModel.BOOKING,
+      data: {
+        bookingStatus: 'CHECKED_IN',
+        restaurantSlug,
+      },
+    });
+  }
+
+  // --------------------------------------
+  // Review notifications
+  // --------------------------------------
+
+  notifyReviewCreated(
+    userId: string,
+    review: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.REVIEW,
+      title: 'Có đánh giá mới',
+      message: `Khách hàng đã để lại đánh giá cho nhà hàng ${restaurantName}.`,
+      referenceId: review._id,
+      referenceModel: NotificationReferenceModel.REVIEW,
+      data: {
+        reviewId: review._id,
+        rating: review.rating,
+        comment: review.comment ?? null,
+        restaurantSlug,
+      },
+    });
+  }
+
+  notifyReviewReplied(
+    userId: string,
+    review: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.REVIEW,
+      title: 'Nhà hàng đã phản hồi đánh giá',
+      message: `Nhà hàng ${restaurantName} đã phản hồi đánh giá của bạn.`,
+      referenceId: review._id,
+      referenceModel: NotificationReferenceModel.REVIEW,
+      data: {
+        reviewId: review._id,
+        restaurantSlug,
+        reply: review.restaurantReply?.content ?? null,
+      },
+    });
+  }
+
+  // --------------------------------------
+  // Payment notifications
+  // --------------------------------------
+
+  notifyPaymentSuccess(
+    userId: string,
+    payment: Record<string, any>,
+    booking: Record<string, any>,
+    restaurantName: string,
+    restaurantSlug?: string,
+  ) {
+    return this.create({
+      userId,
+      type: NotificationType.PAYMENT,
+      title: 'Thanh toán thành công',
+      message: `Bạn đã thanh toán thành công cho đặt bàn tại nhà hàng ${restaurantName}.`,
+      referenceId: payment._id,
+      referenceModel: NotificationReferenceModel.PAYMENT,
+      data: {
+        paymentStatus: 'PAID',
+        amount: payment.amount,
+        bookingId: booking._id,
+        bookingStatus: 'CONFIRMED',
+        restaurantSlug,
+      },
+    });
+  }
+}
