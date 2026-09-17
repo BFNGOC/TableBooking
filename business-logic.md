@@ -1,526 +1,156 @@
-# TableBooking - Business Logic
+# TableBooking Business Logic
 
-## 1. Giới thiệu
+TableBooking is a restaurant discovery and table reservation system with four user contexts: unauthenticated visitors, customers, restaurant owners, and administrators. Authentication, role checks, validation, booking, payment, notifications, search, and operational dashboards are implemented in the frontend and NestJS backend.
 
-TableBooking là hệ thống hỗ trợ khách hàng tìm kiếm nhà hàng, xem thông tin nhà hàng và đặt bàn trực tuyến.
+## 1. Guest
 
-Hệ thống gồm 4 nhóm người dùng:
+Unauthenticated visitors can:
 
-- Guest (khách chưa đăng nhập)
-- Customer (khách hàng)
-- Restaurant Owner (chủ nhà hàng)
-- Admin (quản trị viên)
+- Browse approved restaurant listings.
+- Search restaurants and view restaurant details.
+- View public restaurant information such as address, cuisine, price range, rating, and images.
+- Register with a name, email, password, and phone number.
+- Log in with local credentials or Google authentication.
+- Verify an account and use password recovery/change flows.
 
----
+Creating and managing bookings requires authentication.
 
-# 2. Luồng tổng thể hệ thống
+## 2. Customer
 
-```text
-Khách hàng
-    ↓
-Tìm kiếm nhà hàng
-    ↓
-Xem thông tin nhà hàng
-    ↓
-Chọn ngày giờ đặt bàn
-    ↓
-Hệ thống kiểm tra bàn trống
-    ↓
-Tạo booking
-    ↓
-Chủ nhà hàng xác nhận
-    ↓
-Khách đến sử dụng dịch vụ
-    ↓
-Hoàn thành booking
-    ↓
-Đánh giá nhà hàng
+Customers can:
+
+- Manage their profile, contact information, password, and avatar.
+- Search approved restaurants using keyword, cuisine, price, rating, and sorting filters.
+- View a restaurant's public details and available booking time slots.
+- Select a date, time, guest count, and one or more available tables.
+- Preview booking pricing and deposit requirements.
+- Create bookings and choose whether to continue to deposit/full-payment checkout.
+- View booking history, upcoming bookings, recent bookings, and booking details.
+- Cancel their own `PENDING` or `CONFIRMED` booking before its start time.
+- Pay through the VNPAY integration and view payment information.
+- Receive and manage booking, payment, and system notifications.
+
+### Customer booking rules
+
+The backend validates the restaurant, booking window, notice period, reservation duration, table ownership, table status, capacity, availability schedule, and overlapping bookings. Deposit-required bookings receive a temporary Redis hold. See [Booking Workflow](booking-workflow.md) for the complete lifecycle and refund rules.
+
+The current backend does not expose a review controller or service. Review-related status/schema references should therefore not be treated as an implemented customer review workflow.
+
+## 3. Restaurant Owner
+
+Restaurant owners can:
+
+- Submit a restaurant onboarding request with business and contact information.
+- Verify the restaurant email and wait for administrative approval.
+- Manage the restaurant profile, description, contact details, images, social links, prices, and operating settings.
+- Manage areas and tables, including table capacity, location, base price, deposit configuration, and table status.
+- Configure table availability using weekly schedules and date-specific exceptions.
+- Create and manage pricing rules used for booking price and deposit calculation.
+- View all and upcoming restaurant bookings with booking, payment, and deposit statuses.
+- Reject eligible `PENDING` or `CONFIRMED` bookings before their start time.
+- Verify customer check-in tokens/codes and check in confirmed bookings.
+- View dashboard and analytic data such as booking, revenue, customer, cancellation, and status information where exposed by the dashboard modules.
+
+Restaurant owners do not manually confirm a pending booking. Payment processing changes a booking to `CONFIRMED`; the owner can subsequently manage, reject, or check in eligible bookings.
+
+## 4. Administrator
+
+The backend defines an `ADMIN` role and provides administrative surfaces for operational management, including:
+
+- Reviewing and approving or rejecting restaurant onboarding requests.
+- Managing restaurant verification/status workflows.
+- Accessing restaurant and booking management operations that allow the administrator role.
+- Viewing dashboard and booking statistics.
+- Accessing user and restaurant search/management modules exposed by the backend.
+
+The current source does not provide enough evidence for this document to claim a specific user ban/unban workflow or a complete review moderation workflow, so those are not listed as implemented features here.
+
+## 5. Restaurant and Booking States
+
+### Restaurant verification
+
+Restaurant onboarding uses these verification states:
+
+- `EMAIL_PENDING`: onboarding was submitted and email verification is pending.
+- `PENDING`: email verification is complete and administrative approval is pending.
+- `APPROVED`: the restaurant can appear in public approved listings, subject to its active/booking settings.
+- `REJECTED`: the onboarding request was rejected.
+
+Restaurant operational status is separately represented by `ACTIVE` and `INACTIVE`.
+
+### Table status
+
+Tables use the following statuses:
+
+- `AVAILABLE`: eligible for booking when availability and conflict checks also pass.
+- `MAINTENANCE`: not bookable.
+- `DISABLED`: not bookable.
+
+### Booking status
+
+The booking model defines `PENDING`, `CONFIRMED`, `CHECKED_IN`, `COMPLETED`, `CANCELLED`, `REJECTED`, and `NO_SHOW`. A booking starts as `PENDING`. Successful deposit or full payment changes it to `CONFIRMED`; restaurant verification changes it to `CHECKED_IN`. Expiration and no-show processing are automatic. The current controller has no explicit completion operation.
+
+## 6. End-to-End Booking Flow
+
+```mermaid
+flowchart TD
+    A[Customer signs in] --> B[Select approved restaurant]
+    B --> C[Select date, time, guest count, and tables]
+    C --> D[Validate schedule, capacity, conflicts, and pricing]
+    D --> E[Create PENDING booking]
+    E --> F{Payment required or requested?}
+    F -->|Deposit or full payment| G[VNPAY payment and IPN verification]
+    F -->|No payment flow| H[Booking remains PENDING]
+    G --> I[CONFIRMED]
+    I --> J[Restaurant/admin verifies check-in]
+    J --> K[CHECKED_IN]
+    I --> L[Cancel, reject, or scheduled NO_SHOW]
+    E --> M[Hold expires]
+    M --> N[CANCELLED]
 ```
 
----
+The booking workflow uses three independent status groups:
 
-# 3. Chức năng Guest
+- Booking: `PENDING`, `CONFIRMED`, `CHECKED_IN`, `COMPLETED`, `CANCELLED`, `REJECTED`, `NO_SHOW`.
+- Deposit: `NOT_REQUIRED`, `PENDING`, `PAID`, `REFUNDED`, `FORFEITED`.
+- Payment: `UNPAID`, `PARTIAL`, `PAID`, `REFUNDED`.
 
-Guest là người chưa đăng nhập.
+The default booking settings are `30` advance-booking days, `60` minutes minimum notice, `120` minutes reservation duration, and `30` minutes for a deposit-payment hold when the restaurant has not configured different values.
 
-## 3.1 Đăng ký
+## 7. Notifications and Real-time Communication
 
-Người dùng nhập:
+The notification module stores user-specific notifications for booking, payment, and system events. It supports listing, unread listing/counts, marking notifications as read, and deletion. Socket.IO authenticates connections with a JWT and places each user in a `user:{userId}` room for targeted real-time delivery.
 
-- Họ tên
-- Email
-- Mật khẩu
-- Số điện thoại
+## 8. Search and Data Services
 
-Hệ thống:
+- MongoDB with Mongoose stores users, restaurants, tables, availability, bookings, payments, notifications, and related data.
+- Elasticsearch supports restaurant/customer search and booking index synchronization.
+- Redis stores temporary booking holds and supports distributed table-lock behavior.
+- VNPAY provides the implemented payment and refund integration.
+- Mail templates support account and restaurant onboarding email flows.
+- Cloudinary upload configuration supports managed image uploads where used by the upload module.
 
-- Kiểm tra email đã tồn tại chưa
-- Mã hóa mật khẩu
-- Tạo tài khoản mới
+## 9. Security and Validation
 
-Trạng thái:
+The application implements:
 
-```text
-ACTIVE
-```
+- A global JWT authentication guard with explicit public-route exceptions.
+- Role-based authorization for customer, restaurant, and administrator operations.
+- DTO validation and transformation through NestJS `ValidationPipe`.
+- Rate limiting is configured for sensitive API operations.
+- Helmet security headers and configured CORS.
+- VNPAY signature and amount verification for payment callbacks.
+- Booking ownership/restaurant ownership checks.
+- MongoDB conflict validation and Redis atomic holds for double-booking protection.
 
----
+These are application-level protections and do not by themselves constitute a complete security assessment.
 
-## 3.2 Đăng nhập
+## 10. Future Work
 
-Người dùng đăng nhập bằng:
+The following are reasonable future improvements, not current guarantees of the implementation:
 
-- Email
-- Password
-
-Hệ thống:
-
-- Kiểm tra tài khoản
-- Kiểm tra mật khẩu
-- Sinh Access Token
-- Trả về thông tin người dùng
-
----
-
-## 3.3 Xem danh sách nhà hàng
-
-Guest có thể:
-
-- Xem danh sách nhà hàng
-- Xem thông tin chi tiết
-- Xem địa chỉ
-- Xem giờ hoạt động
-- Xem đánh giá
-
-Guest không được đặt bàn.
-
----
-
-# 4. Chức năng Customer
-
-## 4.1 Cập nhật hồ sơ
-
-Khách hàng có thể:
-
-- Đổi avatar
-- Đổi tên
-- Đổi số điện thoại
-- Đổi mật khẩu
-
----
-
-## 4.2 Tìm kiếm nhà hàng
-
-Tìm theo:
-
-- Tên
-- Địa chỉ
-- Loại hình
-- Số lượng người
-
----
-
-## 4.3 Xem chi tiết nhà hàng
-
-Thông tin hiển thị:
-
-- Tên nhà hàng
-- Hình ảnh
-- Địa chỉ
-- Giờ mở cửa
-- Giờ đóng cửa
-- Sức chứa
-- Đánh giá trung bình
-- Số lượng đánh giá
-
----
-
-## 4.4 Đặt bàn
-
-Khách hàng chọn:
-
-- Nhà hàng
-- Ngày
-- Giờ
-- Số lượng khách
-- Ghi chú
-
-Hệ thống:
-
-### Bước 1
-
-Kiểm tra:
-
-```text
-Ngày đặt hợp lệ
-```
-
-Không cho phép:
-
-- Ngày trong quá khứ
-- Giờ ngoài thời gian hoạt động
-
-### Bước 2
-
-Kiểm tra số lượng khách.
-
-Ví dụ:
-
-```text
-Khách: 6 người
-```
-
-Hệ thống tìm:
-
-```text
-Bàn 6 người
-hoặc
-Ghép nhiều bàn
-```
-
-### Bước 3
-
-Kiểm tra bàn còn trống.
-
-Không cho phép:
-
-```text
-Trùng thời gian đặt
-```
-
-### Bước 4
-
-Tạo Booking.
-
-Trạng thái:
-
-```text
-PENDING
-```
-
----
-
-## 4.5 Hủy đặt bàn
-
-Khách hàng được phép hủy khi:
-
-```text
-Booking chưa COMPLETED
-```
-
-Sau khi hủy:
-
-```text
-CANCELLED
-```
-
----
-
-## 4.6 Xem lịch sử đặt bàn
-
-Hiển thị:
-
-- Mã đặt bàn
-- Nhà hàng
-- Ngày giờ
-- Số lượng khách
-- Trạng thái
-
----
-
-## 4.7 Đánh giá nhà hàng
-
-Điều kiện:
-
-```text
-Booking phải COMPLETED
-```
-
-Khách hàng có thể:
-
-- Chấm điểm 1 → 5 sao
-- Viết nhận xét
-
-Mỗi booking chỉ được đánh giá một lần.
-
----
-
-# 5. Chức năng Restaurant Owner
-
-## 5.1 Tạo nhà hàng
-
-Chủ nhà hàng nhập:
-
-- Tên nhà hàng
-- Địa chỉ
-- Số điện thoại
-- Email
-- Mô tả
-- Hình ảnh
-
-Hệ thống:
-
-```text
-PENDING
-```
-
-Chờ Admin duyệt.
-
----
-
-## 5.2 Quản lý thông tin nhà hàng
-
-Cho phép:
-
-- Sửa thông tin
-- Cập nhật hình ảnh
-- Cập nhật giờ hoạt động
-
----
-
-## 5.3 Quản lý khu vực
-
-Ví dụ:
-
-```text
-Tầng 1
-Tầng 2
-VIP
-Ngoài trời
-```
-
-Chủ nhà hàng:
-
-- Tạo khu vực
-- Cập nhật khu vực
-- Xóa khu vực
-
----
-
-## 5.4 Quản lý bàn
-
-Chủ nhà hàng:
-
-- Thêm bàn
-- Cập nhật bàn
-- Xóa bàn
-
-Ví dụ:
-
-```text
-A01 - 2 người
-A02 - 4 người
-A03 - 6 người
-```
-
-Trạng thái:
-
-```text
-AVAILABLE
-MAINTENANCE
-```
-
----
-
-## 5.5 Quản lý booking
-
-Xem:
-
-- Danh sách booking
-- Thông tin khách hàng
-- Số lượng khách
-- Ghi chú
-
----
-
-## 5.6 Xác nhận booking
-
-Booking mới:
-
-```text
-PENDING
-```
-
-Owner xác nhận:
-
-```text
-CONFIRMED
-```
-
----
-
-## 5.7 Từ chối booking
-
-Nếu không còn bàn:
-
-```text
-REJECTED
-```
-
----
-
-## 5.8 Check-in khách
-
-Khi khách đến:
-
-```text
-CHECKED_IN
-```
-
----
-
-## 5.9 Hoàn thành booking
-
-Sau khi khách sử dụng dịch vụ:
-
-```text
-COMPLETED
-```
-
----
-
-# 6. Chức năng Admin
-
-## 6.1 Quản lý người dùng
-
-Admin có thể:
-
-- Xem danh sách người dùng
-- Khóa tài khoản
-- Mở khóa tài khoản
-
-Trạng thái:
-
-```text
-ACTIVE
-INACTIVE
-BANNED
-```
-
----
-
-## 6.2 Quản lý nhà hàng
-
-Admin:
-
-- Duyệt nhà hàng
-- Từ chối nhà hàng
-- Khóa nhà hàng
-
-Trạng thái:
-
-```text
-PENDING
-ACTIVE
-REJECTED
-INACTIVE
-```
-
----
-
-## 6.3 Quản lý đánh giá
-
-Admin có thể:
-
-- Xem đánh giá
-- Ẩn đánh giá vi phạm
-
----
-
-## 6.4 Dashboard
-
-Thống kê:
-
-- Tổng người dùng
-- Tổng nhà hàng
-- Tổng booking
-- Tổng đánh giá
-
----
-
-# 7. Booking Status
-
-```text
-PENDING
-    ↓
-
-CONFIRMED
-    ↓
-
-CHECKED_IN
-    ↓
-
-COMPLETED
-```
-
-Các trạng thái phụ:
-
-```text
-CANCELLED
-REJECTED
-NO_SHOW
-```
-
----
-
-# 8. Quy tắc nghiệp vụ
-
-## Rule 1
-
-Không cho phép đặt thời gian trong quá khứ.
-
----
-
-## Rule 2
-
-Không cho phép vượt quá sức chứa bàn.
-
----
-
-## Rule 3
-
-Không cho phép một bàn được đặt trùng thời gian.
-
----
-
-## Rule 4
-
-Chỉ khách đã hoàn thành booking mới được đánh giá.
-
----
-
-## Rule 5
-
-Mỗi booking chỉ được đánh giá một lần.
-
----
-
-## Rule 6
-
-Nhà hàng phải được Admin duyệt mới được hiển thị công khai.
-
----
-
-## Rule 7
-
-Booking bị hủy sẽ giải phóng bàn ngay lập tức.
-
----
-
-# 9. Phiên bản tương lai
-
-Các chức năng mở rộng:
-
-- Đặt món trước
-- Thanh toán online
-- Mã giảm giá
-- Tích điểm thành viên
-- Chat với nhà hàng
-- Thông báo realtime
-- Google Maps
-- QR Check-in
-- AI gợi ý nhà hàng
-
-```
-
-```
+- Add a complete backend review and rating workflow if reviews are part of the product scope.
+- Add an explicit booking completion operation and define who may perform it.
+- Expand automated unit, integration, and end-to-end coverage.
+- Add production monitoring, alerting, and more detailed operational audit trails.
+- Continue improving deployment and infrastructure automation.
