@@ -1,6 +1,12 @@
 services:
     frontend:
-        image: tablebooking-frontend:test
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+            args:
+                NEXT_PUBLIC_BACKEND_API_URL: http://localhost:8080/api/v1
+
+        image: tablebooking-frontend:local
         container_name: tablebooking-frontend
 
         ports:
@@ -15,7 +21,11 @@ services:
         restart: unless-stopped
 
     backend:
-        image: ${GHCR_IMAGE}:latest
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+
+        image: tablebooking-backend:local
         container_name: tablebooking-backend
 
         ports:
@@ -60,7 +70,6 @@ services:
 
     redis:
         image: redis:7-alpine
-
         container_name: tablebooking-redis
 
         volumes:

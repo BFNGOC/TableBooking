@@ -42,16 +42,10 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
             onAction: () => router.push('/my-bookings'),
         },
         {
-            id: 'profile',
-            label: 'Thông tin cá nhân',
-            icon: <User size={16} />,
-            onAction: () => router.push('/settings'),
-        },
-        {
             id: 'change-password',
             label: 'Cài đặt',
             icon: <Settings size={16} />,
-            onAction: () => router.push('/settings?tab=security'),
+            onAction: () => router.push('/settings'),
         },
         {
             id: 'restaurant',
@@ -87,7 +81,7 @@ function NavbarPublic({ navItems }: INavbarPublicProps) {
     ];
 
     return (
-        <header className="bg-[#fff8f5] border-b border-gray-200">
+        <header className="sticky top-0 z-50 border-b border-gray-200 bg-[#fff8f5]">
             <div className="mx-auto flex h-16 max-w-375 items-center justify-between px-6">
                 {/* Logo */}
                 <Link href="/" className="text-3xl font-bold text-[#6f4e37]">
